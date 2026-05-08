@@ -1,0 +1,55 @@
+html {
+	font-size: 100%;
+}
+
+body {
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	-webkit-text-size-adjust: none;
+	text-rendering: optimizeLegibility;
+	text-size-adjust: none;
+	text-wrap: pretty;
+
+	font-family: var(--font-primary);
+	font-size: var(--size-5);
+	line-height: 1.25;
+	font-weight: 500;
+	color: var(--color-ink);
+
+	background: var(--color-canvas);
+	max-inline-size: 100vw;
+
+	scroll-behavior: auto;
+	overscroll-behavior: none;
+
+	interpolate-size: allow-keywords;
+}
+
+::selection {
+	background: var(--color-ink);
+	color: var(--color-ink-inverted);
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, figure, p, ol, ul {
+	margin: 0;
+}
+
+ol[role="list"], ul[role="list"] {
+	list-style: none;
+	padding-inline: 0;
+}
+
+h1, h2, h3, h4, h5 {
+	font-size: inherit;
+	font-weight: inherit;
+}
+
+img, video {
+	display: block;
+	max-inline-size: 100%;
+}

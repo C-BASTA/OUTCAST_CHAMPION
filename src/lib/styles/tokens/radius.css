@@ -1,0 +1,11 @@
+@import "sizes.css";
+
+:root{
+    --radius-none: 0;
+    --radius-xs: var(--size-1); /* 4px */
+    --radius-s: var(--size-2);  /* 8px */
+    --radius-m: var(--size-4);  /* 16px */
+    --radius-l: var(--size-5);  /* 25px */
+    --radius-xl: var(--size-6); /* 32px */
+    --radius-full: var(--size-999); /* 999px */
+}

@@ -1,0 +1,24 @@
+:root {
+  --font-primary:   'GeistPixel', monospace;
+  --font-secondary: 'Geist', sans-serif;
+
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
+@font-face {
+  font-family: 'GeistPixel';
+  src: url('/fonts/GeistPixel-Square.woff2') format('woff2'),
+       url('/fonts/GeistPixel-Square.woff') format('woff'),
+       url('/fonts/GeistPixel-Square.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/Geist-Regular.woff2') format('woff2'),
+       url('/fonts/Geist-Regular.woff') format('woff'),
+       url('/fonts/Geist-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

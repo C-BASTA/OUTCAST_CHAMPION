@@ -1,0 +1,19 @@
+:root {
+	--base-size: 1rem; /* 16px */
+
+	--size-0:  calc(var(--base-size) * 0);    /* 0px   */
+	--size-1:  calc(var(--base-size) * 0.25); /* 4px   */
+	--size-2:  calc(var(--base-size) * 0.5);  /* 8px   */
+	--size-3:  calc(var(--base-size) * 0.75); /* 12px  */
+	--size-4:  calc(var(--base-size) * 1);    /* 16px  */
+	--size-4-5:  calc(var(--base-size) * 1.25); /* 20px  */
+	--size-5:  calc(var(--base-size) * 1.5);  /* 24px  */
+	--size-6:  calc(var(--base-size) * 2);    /* 32px  */
+	--size-7:  calc(var(--base-size) * 2.5);  /* 40px  */
+	--size-8:  calc(var(--base-size) * 3.5);  /* 56px  */
+	--size-9:  calc(var(--base-size) * 4.5);  /* 72px  */
+	--size-10: calc(var(--base-size) * 5);    /* 80px  */
+	--size-11: calc(var(--base-size) * 5.75); /* 92px  */
+	--size-12: calc(var(--base-size) * 10);   /* 160px */
+	--size-999: 999px;   					  /* 999px */
+}

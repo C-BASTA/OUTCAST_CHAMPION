@@ -1,0 +1,71 @@
+/* Responsive layout tokens: padding, gutter, ecc. */
+:root {
+    --padding-lateral: var(--size-10); /* 80px */
+    --padding-top-header: var(--size-6); /* 32px */
+    --padding-top-main: var(--size-12); /* 160px */
+
+    --gap-header-links: var(--size-6); /* 32px */
+    --gap-filter-options: var(--size-4); /* 16px */
+    --gap-filter-options-top: var(--size-7); /* 40px */
+    --gap-card-grid: var(--size-5); /* 24px */
+
+    --font-size-h1: var(--size-7); /* 40px */
+    --font-size-h2: var(--size-4-5); /* 20px */
+    --font-size-links: var(--size-5); /* 24px */
+  }
+
+/* Mobile */
+@media (max-width: 600px) {
+  :root {
+    --padding-lateral: var(--size-5); /* 24px */
+    --padding-top-header: var(--size-4); /* 16px */ 
+    --padding-top-main: var(--size-8); /* 56px */
+
+    --gap-header-links: var(--size-6); /* 32px */
+    --gap-filter-options: var(--size-4); /* 16px */
+    --gap-filter-options-top: var(--size-5); /* 24px */
+    --gap-card-grid: var(--size-2); /* 8px */
+
+    --font-size-h1: var(--size-5);  /* 24px */
+    --font-size-h2: var(--size-4-5); /* 20px */
+    --font-size-links: var(--size-4-5); /* 20px */
+  }
+}
+
+/* Tablet */
+@media (min-width: 601px) and (max-width: 1024px) {
+  :root {
+    --padding-lateral: var(--size-7); /* 40px */
+    --padding-top-header: var(--size-5); /* 24px */
+    --padding-top-main: var(--size-10); /* 80px */
+
+    --gap-header-links: var(--size-6); /* 32px */
+    --gap-filter-options: var(--size-4); /* 16px */
+    --gap-filter-options-top: var(--size-5); /* 24px */
+    --gap-card-grid: var(--size-2); /* 8px */
+
+    --font-size-h1: var(--size-7); /* 40px */
+    --font-size-h2: var(--size-5); /* 24px */
+    --font-size-links: var(--size-5); /* 24px */
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  :root {
+    --padding-lateral: var(--size-10); /* 80px */
+    --padding-top-header: var(--size-6); /* 32px */
+    --padding-top-main: var(--size-12); /* 160px */
+
+    --gap-header-links: var(--size-6); /* 32px */
+    --gap-filter-options: var(--size-4); /* 16px */
+    --gap-filter-options-top: var(--size-7); /* 40px */
+    --gap-card-grid: var(--size-5); /* 24px */
+
+    --font-size-h1: var(--size-10); /* 128px */
+    --font-size-h2: var(--size-5); /* 24px */
+    --font-size-links: var(--size-5); /* 24px */
+  }
+}
+
+/* Puoi aggiungere altre variabili (es: --container-max-width, --section-gap, ecc.) seguendo lo stesso schema. */
