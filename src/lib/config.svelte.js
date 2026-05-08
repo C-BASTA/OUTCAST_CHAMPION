@@ -20,4 +20,7 @@ export const config = $state({
   roughness:  0.4,         // 0 = specchio, 1 = completamente opaco
   metalness:  0.8,         // 0 = plastica, 1 = metallo
   atmosphere: 'studio',
+  rotationX: 0,            // rotazione in gradi attorno all'asse X
+  rotationY: 0,            // rotazione in gradi attorno all'asse Y
+  rotationZ: 0            // rotazione in gradi attorno all'asse Z
 })

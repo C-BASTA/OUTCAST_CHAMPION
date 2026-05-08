@@ -14,4 +14,7 @@ export declare const config: {
   roughness: number
   metalness: number
   atmosphere: string
+  rotationX: number
+  rotationY: number
+  rotationZ: number
 }

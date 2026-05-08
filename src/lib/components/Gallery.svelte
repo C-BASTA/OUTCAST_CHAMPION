@@ -3,7 +3,7 @@
   import Scene from './Scene.svelte';
   // Dati degli atleti - le rotazioni sono in radianti
   const faces = [
-    { name: 'Maksym Halinichev', rotation: { x: 0, y: 0, z: 0 }, position: { x: 0.0, y: 0.0, z: 0 } },
+    { name: 'Maksym Halinichev', rotation: { x: 0, y:  1.83, z: 0 }, position: { x: 0.0, y: 0.0, z: 0 } },
     { name: 'Dmytro Sharpar', rotation: { x: 0, y: 1.571, z: 0 }, position: { x: 0, y: 0.0, z: 0 } },
     { name: 'Yevhen Malyshev', rotation: { x: 0, y: 1.0, z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Karyna Bakhur', rotation: { x: 0, y: 1.5, z: 0 }, position: { x: 0, y: 0, z: 0} },

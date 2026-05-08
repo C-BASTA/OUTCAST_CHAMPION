@@ -43,6 +43,10 @@
       node.material.color.set(config.color)
       node.material.roughness = config.roughness
       node.material.metalness = config.metalness
+
+      node.rotation.x = config.rotationX
+      node.rotation.y = config.rotationY
+      node.rotation.z = config.rotationZ
     })
   })
 </script>

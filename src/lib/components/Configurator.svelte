@@ -62,13 +62,18 @@
 
   <!-- ── MATERIALE ──────────────────────────────── -->
   <section>
-    <p class="section-label">Materiale</p>
+    <p class="section-label">Rotazione</p>
+    <Slider label="Rotation X" bind:value={config.rotationX} min={0} max={6.28319} step={0.01} />
+    <Slider label="Rotation Y" bind:value={config.rotationY} min={0} max={6.28319} step={0.01} />
+    <Slider label="Rotation Z" bind:value={config.rotationZ} min={0} max={6.28319} step={0.01} />
+    
+    <!-- <p class="section-label">Materiale</p> -->
     <!--
       bind:value crea un two-way binding con la prop $bindable di Slider
       Ogni modifica allo slider aggiorna config.roughness/metalness
     -->
-    <Slider label="Roughness" bind:value={config.roughness} min={0} max={1} step={0.01} />
-    <Slider label="Metalness" bind:value={config.metalness} min={0} max={1} step={0.01} />
+    <!-- <Slider label="Roughness" bind:value={config.roughness} min={0} max={1} step={0.01} /> -->
+    <!-- <Slider label="Metalness" bind:value={config.metalness} min={0} max={1} step={0.01} /> -->
   </section>
 
   <!-- ── ATMOSFERA ──────────────────────────────── -->
