@@ -16,7 +16,7 @@
   ──────────────────────────────────────────────────────
 -->
 <script>
-  import 'app.css'
+  import '$lib/styles/config.css'
 
   let { children } = $props()
 </script>

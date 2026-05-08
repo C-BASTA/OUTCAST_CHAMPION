@@ -1,9 +1,3 @@
-/*
-  app.css — stili globali
-  Palette ispirata a Milano Cortina 2026:
-  blu olimpico + rame alpino + bianchi nevosi
-*/
-
 @import '$lib/styles/tokens.css';
 
 *, *::before, *::after {
@@ -15,8 +9,10 @@
 html, body {
   height: 100%;
   overflow: hidden;
-  font-family: var(--font-primary, 'GeistPixel'), monospace;
-  background: var(--mc-bg);
-  color: var(--mc-text);
+  font-family: var(--font-primary);
+  font-size: var(--size-4);
+  background: var(--color-canvas);
+  color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
