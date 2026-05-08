@@ -31,6 +31,8 @@
   let activeRotation = $state(faces[0].rotation);
   let activePosition = $state(faces[0].position);
   let timeoutId = null;
+  let lastScroll = 0;
+  const SCROLL_COOLDOWN = 150; // ms tra uno step e l'altro
 
   function updateRotationWithDelay(index) {
     if (timeoutId) {
@@ -66,6 +68,10 @@
 
   function onwheel(e) {
     e.preventDefault();
+    const now = Date.now();
+    if (now - lastScroll < SCROLL_COOLDOWN) return;
+    lastScroll = now;
+
     if (e.deltaY > 0 && selected < faces.length - 1) {
       selected++;
     } else if (e.deltaY < 0 && selected > 0) {
