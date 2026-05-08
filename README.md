@@ -1,42 +1,173 @@
-# sv
+# 3D Configurator — Threlte + SvelteKit
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Progetto didattico per mostrare come costruire un configuratore 3D con **SvelteKit**, **Threlte** e **Three.js**.
 
-## Creating a project
+## Setup del progetto
 
-If you're seeing this, you've probably already done this step. Congrats!
+### 1. Crea il progetto SvelteKit
 
 ```sh
-# create a new project
-npx sv create my-app
+npm install
 ```
 
-To recreate this project with the same configuration:
+Quando chiede il tipo di progetto, scegli **"No"** per TypeScript (JavaScript puro).
+
+### 2. Installa le librerie Threlte e Three.js
 
 ```sh
-# recreate this project
-npx sv@0.15.1 create --template minimal --types jsdoc --install npm 02-webdesign2026
-``` 
+# Runtime
+npm install three @threlte/core @threlte/extras
 
-## Developing
+# Dev: Threlte Studio (pannello di debug visuale)
+npm install -D @threlte/studio
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Dev: necessario per @threlte/gltf (formattazione output)
+npm install -D prettier prettier-plugin-svelte
 ```
 
-## Building
+### 3. Aggiungi il plugin Vite per Threlte Studio
 
-To create a production version of your app:
+In `vite.config.js`:
 
-```sh
-npm run build
+```js
+import { sveltekit } from '@sveltejs/kit/vite'
+import { defineConfig } from 'vite'
+import { threlteStudio } from '@threlte/studio/vite'
+
+export default defineConfig({
+  plugins: [
+    threlteStudio({ apply: 'serve' }), // solo in development
+    sveltekit()
+  ]
+})
 ```
 
-You can preview the production build with `npm run preview`.
+### 4. Disabilita SSR (inutile per app WebGL)
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+Crea `src/routes/+layout.js`:
+
+```js
+export const ssr = false
+```
+
+---
+
+## Aggiungere un modello 3D custom
+
+### Step 1 — Copia il file `.glb`
+
+Metti il file nella cartella `static/models/`:
+
+```
+static/
+  models/
+    tuomodello.glb
+```
+
+> I file in `static/` sono serviti dalla root del sito: `tuomodello.glb` sarà accessibile su `/models/tuomodello.glb`.
+
+### Step 2 — Converti il modello in componente Svelte
+
+```sh
+npx @threlte/gltf@next static/models/tuomodello.glb \
+  --output src/lib/components/TuoModello.svelte \
+  --shadows \
+  --transform
+```
+
+Il comando genera un componente con tutti i nodi e materiali già nominati, pronti da usare.
+
+`--transform` ottimizza automaticamente il modello per il web:
+- **Draco compression** — comprime la geometria (riduce il file anche del 90%)
+- **Texture resize** — scala le texture a max 1024px (modificabile con `--resolution 2048`)
+- **Pruning** — rimuove nodi e dati inutilizzati
+
+Il file `.glb` originale non viene modificato: viene creato un file ottimizzato separato
+nella stessa cartella, con suffisso `-transformed.glb`, che il componente carica automaticamente.
+
+> **Nota:** `@threlte/gltf` scrive il path come `/static/models/...` ma in SvelteKit è sbagliato.
+> Apri il file generato e correggi la riga `useGltf(...)`:
+> ```js
+> // ❌ errato (generato automaticamente)
+> const gltf = useGltf('/static/models/tuomodello.glb')
+>
+> // ✅ corretto
+> const gltf = useGltf('/models/tuomodello.glb')
+> ```
+
+### Step 3 — Collega il materiale ai controlli
+
+Nel componente generato, importa `config` e aggiungi un `$effect`:
+
+```svelte
+<script>
+  import { config } from '$lib/config.svelte.js'
+  // ... resto degli import generati ...
+
+  const gltf = useGltf('/models/tuomodello.glb')
+
+  // Aggiorna il materiale ogni volta che config cambia
+  $effect(() => {
+    if (!$gltf) return
+    const mat = $gltf.materials.ilTuoMateriale
+    mat.color.set(config.color)
+    mat.roughness = config.roughness
+    mat.metalness = config.metalness
+  })
+</script>
+```
+
+### Step 3b — Fix errore `{@render children}` nel file generato
+
+`@threlte/gltf` genera in fondo al componente questo blocco:
+
+```svelte
+{#if ref}
+  {@render children?.({ ref })}
+{/if}
+```
+
+In un progetto JS (con il language server Svelte attivo) questo produce un errore:
+`Type 'Group | undefined' is not assignable to type 'Group'` — il `{#if ref}` non basta
+a TypeScript per considerare `ref` definitivamente non-undefined.
+
+**Fix:** rimuovi il guard `{#if ref}` e lascia solo il render, che è già opzionale (`?.`):
+
+```svelte
+<!-- ❌ genera errore -->
+{#if ref}
+  {@render children?.({ ref })}
+{/if}
+
+<!-- ✅ corretto -->
+{@render children?.({ ref })}
+```
+
+### Step 4 — Usalo nella scena
+
+In `src/lib/components/Scene.svelte`, sostituisci il modello precedente:
+
+```svelte
+<script>
+  import TuoModello from './TuoModello.svelte'
+</script>
+
+<!-- ... luci e camera ... -->
+<TuoModello />
+```
+
+---
+
+## Sviluppo
+
+```sh
+npm run dev            # avvia il server (Threlte Studio attivo)
+npm run dev -- --open  # apre anche il browser
+```
+
+## Build
+
+```sh
+npm run build    # build di produzione (Studio escluso)
+npm run preview  # anteprima del build
+```
