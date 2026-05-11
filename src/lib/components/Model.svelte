@@ -19,7 +19,7 @@
 
   // Carica il file .glb dalla cartella /static/models/
   // $gltf è undefined mentre carica, poi diventa l'oggetto GLTF
-  const gltf = useGltf('/models/EmpyInParts.glb')
+  const gltf = useGltf('/models/casco_con_facce.glb')
 
   /*
     $effect: si ri-esegue automaticamente ogni volta che
