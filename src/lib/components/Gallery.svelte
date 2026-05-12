@@ -132,13 +132,15 @@
     {/each}
   </div>
   <div class="viewer">
-    <Canvas renderMode="always">
-      <Scene 
-        rotation={activeRotation}
-        position={activePosition}
-        orbitControlVal={false}
-      />
-    </Canvas>
+    <div class="canvas-fill">
+      <Canvas renderMode="always">
+        <Scene
+          rotation={activeRotation}
+          position={activePosition}
+          orbitControlVal={false}
+        />
+      </Canvas>
+    </div>
   </div>
 </div>
 
@@ -202,10 +204,13 @@
     width: 100%;
     height: 100%;
     background: var(--color-canvas, #000);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-left: 45%;
+  }
+
+  /* canvas-fill: dimensioni esplicite note → Threlte può dimensionare il Canvas correttamente.
+     Con display:flex e align-items:center sul parent, height:100% collassava a ~0. */
+  .canvas-fill {
+    position: absolute;
+    inset: 0;
   }
 
   @media (max-width: 768px) {
