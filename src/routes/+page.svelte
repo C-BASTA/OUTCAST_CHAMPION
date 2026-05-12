@@ -6,7 +6,6 @@
   import SectionTransition from '$lib/components/sections/SectionTransition.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
   import SectionBiography from '$lib/components/sections/SectionBiography.svelte'
-  import SectionStoria from '$lib/components/sections/SectionStoria.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import SectionAbout from '$lib/components/sections/SectionAbout.svelte'
   import Gallery from '$lib/components/Gallery.svelte'
@@ -38,6 +37,9 @@
     const inLight = scrollY < vh || (scrollY >= bioStart && scrollY < bioEnd)
     return !inLight
   })
+
+  // Nascondi il logo del nav sulla landing (ha già il suo <h1> grande)
+  let navShowLogo = $derived(typeof window === 'undefined' ? true : scrollY >= window.innerHeight * 0.2)
 </script>
 
 <!-- Layer fisso: quadratini su sfondo bianco, svanisce prima della gallery -->
@@ -46,7 +48,7 @@
 {/if}
 
 <!-- Navbar globale -->
-<Navbar dark={navDark} />
+<Navbar dark={navDark} showLogo={navShowLogo} />
 
 <main>
   <SectionLanding />
@@ -58,7 +60,6 @@
     <Gallery />
   </section>
 
-  <SectionStoria />
   <SectionRegolamento />
   <SectionAbout />
 </main>
