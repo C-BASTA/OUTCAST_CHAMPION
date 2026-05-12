@@ -1,7 +1,9 @@
 <script>
   import { Canvas } from '@threlte/core';
   import Scene from './Scene.svelte';
-  // Dati degli atleti - le rotazioni sono in radianti
+
+  let { onBack } = $props()
+
   const faces = [
     { name: 'Maksym Halinichev', rotation: { x: 0, y:  1.83, z: 0 }, position: { x: 0.0, y: 0.0, z: 0 } },
     { name: 'Dmytro Sharpar', rotation: { x: 0, y: 1.571, z: 0 }, position: { x: 0, y: 0.0, z: 0 } },
@@ -32,7 +34,7 @@
   let activePosition = $state(faces[0].position);
   let timeoutId = null;
   let lastScroll = 0;
-  const SCROLL_COOLDOWN = 150; // ms tra uno step e l'altro
+  const SCROLL_COOLDOWN = 150;
 
   function updateRotationWithDelay(index) {
     if (timeoutId) {
@@ -72,6 +74,12 @@
     if (now - lastScroll < SCROLL_COOLDOWN) return;
     lastScroll = now;
 
+    // Scroll su dal primo elemento → torna all'intro
+    if (e.deltaY < 0 && selected === 0) {
+      onBack?.();
+      return;
+    }
+
     if (e.deltaY > 0 && selected < faces.length - 1) {
       selected++;
     } else if (e.deltaY < 0 && selected > 0) {
@@ -98,6 +106,8 @@
       selected++;
     } else if (delta < 0 && selected > 0) {
       selected--;
+    } else if (delta < 0 && selected === 0) {
+      onBack?.();
     }
     updateRotationWithDelay(selected);
   }
