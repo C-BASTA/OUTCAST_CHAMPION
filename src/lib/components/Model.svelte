@@ -14,12 +14,14 @@
 <script>
   import { T } from '@threlte/core'
   import { useGltf } from '@threlte/extras'
+  import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
   import * as THREE from 'three'
   import { config } from '$lib/config.svelte.js'
 
-  // Carica il file .glb dalla cartella /static/models/
-  // $gltf è undefined mentre carica, poi diventa l'oggetto GLTF
-  const gltf = useGltf('/models/casco_con_facce.glb')
+  const dracoLoader = new DRACOLoader()
+  dracoLoader.setDecoderPath('/draco/')
+
+  const gltf = useGltf('/models/casco_con_facce.glb', { dracoLoader })
 
   /*
     $effect: si ri-esegue automaticamente ogni volta che
