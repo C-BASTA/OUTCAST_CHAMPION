@@ -27,15 +27,13 @@
     return () => window.removeEventListener('scroll', handler)
   })
 
-  // Navbar scura solo nelle sezioni chiare (landing + bio)
+  // navDark=true solo nelle sezioni scure (Gallery in poi).
+  // La landing è ora alta calc(100vh + 900px): bianco fino alla Gallery.
   let navDark = $derived.by(() => {
     if (typeof window === 'undefined') return false
-    const vh = window.innerHeight
-    const bioEl = typeof document !== 'undefined' ? document.getElementById('athlete-bio') : null
-    const bioStart = bioEl?.offsetTop ?? 0
-    const bioEnd = bioStart + (bioEl?.offsetHeight ?? 0)
-    const inLight = scrollY < vh || (scrollY >= bioStart && scrollY < bioEnd)
-    return !inLight
+    const galleryEl = typeof document !== 'undefined' ? document.getElementById('helmet') : null
+    const galleryStart = galleryEl?.offsetTop ?? Infinity
+    return scrollY >= galleryStart
   })
 
   // Nascondi il logo del nav sulla landing (ha già il suo <h1> grande)

@@ -175,26 +175,20 @@
   }
 
   .item-num {
-    font-family: var(--font-secondary);
+    font-family: var(--font-primary);     /* GeistPixel */
     font-size: clamp(13px, 1.3vw, 18px);
     font-weight: 400;
     opacity: 0.45;
     min-width: 2.4rem;
-    padding-bottom: 0.1em; /* allinea baseline con il label */
+    padding-bottom: 0.1em;
   }
 
   .item-label {
-    font-family: var(--font-secondary);   /* Geist — sans-serif rotondo */
+    font-family: 'GeistPixel', monospace;
     font-size: clamp(52px, 8.5vw, 124px);
     font-weight: 400;
-    letter-spacing: -0.01em;
-    transition: opacity 0.18s;
-  }
-
-  /* "About Us" usa il font pixel come nel design */
-  .menu-item:last-child .item-label {
-    font-family: var(--font-primary);     /* GeistPixel */
     letter-spacing: 0;
+    transition: opacity 0.18s;
   }
 
   .menu-item:hover .item-label { opacity: 0.35; }
