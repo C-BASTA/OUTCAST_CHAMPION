@@ -2,18 +2,15 @@
   import { onMount } from 'svelte'
   import { introState } from '$lib/introState.svelte.js'
 
-  let { onDone } = $props()
+  const COLS = 40
+  const ROWS = 25
+  const total = COLS * ROWS
+  const PHASE_SPLIT = 0.65      // 0→65% quadratini, 65→100% citazione
+  const SCROLL_HEIGHT = 2500    // altezza sticky in px (quanto "spazio" di scroll)
 
   let canvas
+  let wrapper
   let quoteOpacity = $state(0)
-
-  const COLS = 50
-  const ROWS = 30
-  const total = COLS * ROWS
-  const SCROLL_MAX = 3000
-  const PHASE_SPLIT = 0.65
-  const DONE_THRESHOLD = 0.92
-
   let cellOrder = []
 
   function shuffle(arr) {
@@ -46,89 +43,75 @@
   }
 
   function update() {
-    const t = introState.scrolled / SCROLL_MAX
+    if (!wrapper) return
+    const rect = wrapper.getBoundingClientRect()
 
-    if (t <= PHASE_SPLIT) {
-      draw(t / PHASE_SPLIT)
+    // Quanto abbiamo scrollato dentro la sezione sticky (0→1)
+    const scrolled = Math.max(0, Math.min(1, -rect.top / SCROLL_HEIGHT))
+
+    if (scrolled <= PHASE_SPLIT) {
+      draw(scrolled / PHASE_SPLIT)
       quoteOpacity = 0
     } else {
       draw(1)
-      const quoteProgress = (t - PHASE_SPLIT) / (DONE_THRESHOLD - PHASE_SPLIT)
-      quoteOpacity = Math.min(1, quoteProgress)
+      quoteOpacity = Math.min(1, (scrolled - PHASE_SPLIT) / (1 - PHASE_SPLIT))
     }
-  }
-
-  let doneFired = false
-
-  function onwheel(e) {
-    e.preventDefault()
-    const prev = introState.scrolled
-    introState.scrolled = Math.max(0, Math.min(SCROLL_MAX, introState.scrolled + e.deltaY))
-
-    const t = introState.scrolled / SCROLL_MAX
-    const tPrev = prev / SCROLL_MAX
-
-    if (t >= DONE_THRESHOLD && tPrev < DONE_THRESHOLD && !doneFired) {
-      doneFired = true
-      setTimeout(onDone, 400)
-      return
-    }
-
-    update()
-  }
-
-  let touchStartY = 0
-  let lastTouchY = 0
-
-  function ontouchstart(e) {
-    touchStartY = e.touches[0].clientY
-    lastTouchY  = e.touches[0].clientY
-  }
-
-  function ontouchmove(e) {
-    e.preventDefault()
-    const delta = lastTouchY - e.touches[0].clientY
-    lastTouchY = e.touches[0].clientY
-    onwheel({ preventDefault: () => {}, deltaY: delta * 3 })
   }
 
   onMount(() => {
     canvas.width  = window.innerWidth
     canvas.height = window.innerHeight
     cellOrder = shuffle([...Array(total).keys()])
-    // Ripristina lo stato visivo se si torna indietro
-    update()
+    draw(0)
+
+    // Aggiorna ogni frame mentre si scrolla
+    let rafId
+    function onScroll() {
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(update)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(rafId)
+    }
   })
 </script>
 
-<div
-  class="wrapper"
-  on:wheel={onwheel}
-  on:touchstart={ontouchstart}
-  on:touchmove={ontouchmove}
-  role="presentation"
->
-  <canvas bind:this={canvas}></canvas>
-
-  <div class="quote-overlay" style="opacity: {quoteOpacity}">
-    <p class="quote">
-      I believe they deserve to be here today with me,<br> and also they deserve to be with me on competition day.
-    </p>
-    <span class="hint">scroll per continuare</span>
+<!--
+  Il wrapper ha altezza = 100vh (sticky) + SCROLL_HEIGHT px di spazio scroll.
+  Il canvas è sticky così rimane a schermo mentre si scrolla dentro il wrapper.
+-->
+<div class="intro-wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
+  <div class="sticky-canvas">
+    <canvas bind:this={canvas}></canvas>
+    <div class="quote-overlay" style="opacity: {quoteOpacity}">
+      <p class="quote">
+        "Non è il trofeo che conta,<br>
+        ma la strada che ti ha portato fin qui."
+      </p>
+    </div>
   </div>
 </div>
 
 <style>
-  .wrapper {
-    position: fixed;
-    inset: 0;
+  .intro-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .sticky-canvas {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
   }
 
   canvas {
     display: block;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
   }
 
   .quote-overlay {
@@ -139,9 +122,7 @@
     align-items: flex-start;
     justify-content: center;
     padding-left: var(--padding-lateral);
-    gap: var(--size-6);
     pointer-events: none;
-    transition: opacity 0.1s linear;
   }
 
   .quote {
@@ -154,24 +135,7 @@
     max-width: 50%;
   }
 
-  .hint {
-    font-family: var(--font-primary);
-    font-size: var(--size-3);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--color-ink-secondary);
-    animation: blink 2s ease infinite;
-  }
-
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.3; }
-  }
-
   @media (max-width: 768px) {
-    .quote {
-      max-width: 100%;
-      padding-right: var(--padding-lateral);
-    }
+    .quote { max-width: 90%; }
   }
 </style>
