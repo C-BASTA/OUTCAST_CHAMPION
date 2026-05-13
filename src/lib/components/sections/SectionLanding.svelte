@@ -1,7 +1,6 @@
 <script>
   import { onMount } from 'svelte'
 
-  // ─── Liquid blob mask ────────────────────────────────────────────────────
   let wrap
   let helmetLayer
 
@@ -9,13 +8,12 @@
   let _t1x = 0, _t1y = 0, _t1r = 0, _t1vx = 0, _t1vy = 0, _t1vr = 0
   let _t2x = 0, _t2y = 0, _t2r = 0, _t2vx = 0, _t2vy = 0, _t2vr = 0
   let _tCx = 0, _tCy = 0, _tR  = 0
+  let _hovering = false  // <-- nuovo
 
-  // Raggio piccolo + trail molto lento → la separazione crea la striscia naturalmente
-  const RADIUS    = 110
+  const RADIUS    = 200
   const STIFFNESS = 0.62
   const DAMPING   = 0.70
 
-  // ─── Scroll-driven shrink (ex-SectionTransition) ─────────────────────────
   const SCROLL_RANGE = 900
   const UNIT  = 'Vladyslav Heraskevyč  '
   const TEXT  = UNIT.repeat(6)
@@ -27,7 +25,7 @@
   const TRAVEL = 520
 
   let progress = $state(0)
-  let _scale   = 1   // mirror non-reattivo per i listener
+  let _scale   = 1
 
   let photoScale   = $derived(1 - progress * 0.78)
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
@@ -35,56 +33,71 @@
   let textOpacity  = $derived(Math.min(1, progress * 2.5))
 
   onMount(() => {
-    // ── Scroll ───────────────────────────────────────────────────────────
     const onScroll = () => {
-      const p  = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
+      const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
       progress = p
       _scale   = 1 - p * 0.78
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     onScroll()
 
-    // ── Blob mask ────────────────────────────────────────────────────────
-    const c0 = document.getElementById('blob-c0')
-    const c1 = document.getElementById('blob-c1')
-    const c2 = document.getElementById('blob-c2')
-
-    helmetLayer.style.mask       = 'url(#blob-mask)'
-    helmetLayer.style.webkitMask = 'url(#blob-mask)'
-
     let raf
     const tick = () => {
-      // Main — veloce, segue il cursore
       _vx += (_tCx - _cx) * STIFFNESS;  _vx *= DAMPING;  _cx += _vx
       _vy += (_tCy - _cy) * STIFFNESS;  _vy *= DAMPING;  _cy += _vy
       _vr += (_tR  - _r ) * 0.55;       _vr *= 0.72;     _r  += _vr
 
-      // Trail 1 — molto più lento: la separazione dal main crea la striscia via gooey
       _t1vx += (_cx - _t1x) * 0.13;  _t1vx *= 0.85;  _t1x += _t1vx
       _t1vy += (_cy - _t1y) * 0.13;  _t1vy *= 0.85;  _t1y += _t1vy
       _t1vr += (Math.max(0, _r) * 0.70 - _t1r) * 0.20;  _t1vr *= 0.82;  _t1r += _t1vr
 
-      // Trail 2 — coda
       _t2vx += (_t1x - _t2x) * 0.07;  _t2vx *= 0.87;  _t2x += _t2vx
       _t2vy += (_t1y - _t2y) * 0.07;  _t2vy *= 0.87;  _t2y += _t2vy
       _t2vr += (Math.max(0, _t1r) * 0.55 - _t2r) * 0.13;  _t2vr *= 0.84;  _t2r += _t2vr
 
-      c0.setAttribute('cx', _cx);  c0.setAttribute('cy', _cy);  c0.setAttribute('r', Math.max(0, _r))
-      c1.setAttribute('cx', _t1x); c1.setAttribute('cy', _t1y); c1.setAttribute('r', Math.max(0, _t1r))
-      c2.setAttribute('cx', _t2x); c2.setAttribute('cy', _t2y); c2.setAttribute('r', Math.max(0, _t2r))
+      if (_tR === 0 && _r < 2)   { _r = 0;   _vr = 0   }
+      if (_tR === 0 && _t1r < 2) { _t1r = 0; _t1vr = 0 }
+      if (_tR === 0 && _t2r < 2) { _t2r = 0; _t2vr = 0 }
+
+      // Se non è mai stato in hover, o il raggio è zero, nascondi
+      if (!_hovering || _r <= 1) {
+        helmetLayer.style.opacity = "0";
+      } else {
+        helmetLayer.style.opacity = "1";
+        
+        const w = helmetLayer.offsetWidth  || 1
+        const h = helmetLayer.offsetHeight || 1
+
+        const pct = (v, max) => ((v / max) * 100).toFixed(2) + '%'
+        const g = (x, y, r) =>
+          `radial-gradient(circle ${r}px at ${pct(x,w)} ${pct(y,h)}, black ${(r * 0.4).toFixed(0)}px, transparent ${r}px)`
+
+        const masks = [g(_cx, _cy, _r)]
+        if (_t1r > 1) masks.push(g(_t1x, _t1y, _t1r))
+        if (_t2r > 1) masks.push(g(_t2x, _t2y, _t2r))
+
+        const maskVal = masks.join(', ')
+        helmetLayer.style.webkitMaskImage     = maskVal
+        helmetLayer.style.maskImage           = maskVal
+        helmetLayer.style.webkitMaskComposite = 'source-over'
+        helmetLayer.style.maskComposite       = 'add'
+      }
 
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
 
     const onMove = (e) => {
+      _hovering = true
       const hr = helmetLayer.getBoundingClientRect()
-      // Divide per _scale: converte coordinate visive → spazio maschera (non scalato)
       _tCx = (e.clientX - hr.left) / _scale
       _tCy = (e.clientY - hr.top)  / _scale
       _tR  = RADIUS
     }
-    const onLeave = () => { _tR = 0 }
+    const onLeave = () => {
+      _hovering = false
+      _tR = 0
+    }
 
     wrap.addEventListener('mousemove', onMove)
     wrap.addEventListener('mouseleave', onLeave)
@@ -98,48 +111,11 @@
   })
 </script>
 
-<!--
-  SVG hidden: filter gooey + mask inline.
-  I cerchi sono separati dal movimento → gooey li fonde in una striscia.
--->
-<svg
-  xmlns="http://www.w3.org/2000/svg"
-  style="position:absolute;width:0;height:0;overflow:hidden;pointer-events:none"
-  aria-hidden="true"
->
-  <defs>
-    <filter id="blob-gooey" x="-60%" y="-60%" width="220%" height="220%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/>
-      <feColorMatrix in="blur" type="matrix"
-        values="1 0 0 0 0
-                0 1 0 0 0
-                0 0 1 0 0
-                0 0 0 28 -13"/>
-    </filter>
-    <mask id="blob-mask" maskUnits="userSpaceOnUse"
-          x="-600" y="-600" width="3000" height="3000">
-      <g filter="url(#blob-gooey)" fill="white">
-        <circle id="blob-c0" cx="-999" cy="-999" r="0"/>
-        <circle id="blob-c1" cx="-999" cy="-999" r="0"/>
-        <circle id="blob-c2" cx="-999" cy="-999" r="0"/>
-      </g>
-    </mask>
-  </defs>
-</svg>
-
-<!--
-  La sezione è alta calc(100vh + 900px).
-  Lo sticky-inner rimane fisso mentre l'utente scrolla i 900px extra →
-  la foto si rimpicciolisce verso il centro, poi arrivano le scritte.
-  Niente sezione duplicata.
--->
 <section id="athlete" class="landing">
   <div class="sticky-inner">
 
-    <!-- Titolo: scompare appena si inizia a scrollare -->
     <h1 class="title" style:opacity={titleOpacity}>Outcast<br />Champion</h1>
 
-    <!-- Foto + maschera casco: scala verso il centro e sfuma con lo scroll -->
     <div
       class="photo-wrap"
       bind:this={wrap}
@@ -161,7 +137,6 @@
       />
     </div>
 
-    <!-- Righe nome: scivolano dai lati mentre la foto scompare -->
     <div class="name-wrap" style:opacity={textOpacity}>
       {#each ROWS as row}
         <div
@@ -178,7 +153,6 @@
 </section>
 
 <style>
-  /* Sezione estesa: i 900px extra sono il tempo di scroll per l'animazione */
   .landing {
     position: relative;
     width: 100%;
@@ -187,7 +161,6 @@
     z-index: 1;
   }
 
-  /* Sticky: rimane a top:0 mentre la sezione scorre */
   .sticky-inner {
     position: sticky;
     top: 0;
@@ -212,13 +185,6 @@
     will-change: opacity;
   }
 
-  /*
-   * photo-wrap: stessa posizione della landing originale.
-   * transform-origin: 50% 40% → il punto di scala è vicino al centro
-   * visivo del viewport (la testa di Vlad), creando il rimpicciolimento
-   * verso il centro della pagina.
-   * Il transform inline sovrascrive 'transform' CSS con translateX(-50%) scale(…).
-   */
   .photo-wrap {
     position: absolute;
     bottom: -8%;
@@ -242,10 +208,6 @@
     -webkit-user-drag: none;
   }
 
-  /*
-   * Casco: top -14% → visore copre gli occhi.
-   * Mask applicata via JS in onMount.
-   */
   .helmet {
     position: absolute;
     top: -14%;
@@ -256,9 +218,12 @@
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+
+    /* AGGIUNGI QUESTO: */
+    mask-image: radial-gradient(circle 0px at 0% 0%, black 0%, transparent 0%);
+    -webkit-mask-image: radial-gradient(circle 0px at 0% 0%, black 0%, transparent 0%);
   }
 
-  /* Righe nome (gold/blue/gold) */
   .name-wrap {
     position: absolute;
     inset: 0;

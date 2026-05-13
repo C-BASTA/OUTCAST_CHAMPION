@@ -4,13 +4,15 @@
   const COLS = 120
   const ROWS = 70
   const total = COLS * ROWS
-  const PHASE_SPLIT = 0.65      // 0→65% quadratini, 65→100% citazione
-  const SCROLL_HEIGHT = 2500    // altezza sticky in px
+  const PHASE_SPLIT = 0.65
+  const SCROLL_HEIGHT = 3500
+  const EXTRA_SCROLL = 1000  // spazio extra dopo la citazione (blocco meccanico)
 
   let canvas
   let wrapper
   let quoteOpacity = $state(0)
   let cellOrder = []
+  let hasReleased = $state(false)
 
   function shuffle(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
@@ -44,15 +46,24 @@
   function update() {
     if (!wrapper) return
     const rect = wrapper.getBoundingClientRect()
-    const scrolled = Math.max(0, Math.min(1, -rect.top / SCROLL_HEIGHT))
+    const totalHeight = SCROLL_HEIGHT + EXTRA_SCROLL
+    const scrolled = Math.max(0, Math.min(1, -rect.top / totalHeight))
 
-    if (scrolled <= PHASE_SPLIT) {
-      draw(scrolled / PHASE_SPLIT)
+    if (scrolled <= (SCROLL_HEIGHT / totalHeight)) {
+      // Fase quadratini
+      const blockProgress = scrolled / (SCROLL_HEIGHT / totalHeight)
+      draw(blockProgress / PHASE_SPLIT)
       quoteOpacity = 0
     } else {
+      // Fase citazione
       draw(1)
-      // La citazione appare e rimane visibile (opacity 1)
       quoteOpacity = 1
+      
+      // Rilascia quando l'utente ha scrollato l'extra
+      if (scrolled >= 0.95 && !hasReleased) {
+        hasReleased = true
+        // Sblocca naturalmente, niente animazioni invasive
+      }
     }
   }
 
@@ -67,6 +78,7 @@
       cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(update)
     }
+    
     window.addEventListener('scroll', onScroll, { passive: true })
     
     function onResize() {
@@ -84,11 +96,12 @@
   })
 </script>
 
-<div class="intro-wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
+<!-- L'altezza include l'extra scroll meccanico -->
+<div class="intro-wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT + EXTRA_SCROLL}px)">
   <div class="sticky-canvas">
     <canvas bind:this={canvas}></canvas>
     
-    <!-- La citazione mantiene ESATTAMENTE il tuo stile originale -->
+    <!-- Solo la citazione, niente bottoni, niente messaggi -->
     <div class="quote-overlay" style="opacity: {quoteOpacity}">
       <p class="quote">
         I believe they deserve to be here today with me,<br> and also they deserve to be with me on competition day.
@@ -117,7 +130,6 @@
     height: 100%;
   }
 
-  /* Il tuo stile originale, identico */
   .quote-overlay {
     position: absolute;
     inset: 0;
