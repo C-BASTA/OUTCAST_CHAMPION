@@ -55,5 +55,5 @@
   quindi y=0 è la faccia liscia davanti (visiera verso il viewer).
 -->
 {#if $gltf}
-  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0, 0, 0]} />
+  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0, Math.PI, 0]} />
 {/if}
