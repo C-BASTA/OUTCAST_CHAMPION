@@ -51,18 +51,18 @@
     for (let i = 2; i >= 1; i--) {
       const index = selected - i;
       if (index >= 0) {
-        slots.push({ name: faces[index].name, index: index, isEmpty: false });
+        slots.push({ name: faces[index].name, index: index, isEmpty: false, distance: i });
       } else {
-        slots.push({ name: '', index: -1, isEmpty: true });
+        slots.push({ name: '', index: -1, isEmpty: true, distance: i });
       }
     }
-    slots.push({ name: faces[selected].name, index: selected, isEmpty: false });
+    slots.push({ name: faces[selected].name, index: selected, isEmpty: false, distance: 0 });
     for (let i = 1; i <= 2; i++) {
       const index = selected + i;
       if (index < faces.length) {
-        slots.push({ name: faces[index].name, index: index, isEmpty: false });
+        slots.push({ name: faces[index].name, index: index, isEmpty: false, distance: i });
       } else {
-        slots.push({ name: '', index: -1, isEmpty: true });
+        slots.push({ name: '', index: -1, isEmpty: true, distance: i });
       }
     }
     return slots;
@@ -117,10 +117,11 @@
   <div class="names">
     {#each displaySlots as slot}
       {#if slot.isEmpty}
-        <div class="name empty"></div>
+        <div class="name empty" style="opacity: 0"></div>
       {:else}
-        <div 
+        <div
           class="name {slot.index === selected ? 'selected' : ''}"
+          style="opacity: {slot.distance === 0 ? 1 : slot.distance === 1 ? 0.30 : 0.14}"
           on:click={() => selectFace(slot.index)}
           role="button"
           tabindex="0"
@@ -172,9 +173,10 @@
     font-family: var(--font-primary, 'GeistPixel'), monospace;
     font-size: var(--font-size-h1);
     font-weight: 500;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--color-ink);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--color-ink, #fafafa);
+    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                margin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     letter-spacing: -0.03em;
     line-height: 1;
@@ -185,8 +187,6 @@
     pointer-events: none;
   }
   .name.selected {
-    color: var(--color-ink, #fff);
-    -webkit-text-stroke: 0;
     transform: scale(1.30);
     transform-origin: left center;
   }
@@ -222,7 +222,6 @@
     .name {
       font-size: var(--font-size-h2, 2rem);
       text-align: center;
-      -webkit-text-stroke: 1px var(--color-ink, #fff6);
       letter-spacing: 0.01em;
     }
     .name.selected {

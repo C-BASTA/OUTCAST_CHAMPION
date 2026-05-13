@@ -6,7 +6,6 @@
   import SectionTransition from '$lib/components/sections/SectionTransition.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
   import SectionBiography from '$lib/components/sections/SectionBiography.svelte'
-  import SectionHelmetZoom from '$lib/components/sections/SectionHelmetZoom.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import SectionAbout from '$lib/components/sections/SectionAbout.svelte'
   import Gallery from '$lib/components/Gallery.svelte'
@@ -17,10 +16,11 @@
   onMount(() => {
     const handler = () => {
       scrollY = window.scrollY
-      // Nascondi i quadratini a partire dall'inizio della sezione helmet-zoom
-      const zoomEl = document.getElementById('helmet-zoom')
-      if (zoomEl) {
-        showQuadratini = window.scrollY < zoomEl.offsetTop - window.innerHeight * 0.1
+      // Nascondi i quadratini quando la traccia orizzontale sta per finire (progress ~0.54)
+      const bioEl = document.getElementById('athlete-bio')
+      if (bioEl) {
+        const hideAt = bioEl.offsetTop + (bioEl.offsetHeight - window.innerHeight) * 0.54
+        showQuadratini = window.scrollY < hideAt
       }
     }
     window.addEventListener('scroll', handler, { passive: true })
@@ -29,17 +29,18 @@
   })
 
   // navDark=true quando lo sfondo diventa scuro:
-  // - dentro helmet-zoom (dopo il primo 12% dello scroll della sezione)
+  // - nella fase helmet della bio (progress ~0.63, quando zoom-in inizia a scurire)
   // - nella Gallery e nelle sezioni successive
   let navDark = $derived.by(() => {
     if (typeof window === 'undefined') return false
-    const zoomEl   = typeof document !== 'undefined' ? document.getElementById('helmet-zoom')   : null
-    const galleryEl = typeof document !== 'undefined' ? document.getElementById('helmet')        : null
-    const zoomDarkStart = zoomEl
-      ? zoomEl.offsetTop + (zoomEl.offsetHeight - window.innerHeight) * 0.12
+    const bioEl     = typeof document !== 'undefined' ? document.getElementById('athlete-bio') : null
+    const galleryEl = typeof document !== 'undefined' ? document.getElementById('helmet')       : null
+    // 0.63 ≈ P_STOP(0.59) + 0.10*(1-P_STOP) — start of colour transition in helmet phase
+    const bioDarkStart  = bioEl
+      ? bioEl.offsetTop + (bioEl.offsetHeight - window.innerHeight) * 0.63
       : Infinity
-    const galleryStart = galleryEl?.offsetTop ?? Infinity
-    return scrollY >= Math.min(zoomDarkStart, galleryStart)
+    const galleryStart  = galleryEl?.offsetTop ?? Infinity
+    return scrollY >= Math.min(bioDarkStart, galleryStart)
   })
 
   // Nascondi il logo del nav sulla landing (ha già il suo <h1> grande)
@@ -59,8 +60,6 @@
   <SectionTransition />
   <SectionFrase />
   <SectionBiography />
-
-  <SectionHelmetZoom />
 
   <section id="helmet" class="gallery-wrapper">
     <Gallery />
