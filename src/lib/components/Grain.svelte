@@ -1,38 +1,62 @@
 <script>
-  // Nessuna logica necessaria, è puro CSS
+  import { onMount } from 'svelte'
+
+  let canvas
+
+  onMount(() => {
+    const ctx = canvas.getContext('2d')
+    let rafId
+
+    function resize() {
+      // Usiamo dimensioni ridotte e scaliamo via CSS per performance
+      canvas.width  = Math.ceil(window.innerWidth  / 2)
+      canvas.height = Math.ceil(window.innerHeight / 2)
+    }
+
+    function drawGrain() {
+      const w = canvas.width
+      const h = canvas.height
+      const imageData = ctx.createImageData(w, h)
+      const data = imageData.data
+
+      for (let i = 0; i < data.length; i += 4) {
+        const value = Math.random() * 255
+        data[i]     = value  // R
+        data[i + 1] = value  // G
+        data[i + 2] = value  // B
+        data[i + 3] = 255    // A
+      }
+
+      ctx.putImageData(imageData, 0, 0)
+    }
+
+    function loop() {
+      drawGrain()
+      rafId = requestAnimationFrame(loop)
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+    loop()
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('resize', resize)
+    }
+  })
 </script>
 
-<div class="grain" aria-hidden="true"></div>
+<canvas bind:this={canvas}></canvas>
 
 <style>
-  .grain {
+  canvas {
     position: fixed;
     inset: 0;
     width: 100vw;
     height: 100vh;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.035;
-
-    /* SVG noise inline come data URI — nessuna dipendenza esterna */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    background-size: 128px 128px;
-
-    animation: grain 0.5s steps(1) infinite;
-  }
-
-  @keyframes grain {
-    0%   { background-position:   0%   0%; }
-    10%  { background-position: -10%  -5%; }
-    20%  { background-position:  15%  10%; }
-    30%  { background-position: -20%   5%; }
-    40%  { background-position:  25% -10%; }
-    50%  { background-position: -15%  15%; }
-    60%  { background-position:  10% -20%; }
-    70%  { background-position: -25%  10%; }
-    80%  { background-position:  20%  -5%; }
-    90%  { background-position:  -5%  20%; }
-    100% { background-position:  15%  -15%; }
+    opacity: 0.04;
+    mix-blend-mode: screen;
   }
 </style>
