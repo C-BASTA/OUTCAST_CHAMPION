@@ -82,7 +82,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 28px 48px;
+    padding: 28px var(--padding-lateral);
     pointer-events: none;
     --ink: #030404;
     transition: opacity 0.2s;
