@@ -10,16 +10,16 @@
     { name: 'Karyna Bakhur',         rotation: { x: 0, y: 1.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Taras Shpuk',           rotation: { x: 0, y: 2.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Pavlo Ishchenko',       rotation: { x: 0, y: 2.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
-    { name: 'Oleksiy Loginov',       rotation: { x: 0, y: 3.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
+    { name: 'Oleksiy Loginov',       rotation: { x: 0, y: 10.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Volodymyr Androshchuk', rotation: { x: 0, y: 3.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
-    { name: 'Oleksiy Khabarov',      rotation: { x: 0, y: 4.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
+    { name: 'Oleksiy Khabarov',      rotation: { x: 0, y: 1.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Mykyta Kozubenko',      rotation: { x: 0, y: 4.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Andriy Yaremenko',      rotation: { x: 0, y: 5.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
-    { name: 'Fedor Epifanov',        rotation: { x: 0, y: 5.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
+    { name: 'Fedor Epifanov',        rotation: { x: 0, y: 8.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Kateryna Troyan',       rotation: { x: 0, y: 6.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Nazar Zuy',             rotation: { x: 0, y: 6.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Mariia Lebid',          rotation: { x: 0, y: 7.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
-    { name: 'Alina Perehudova',      rotation: { x: 0, y: 7.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
+    { name: 'Alina Perehudova',      rotation: { x: 0, y: 10.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Oleksandr Peleshenko',  rotation: { x: 0, y: 8.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Kateryna Diachenko',    rotation: { x: 0, y: 8.5,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
     { name: 'Viktoriia Ivashko',     rotation: { x: 0, y: 9.0,   z: 0 }, position: { x: 0, y: 0, z: 0 } },
@@ -46,7 +46,7 @@
     timeoutId = setTimeout(() => {
       activeRotation = faces[index].rotation
       activePosition = faces[index].position
-    }, 400)
+    }, 200)
   }
 
   let displaySlots = $derived.by(() => {

@@ -4,58 +4,49 @@
   const CARDS = [
     {
       x: 100,  top: 80,
-      boldPart: '12/1/1999,', rest: ' born in Kyiv',
+      boldPart: '1999', rest: ' - Born in Kyiv',
       img: '/images/atleti/bio-kyiv.png',
       imgW: 310, imgH: 212,
-      ukraineOverlay: true,
     },
     {
-      x: 480,  top: 450,
-      boldPart: 'Boxing', rest: ' is his first sport, until 2014',
-      img: '/images/atleti/bio-boxing.png',
-      imgW: 200, imgH: 235,
-    },
-    {
-      x: 860,  top: 70,
+      x: 700,  top: 70,
       noTitle: true,
       img: '/images/atleti/bio-2016-prep.png',
-      imgW: 255, imgH: 270,
+      imgW: 150, imgH: 200,
     },
     {
-      x: 1250, top: 430,
-      boldPart: 'In 2016', rest: ' makes his debut at the Youth Olympics',
+      x: 350, top: 430,
+      boldPart: '2016', rest: ' - Youth Olympics',
       img: '/images/atleti/bio-2016-race.png',
-      imgW: 380, imgH: 192,
-      ukraineOverlay: true,
+      imgW: 380, imgH: 270,
     },
     {
-      x: 1680, top: 80,
-      boldPart: '24-2-2017,', rest: ' first Ukrainian athlete to compete in a world championship',
+      x: 950, top: 200,
+      boldPart: '2017', rest: ' - World Championship',
       img: '/images/atleti/bio-2017-worlds.png',
-      imgW: 305, imgH: 213,
-      ukraineOverlay: true,
+      imgW: 480, imgH: 350,
     },
     {
-      x: 2100, top: 450,
-      boldPart: 'Pyeongchang 2018', rest: '',
+      x: 1990, top: 450,
+      boldPart: '2018', rest: ' - PyeongChang Olympics',
       img: '/images/atleti/bio-2018-pyeongchang.png',
       imgW: 350, imgH: 196,
     },
     {
-      x: 2530, top: 75,
-      boldPart: '2019 World Championships', rest: '',
+      x: 2300, top: 75,
+      boldPart: '2019', rest: ' - World Championships',
       img: '/images/atleti/bio-2019-worlds.png',
       imgW: 370, imgH: 277,
     },
     {
-      x: 2960, top: 440,
+      x: 1650, top: 90,
       noTitle: true,
       img: '/images/atleti/bio-portrait-helmet.png',
       imgW: 250, imgH: 247,
     },
     {
-      x: 3360, top: 80,
-      boldPart: '2024 World Championships', rest: '',
+      x: 3600, top: 80,
+      boldPart: '2024', rest: ' - World Championships',
       img: '/images/atleti/bio-2024-worlds.png',
       imgW: 370, imgH: 257,
     },
@@ -66,18 +57,16 @@
       imgW: 240, imgH: 243,
     },
     {
-      x: 4180, top: 80,
-      boldPart: '2026 Milano-Cortina Olympics', rest: '',
+      x: 4180, top: 200,
+      boldPart: '2026', rest: ' - Milan Cortina Olympics',
       img: '/images/atleti/bio-2026-olympic.png',
       imgW: 340, imgH: 240,
-      ukraineOverlay: true,
     },
     {
-      x: 4580, top: 420,
-      boldPart: '2026 Milano-Cortina Olympics', rest: '',
-      img: '/images/atleti/bio-2026-milano.png',
-      imgW: 215, imgH: 275,
-      ukraineOverlay: true,
+      x: 2900, top: 180,
+      boldPart: '2022', rest: ' - Beijing Olympics',
+      img: '/images/atleti/2022olympics.avif',
+      imgW: 500, imgH: 400,
     },
   ]
 
@@ -87,6 +76,9 @@
   let sectionTop = 0
   let sectionH = 0
   let vpW = typeof window !== 'undefined' ? window.innerWidth : 1440
+  
+  // Riferimenti agli elementi delle card
+  let cardRefs = $state({})
 
   onMount(() => {
     const measure = () => {
@@ -114,13 +106,40 @@
   })
 
   let offsetX = $derived(progress * Math.max(0, TRACK_WIDTH - vpW))
+  
+  // Calcola il parallasse per ogni card in base alla sua visibilità
+  const PARALLAX_INTENSITY = 60; 
+
+  function getParallaxAmount(cardX) {
+    if (typeof window === 'undefined') return 0;
+
+    // 1. Posizione della card relativa al viewport (0 = inizio schermo, vpW = fine schermo)
+    const cardRelativeX = cardX - offsetX;
+    
+    // 2. Normalizziamo la posizione: 
+    // -1 quando la card è appena uscita a sinistra
+    // 0 quando è perfettamente al centro
+    // 1 quando sta entrando da destra
+    const centerPoint = (cardRelativeX + 100) / vpW; // 150 è circa metà larghezza card
+    const normalized = (centerPoint * 2) - 1;
+
+    // 3. Limitiamo il valore tra -1 e 1 per evitare drift eccessivi
+    const clamped = Math.max(-1, Math.min(1, normalized));
+
+    // Restituiamo lo spostamento in pixel (invertito per l'effetto parallasse)
+    return -clamped * PARALLAX_INTENSITY;
+  }
 </script>
 
 <section bind:this={section} class="bio-section" id="athlete-bio">
   <div class="sticky-wrap">
     <div class="cards-track" style:transform="translateX(-{offsetX}px)">
-      {#each CARDS as card}
-        <div class="card" style:left="{card.x}px" style:top="{card.top}px">
+      {#each CARDS as card, i}
+        <div 
+          class="card" 
+          style:left="{card.x}px" 
+          style:top="{card.top}px"
+        >
           {#if !card.noTitle}
             <p class="caption">
               <strong>{card.boldPart}</strong>{card.rest}
@@ -128,18 +147,13 @@
           {/if}
           
           <div class="img-frame" style:width="{card.imgW}px" style:height="{card.imgH}px">
-  <div class="parallax-container" style:transform="translateX({(progress - 0.5) * 150}px)">
-    <img
-      src={card.img}
-      alt={card.boldPart ?? ''}
-      class="parallax-img"
-      style:width="{card.imgW + 100}px"
-    />
-  </div>
-  {#if card.ukraineOverlay}
-    <div class="ukraine-overlay"></div>
-  {/if}
-</div>
+            <img
+              src={card.img}
+              alt={card.boldPart ?? ''}
+              class="parallax-img"
+              style:transform="translateX({getParallaxAmount(card.x)}px)"
+            />
+          </div>
         </div>
       {/each}
     </div>
@@ -191,37 +205,23 @@
 
   .img-frame {
     position: relative;
-    display: block;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    /* Opzionale: aggiungi un leggero zoom per sicurezza */
   }
 
-  /* Parallasse ORIZZONTALE: immagine più larga della cornice */
-.parallax-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  will-change: transform;
-  transition: transform 0.05s linear;
-}
-
-.parallax-img {
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
-  /* Overlay blu Ucraina */
-  .ukraine-overlay {
+  .parallax-img {
+    /* L'immagine deve uscire dai bordi della maschera */
+    width: 140%; 
+    height: 110%;
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 87, 183, 0.5);
-    pointer-events: none;
+    top: -5%;
+    left: -20%; /* Centra l'immagine 140% rispetto al frame */
+    
+    object-fit: cover;
+    display: block;
+    will-change: transform;
+    /* Rimuovi la transition per reattività massima */
+    transition: none; 
   }
+
 </style>
