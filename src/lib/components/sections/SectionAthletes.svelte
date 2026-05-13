@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { Canvas } from '@threlte/core'
-  import Scene from './Scene.svelte'
+  import Scene from '../helmetConfigurator/Scene.svelte'
 
   const faces = [
     { name: 'Maksym Halinichev',     rotation: { x: 0, y: 1.83,  z: 0 }, position: { x: 0, y: 0, z: 0 } },

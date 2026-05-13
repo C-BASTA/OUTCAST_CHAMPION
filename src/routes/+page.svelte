@@ -2,13 +2,12 @@
   import { onMount } from 'svelte'
   import Navbar from '$lib/components/Navbar.svelte'
   import SectionLanding from '$lib/components/sections/SectionLanding.svelte'
-  import SectionTransition from '$lib/components/sections/SectionTransition.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
   import SectionBiography from '$lib/components/sections/SectionBiography.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import SectionAbout from '$lib/components/sections/SectionAbout.svelte'
-  import Gallery from '$lib/components/Gallery.svelte'
-  import Intro from '$lib/components/Intro.svelte'
+  import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
+  import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
 
   let scrollY = $state(0)
 
@@ -32,11 +31,10 @@
 
 <main>
   <SectionLanding />
-  <SectionTransition />
   <SectionFrase />
   <SectionBiography />
-  <Intro />
-  <Gallery />
+  <SectionAthletesIntro />
+  <SectionAthletes />
   <SectionRegolamento />
   <SectionAbout />
 </main>

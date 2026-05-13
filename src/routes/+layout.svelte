@@ -17,10 +17,8 @@
 -->
 <script>
   import '../app.css'
-  import Grain from '$lib/components/Grain.svelte'
 
   let { children } = $props()
 </script>
 
-<Grain />
 {@render children()}
