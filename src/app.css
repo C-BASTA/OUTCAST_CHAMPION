@@ -6,9 +6,13 @@
   padding: 0;
 }
 
-html, body {
-  height: 100%;
-  overflow: hidden;
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100%;
+  overflow-x: hidden;
   font-family: var(--font-primary);
   font-size: var(--size-4);
   background: var(--color-canvas);
