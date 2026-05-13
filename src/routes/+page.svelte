@@ -1,7 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { fade } from 'svelte/transition'
-  import Intro from '$lib/components/Intro.svelte'
   import Quadratini from '$lib/components/Quadratini.svelte'
   import Navbar from '$lib/components/Navbar.svelte'
   import SectionLanding from '$lib/components/sections/SectionLanding.svelte'
@@ -11,14 +9,6 @@
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import SectionAbout from '$lib/components/sections/SectionAbout.svelte'
   import Gallery from '$lib/components/Gallery.svelte'
-
-  let phase = $state('intro')
-
-  // Blocca lo scroll del body mentre l'intro è attiva
-  $effect(() => {
-    document.body.style.overflow = phase === 'intro' ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
-  })
 
   let scrollY = $state(0)
   let showQuadratini = $state(true)
@@ -57,12 +47,6 @@
   let navShowLogo = $derived(typeof window === 'undefined' ? true : scrollY >= window.innerHeight * 0.2)
 </script>
 
-{#if phase === 'intro'}
-  <div class="intro-layer" out:fade={{ duration: 900 }}>
-    <Intro onDone={() => (phase = 'main')} />
-  </div>
-{/if}
-
 <!-- Layer fisso: quadratini su sfondo bianco, svanisce prima della gallery -->
 {#if showQuadratini}
   <Quadratini />
@@ -86,12 +70,6 @@
 </main>
 
 <style>
-  .intro-layer {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-  }
-
   main { width: 100%; }
 
   .gallery-wrapper {
