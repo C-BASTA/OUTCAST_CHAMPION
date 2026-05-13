@@ -7,8 +7,8 @@
   let canvas
   let quoteOpacity = $state(0)
 
-  const COLS = 40
-  const ROWS = 25
+  const COLS = 50
+  const ROWS = 30
   const total = COLS * ROWS
   const SCROLL_MAX = 3000
   const PHASE_SPLIT = 0.65

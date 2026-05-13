@@ -34,7 +34,7 @@
   let activePosition = $state(faces[0].position);
   let timeoutId = null;
   let lastScroll = 0;
-  const SCROLL_COOLDOWN = 150;
+  const SCROLL_COOLDOWN = 250;
 
   function updateRotationWithDelay(index) {
     if (timeoutId) {
