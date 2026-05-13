@@ -13,15 +13,11 @@
 -->
 <script>
   import { T } from '@threlte/core'
-  import { useGltf } from '@threlte/extras'
-  import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
+  import { useGltf, useDraco } from '@threlte/extras'
   import * as THREE from 'three'
   import { config } from '$lib/config.svelte.js'
 
-  const dracoLoader = new DRACOLoader()
-  dracoLoader.setDecoderPath('/draco/')
-
-  const gltf = useGltf('/models/casco_con_facce.glb', { dracoLoader })
+  const gltf = useGltf('/models/casco_con_facce.glb', { dracoLoader: useDraco('/draco/') })
 
   /*
     $effect: si ri-esegue automaticamente ogni volta che
