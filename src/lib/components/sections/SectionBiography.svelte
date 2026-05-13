@@ -17,26 +17,26 @@
     {
       x: 350, top: 430,
       boldPart: '2016', rest: ' - Youth Olympics',
-      img: '/images/atleti/bio-2016-race.png',
+      img: '/images/atleti/bio-youthOlympics.jpg',
       imgW: 380, imgH: 270,
     },
     {
       x: 950, top: 200,
       boldPart: '2017', rest: ' - World Championship',
-      img: '/images/atleti/bio-2017-worlds.png',
+      img: '/images/atleti/bio-2017-wc.jpg',
       imgW: 480, imgH: 350,
     },
     {
-      x: 1990, top: 450,
+      x: 1700, top: 450,
       boldPart: '2018', rest: ' - PyeongChang Olympics',
       img: '/images/atleti/bio-2018-pyeongchang.png',
       imgW: 350, imgH: 196,
     },
     {
-      x: 2300, top: 75,
+      x: 2300, top: 45,
       boldPart: '2019', rest: ' - World Championships',
-      img: '/images/atleti/bio-2019-worlds.png',
-      imgW: 370, imgH: 277,
+      img: '/images/atleti/bio-wc2019.jpg',
+      imgW: 370, imgH: 600,
     },
     {
       x: 1650, top: 90,
@@ -70,16 +70,16 @@
     },
   ]
 
-  const TRACK_WIDTH = 4900
+  const QUOTES = [
+    { x: 1950, top: 85, text: "In 2022 founded the Heraskevych foundation", author: "" },
+    { x: 3500, top: 515, text: "Some things are more important than sports", author: "" }
+  ];
+
+const TRACK_WIDTH = 4900
   let progress = $state(0)
-  let section
-  let sectionTop = 0
-  let sectionH = 0
+  let section, sectionTop = 0, sectionH = 0
   let vpW = typeof window !== 'undefined' ? window.innerWidth : 1440
   
-  // Riferimenti agli elementi delle card
-  let cardRefs = $state({})
-
   onMount(() => {
     const measure = () => {
       if (!section) return
@@ -88,17 +88,13 @@
       sectionH = section.offsetHeight
       vpW = window.innerWidth
     }
-    
     const onScroll = () => {
       const raw = (window.scrollY - sectionTop) / (sectionH - window.innerHeight)
       progress = Math.max(0, Math.min(1, raw))
     }
-    
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', measure)
-    measure()
-    onScroll()
-    
+    measure(); onScroll()
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', measure)
@@ -106,56 +102,45 @@
   })
 
   let offsetX = $derived(progress * Math.max(0, TRACK_WIDTH - vpW))
-  
-  // Calcola il parallasse per ogni card in base alla sua visibilità
-  const PARALLAX_INTENSITY = 60; 
+  const PARALLAX_INTENSITY = 70; 
 
   function getParallaxAmount(cardX) {
     if (typeof window === 'undefined') return 0;
-
-    // 1. Posizione della card relativa al viewport (0 = inizio schermo, vpW = fine schermo)
     const cardRelativeX = cardX - offsetX;
-    
-    // 2. Normalizziamo la posizione: 
-    // -1 quando la card è appena uscita a sinistra
-    // 0 quando è perfettamente al centro
-    // 1 quando sta entrando da destra
-    const centerPoint = (cardRelativeX + 100) / vpW; // 150 è circa metà larghezza card
-    const normalized = (centerPoint * 2) - 1;
-
-    // 3. Limitiamo il valore tra -1 e 1 per evitare drift eccessivi
-    const clamped = Math.max(-1, Math.min(1, normalized));
-
-    // Restituiamo lo spostamento in pixel (invertito per l'effetto parallasse)
+    const centerPoint = (cardRelativeX + 150) / vpW; 
+    const clamped = Math.max(-1, Math.min(1, (centerPoint * 2) - 1));
     return -clamped * PARALLAX_INTENSITY;
   }
 </script>
 
-<section bind:this={section} class="bio-section" id="athlete-bio">
+<section bind:this={section} class="bio-section">
+  <!-- Overlay Grana -->
+  <div class="grain-overlay"></div>
+
   <div class="sticky-wrap">
     <div class="cards-track" style:transform="translateX(-{offsetX}px)">
-      {#each CARDS as card, i}
-        <div 
-          class="card" 
-          style:left="{card.x}px" 
-          style:top="{card.top}px"
-        >
+      
+      <!-- Rendering Cards -->
+      {#each CARDS as card}
+        <div class="card" style:left="{card.x}px" style:top="{card.top}px">
           {#if !card.noTitle}
-            <p class="caption">
-              <strong>{card.boldPart}</strong>{card.rest}
-            </p>
+            <p class="caption"><strong>{card.boldPart}</strong>{card.rest}</p>
           {/if}
-          
           <div class="img-frame" style:width="{card.imgW}px" style:height="{card.imgH}px">
-            <img
-              src={card.img}
-              alt={card.boldPart ?? ''}
-              class="parallax-img"
-              style:transform="translateX({getParallaxAmount(card.x)}px)"
-            />
+            <img src={card.img} alt="" class="parallax-img" 
+                 style:transform="translateX({getParallaxAmount(card.x)}px)" />
           </div>
         </div>
       {/each}
+
+      <!-- Rendering Quotes -->
+      {#each QUOTES as quote}
+        <div class="quote-block" style:left="{quote.x}px" style:top="{quote.top}px">
+          <span class="quote-text">{quote.text}</span>
+          <span class="quote-author">{quote.author}</span>
+        </div>
+      {/each}
+
     </div>
   </div>
 </section>
@@ -167,61 +152,65 @@
     position: relative;
   }
 
+  /* EFFETTO GRAIN SHADER */
+  .grain-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.2; /* Regola l'intensità del nero */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
   .sticky-wrap {
     position: sticky;
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: #fafafa;
   }
 
   .cards-track {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     width: 4900px;
     height: 100vh;
     will-change: transform;
   }
 
-  .card {
+  /* CITAZIONI */
+  .quote-block {
     position: absolute;
+    max-width: 250px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1rem;
   }
 
-  .caption {
+  .quote-text {
+    font-family: var(--font-primary); /* O il tuo font headline */
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #1a1a1a;
+  }
+
+  .quote-author {
     font-family: var(--font-secondary);
-    font-size: 1rem;
-    color: #030404;
-    line-height: 1.45;
-    max-width: 380px;
+    font-size: 0.8rem;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    opacity: 0.5;
+    color: #1a1a1a;
   }
 
-  .caption strong {
-    font-weight: 700;
-  }
-
-  .img-frame {
-    position: relative;
-    overflow: hidden;
-    /* Opzionale: aggiungi un leggero zoom per sicurezza */
-  }
-
+  /* CARDS & PARALLAX */
+  .card { position: absolute; display: flex; flex-direction: column; gap: 10px; }
+  .img-frame { position: relative; overflow: hidden; background: #eee; }
   .parallax-img {
-    /* L'immagine deve uscire dai bordi della maschera */
-    width: 140%; 
-    height: 110%;
-    position: absolute;
-    top: -5%;
-    left: -20%; /* Centra l'immagine 140% rispetto al frame */
-    
+    width: 140%; height: 110%;
+    position: absolute; top: -5%; left: -20%;
     object-fit: cover;
-    display: block;
     will-change: transform;
-    /* Rimuovi la transition per reattività massima */
-    transition: none; 
   }
-
+  .caption { font-size: 1rem; color: #030404; }
 </style>
