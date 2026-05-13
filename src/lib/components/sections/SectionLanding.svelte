@@ -10,7 +10,7 @@
   let _tCx = 0, _tCy = 0, _tR  = 0
   let _hovering = false  // <-- nuovo
 
-  const RADIUS    = 200
+  const RADIUS    = 250
   const STIFFNESS = 0.62
   const DAMPING   = 0.70
 
@@ -64,7 +64,7 @@
         helmetLayer.style.opacity = "0";
       } else {
         helmetLayer.style.opacity = "1";
-        
+
         const w = helmetLayer.offsetWidth  || 1
         const h = helmetLayer.offsetHeight || 1
 
@@ -130,7 +130,7 @@
       />
       <img
         class="helmet"
-        src="/images/vlad-hover.png"
+        src="/images/vlad-hover-black.png"
         alt=""
         bind:this={helmetLayer}
         draggable="false"
@@ -210,7 +210,7 @@
 
   .helmet {
     position: absolute;
-    top: -14%;
+    top: -17%;
     left: 50%;
     transform: translateX(-50%) translateZ(0);
     width: 118%;
