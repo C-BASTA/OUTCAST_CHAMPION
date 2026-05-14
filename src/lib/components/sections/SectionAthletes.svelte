@@ -202,10 +202,7 @@
 
   .name.selected:hover {
     transform: scale(1.30);
-    text-shadow:
-      0 0 20px var(--color-ink, #fff),
-      0 0 40px var(--color-ink, #fff3),
-      0 0 80px var(--color-ink, #fff2);
+   
   }
 
   .viewer {
