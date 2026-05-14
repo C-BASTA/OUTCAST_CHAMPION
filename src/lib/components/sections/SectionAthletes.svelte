@@ -157,7 +157,7 @@
     top: 0;
     width: 100%;
     height: 100vh;
-    background: var(--color-canvas, #000);
+    background: var(--color-canvas-dark, #000);
     overflow: hidden;
   }
 

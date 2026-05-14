@@ -17,8 +17,12 @@
 -->
 <script>
   import '../app.css'
+  import BackgroundGrid from '$lib/components/BackgroundGrid.svelte';
 
   let { children } = $props()
 </script>
+
+<!-- Il componente dello sfondo -->
+<BackgroundGrid />
 
 {@render children()}

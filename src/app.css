@@ -15,7 +15,6 @@ body {
   overflow-x: hidden;
   font-family: var(--font-primary);
   font-size: var(--size-4);
-  background: var(--color-canvas);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

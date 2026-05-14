@@ -200,7 +200,6 @@
   /* Desktop styles (orizzontale) */
   .bio-section--horizontal {
     position: relative;
-    background: #fafafa;
     width: 100%;
   }
 
@@ -237,7 +236,7 @@
   .img-frame {
     position: relative;
     overflow: hidden;
-    background: #eee;
+    background: var(--color-canvas);
   }
 
   .parallax-img {
@@ -270,7 +269,7 @@
 
   /* ========== MOBILE STYLES (verticale) ========== */
   .bio-section--vertical {
-    background: #fafafa;
+    background: var(--color-canvas);
     padding: 80px 24px 120px;
     min-height: 100vh;
   }
@@ -315,7 +314,7 @@
     width: 100%;
     overflow: hidden;
     border-radius: 12px;
-    background: #eee;
+    background: var(--color-canvas);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 

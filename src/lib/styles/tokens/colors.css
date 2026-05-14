@@ -1,15 +1,27 @@
 :root {
-	/* ── Palette brand ───────────────────────────────────────── */
-	--hex-brand-50:  #f8f3ed;
-	--hex-brand-100: #FCF4E9;
-	--hex-brand-200: #F9E8D3;
-	--hex-brand-300: #EFD2B8;
-	--hex-brand-400: #DFBAA0;
-	--hex-brand-500: #CB997E;
-	--hex-brand-600: #AE735C;
-	--hex-brand-700: #92523F;
-	--hex-brand-800: #753428;
-	--hex-brand-900: #611F18;
+	/* ── Palette brand yellow ───────────────────────────────────────── */
+	--hex-brand-yellow-50:  #FFFBE6;
+	--hex-brand-yellow-100: #FFFACC;
+	--hex-brand-yellow-200: #FFF499;
+	--hex-brand-yellow-300: #FFEC66;
+	--hex-brand-yellow-400: #FFE43F;
+	--hex-brand-yellow-500: #FFD700;
+	--hex-brand-yellow-600: #DBB500;
+	--hex-brand-yellow-700: #B79400;
+	--hex-brand-yellow-800: #937500;
+	--hex-brand-yellow-900: #7A5F00;
+
+	/* ── Palette brand blue ───────────────────────────────────────── */
+	--hex-brand-blue-50:  #EFF6FF;
+	--hex-brand-blue-100: #C9EAFB;
+	--hex-brand-blue-200: #94D2F7;
+	--hex-brand-blue-300: #5DADE9;
+	--hex-brand-blue-400: #3488D3;
+	--hex-brand-blue-500: #0057B7;
+	--hex-brand-blue-600: #00439D;
+	--hex-brand-blue-700: #003283;
+	--hex-brand-blue-800: #00236A;
+	--hex-brand-blue-900: #001857;
 
 	/* ── Palette neutral ─────────────────────────────────────── */
 	--hex-neutral-50:  #FAFAFA;
@@ -26,14 +38,15 @@
 	/* ── Semantic tokens: light mode (default) ───────────────── */
 	--color-canvas:  var(--hex-neutral-50);
 	--color-surface: var(--hex-neutral-800);
+	--color-canvas-dark:  var(--hex-neutral-900);
 
 	--color-ink:           var(--hex-neutral-50);
 	--color-ink-secondary: var(--hex-neutral-400);
 	--color-ink-inverted:  var(--hex-neutral-900);
-	--color-link:          var(--hex-brand-500);
+	--color-link:          var(--hex-brand-blue-500);
 
 	--color-filter--hover:    var(--hex-neutral-800);
-	--color-filter--selected: var(--hex-brand-600);
+	--color-filter--selected: var(--hex-brand-blue-600);
 }
 
 /* ── Dark mode override ──────────────────────────────────── */
@@ -45,9 +58,9 @@
 		--color-ink:           var(--hex-neutral-50);
 		--color-ink-secondary: var(--hex-neutral-500);
 		--color-ink-inverted:  var(--hex-neutral-50);
-		--color-link:          var(--hex-brand-600);
+		--color-link:          var(--hex-brand-blue-600);
 
 		--color-filter--hover:    var(--hex-neutral-700);
-		--color-filter--selected: var(--hex-brand-500);
+		--color-filter--selected: var(--hex-brand-blue-500);
 	}
 }

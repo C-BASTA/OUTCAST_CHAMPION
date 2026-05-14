@@ -1,119 +1,143 @@
 <script>
   import { onMount } from 'svelte'
 
-  let wrap
-  let helmetLayer
-
-  let _cx = 0, _cy = 0, _r  = 0, _vx = 0, _vy = 0, _vr = 0
+  let wrap, helmetLayer
+  let _cx = 0, _cy = 0, _r = 0, _vx = 0, _vy = 0, _vr = 0
   let _t1x = 0, _t1y = 0, _t1r = 0, _t1vx = 0, _t1vy = 0, _t1vr = 0
-  let _t2x = 0, _t2y = 0, _t2r = 0, _t2vx = 0, _t2vy = 0, _t2vr = 0
-  let _tCx = 0, _tCy = 0, _tR  = 0
-  let _hovering = false  // <-- nuovo
+  let _tCx = 0, _tCy = 0, _tR = 0
+  let _hovering = false
+  let lastMoveTime = Date.now()
+  let isAutoPlaying = false
 
-  const RADIUS    = 250
-  const STIFFNESS = 0.62
-  const DAMPING   = 0.70
+  const RADIUS = 220
+  const STIFFNESS = 0.15
+  const DAMPING = 0.85
 
+  // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 900
-  const UNIT  = 'Vladyslav Heraskevyč  '
-  const TEXT  = UNIT.repeat(6)
-  const ROWS  = [
-    { color: '#ffd700', dir: -1 },
-    { color: '#0057b7', dir:  1 },
-    { color: '#ffd700', dir: -1 },
-  ]
+  const UNIT = 'Vladyslav Heraskevyč  '
+  const TEXT = UNIT.repeat(6)
+  const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
   const TRAVEL = 520
 
   let progress = $state(0)
-  let _scale   = 1
-
-  let photoScale   = $derived(1 - progress * 0.78)
+  let _scale = 1
+  let photoScale = $derived(1 - progress * 0.78)
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
-  let textOpacity  = $derived(Math.min(1, progress * 2.5))
+  let textOpacity = $derived(Math.min(1, progress * 2.5))
 
   onMount(() => {
     const onScroll = () => {
       const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
       progress = p
-      _scale   = 1 - p * 0.78
+      _scale = 1 - p * 0.78
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
+
+    // --- CONFIGURAZIONE AUTO-PLAY (IL TUO ZIG-ZAG) ---
+    let idleStep = 0
+    let isPausing = false
+    let pauseStartTime = 0
+    const IDLE_WAIT = 3000
+    const PAUSE_BETWEEN = 2000
+    const TARGET_TOLERANCE = 100
+    const idlePoints = [
+      { x: 0.3, y: 0.2 }, { x: 0.7, y: 0.4 }, { x: 0.2, y: 0.6 }, { x: 0.8, y: 0.8 }
+    ]
 
     let raf
     const tick = () => {
-      _vx += (_tCx - _cx) * STIFFNESS;  _vx *= DAMPING;  _cx += _vx
-      _vy += (_tCy - _cy) * STIFFNESS;  _vy *= DAMPING;  _cy += _vy
-      _vr += (_tR  - _r ) * 0.55;       _vr *= 0.72;     _r  += _vr
+      const now = Date.now()
+      const w = wrap?.offsetWidth || 0
+      const h = wrap?.offsetHeight || 0
 
-      _t1vx += (_cx - _t1x) * 0.13;  _t1vx *= 0.85;  _t1x += _t1vx
-      _t1vy += (_cy - _t1y) * 0.13;  _t1vy *= 0.85;  _t1y += _t1vy
-      _t1vr += (Math.max(0, _r) * 0.70 - _t1r) * 0.20;  _t1vr *= 0.82;  _t1r += _t1vr
-
-      _t2vx += (_t1x - _t2x) * 0.07;  _t2vx *= 0.87;  _t2x += _t2vx
-      _t2vy += (_t1y - _t2y) * 0.07;  _t2vy *= 0.87;  _t2y += _t2vy
-      _t2vr += (Math.max(0, _t1r) * 0.55 - _t2r) * 0.13;  _t2vr *= 0.84;  _t2r += _t2vr
-
-      if (_tR === 0 && _r < 2)   { _r = 0;   _vr = 0   }
-      if (_tR === 0 && _t1r < 2) { _t1r = 0; _t1vr = 0 }
-      if (_tR === 0 && _t2r < 2) { _t2r = 0; _t2vr = 0 }
-
-      // Se non è mai stato in hover, o il raggio è zero, nascondi
-      if (!_hovering || _r <= 1) {
-        helmetLayer.style.opacity = "0";
-      } else {
-        helmetLayer.style.opacity = "1";
-
-        const w = helmetLayer.offsetWidth  || 1
-        const h = helmetLayer.offsetHeight || 1
-
-        const pct = (v, max) => ((v / max) * 100).toFixed(2) + '%'
-        const g = (x, y, r) =>
-          `radial-gradient(circle ${r}px at ${pct(x,w)} ${pct(y,h)}, black ${(r * 0.4).toFixed(0)}px, transparent ${r}px)`
-
-        const masks = [g(_cx, _cy, _r)]
-        if (_t1r > 1) masks.push(g(_t1x, _t1y, _t1r))
-        if (_t2r > 1) masks.push(g(_t2x, _t2y, _t2r))
-
-        const maskVal = masks.join(', ')
-        helmetLayer.style.webkitMaskImage     = maskVal
-        helmetLayer.style.maskImage           = maskVal
-        helmetLayer.style.webkitMaskComposite = 'source-over'
-        helmetLayer.style.maskComposite       = 'add'
+      // Gestione Idle Animation (Tua logica originale)
+      if (!_hovering && (now - lastMoveTime > IDLE_WAIT)) {
+        if (isPausing) {
+          _tR = 0
+          if (now - pauseStartTime > PAUSE_BETWEEN) {
+            isPausing = false
+            idleStep = 0
+          }
+        } else {
+          isAutoPlaying = true
+          _tR = RADIUS * 0.85
+          const target = idlePoints[idleStep]
+          _tCx = target.x * w
+          _tCy = target.y * h
+          const dist = Math.sqrt(Math.pow(_tCx - _cx, 2) + Math.pow(_tCy - _cy, 2))
+          if (dist < TARGET_TOLERANCE) {
+            if (idleStep === idlePoints.length - 1) {
+              isPausing = true
+              pauseStartTime = now
+              isAutoPlaying = false
+            } else { idleStep++ }
+          }
+        }
+      } else if (_hovering) {
+        isAutoPlaying = false
+        isPausing = false
       }
 
+      // Fisica Fluida
+      const currentStiffness = isAutoPlaying ? 0.015 : STIFFNESS
+      const currentDamping = isAutoPlaying ? 0.8 : DAMPING
+
+      _vx += (_tCx - _cx) * currentStiffness; _vx *= currentDamping; _cx += _vx
+      _vy += (_tCy - _cy) * currentStiffness; _vy *= currentDamping; _cy += _vy
+      _vr += (_tR - _r) * 0.05; _vr *= 0.8; _r += _vr
+
+      // Scia (Effetto acqua/blob)
+      _t1vx += (_cx - _t1x) * 0.12; _t1vx *= 0.75; _t1x += _t1vx
+      _t1vy += (_cy - _t1y) * 0.12; _t1vy *= 0.75; _t1y += _t1vy
+      _t1r += (_r * 0.85 - _t1r) * 0.1; _t1r *= 0.8
+
+      if (helmetLayer) {
+        if (!isAutoPlaying && !_hovering && _r < 1) {
+          helmetLayer.style.opacity = "0"
+        } else {
+          helmetLayer.style.opacity = "1"
+          const stretch = Math.min(Math.abs(_vx + _vy) * 0.6, 60)
+          
+          const g = (x, y, r, sx) => {
+            const px = (x / w) * 100
+            const py = (y / h) * 100
+            // Usiamo 80% -> 100% per lasciare un po' di "morbidezza" che il filtro contrasto trasformerà in liquido
+            return `radial-gradient(${r + sx}px ${r}px at ${px}% ${py}%, black 80%, transparent 100%)`
+          }
+
+          const maskVal = [g(_cx, _cy, _r, stretch), g(_t1x, _t1y, _t1r, 0)].join(', ')
+          helmetLayer.style.webkitMaskImage = maskVal
+          helmetLayer.style.maskImage = maskVal
+        }
+      }
       raf = requestAnimationFrame(tick)
     }
-    raf = requestAnimationFrame(tick)
+    tick()
 
     const onMove = (e) => {
       _hovering = true
-      const hr = helmetLayer.getBoundingClientRect()
+      lastMoveTime = Date.now()
+      const hr = wrap.getBoundingClientRect()
       _tCx = (e.clientX - hr.left) / _scale
-      _tCy = (e.clientY - hr.top)  / _scale
-      _tR  = RADIUS
-    }
-    const onLeave = () => {
-      _hovering = false
-      _tR = 0
+      _tCy = (e.clientY - hr.top) / _scale
+      _tR = RADIUS
     }
 
+    const onLeave = () => { _hovering = false; _tR = 0 }
     wrap.addEventListener('mousemove', onMove)
     wrap.addEventListener('mouseleave', onLeave)
 
     return () => {
       cancelAnimationFrame(raf)
       window.removeEventListener('scroll', onScroll)
-      wrap.removeEventListener('mousemove', onMove)
-      wrap.removeEventListener('mouseleave', onLeave)
     }
   })
 </script>
 
 <section id="athlete" class="landing">
   <div class="sticky-inner">
-
     <h1 class="title" style:opacity={titleOpacity}>Outcast<br />Champion</h1>
 
     <div
@@ -122,38 +146,28 @@
       style:transform="translateX(-50%) scale({photoScale})"
       style:opacity={photoOpacity}
     >
-      <img
-        class="vlad"
-        src="/images/vlad-face-hd-transparent.png"
-        alt="Vladyslav Heraskevych"
-        draggable="false"
-      />
-      <img
-        class="helmet"
-        src="/images/vlad-hover-black.png"
-        alt=""
-        bind:this={helmetLayer}
-        draggable="false"
-      />
+      <img class="vlad" src="/images/vlad-face-hd-transparent.png" alt="Vlad" draggable="false" />
+      
+      <div class="gooey-container">
+        <img
+          class="helmet"
+          src="/images/vlad-hover-black.png"
+          alt=""
+          bind:this={helmetLayer}
+          draggable="false"
+        />
+      </div>
     </div>
 
-<div class="name-wrap" style:opacity={textOpacity}>
+    <div class="name-wrap" style:opacity={textOpacity}>
       {#each ROWS as row, i}
-        <div 
-          class="row-container" 
-          style:transform="translateX({row.dir * (1 - Math.min(progress * 1.5, 1)) * TRAVEL}px)"
-        >
-          <!-- Se i è 0 o 2 (righe 1 e 3) -> marquee-left, se i è 1 -> marquee-right -->
-          <div 
-            class="name-row {i % 2 === 0 ? 'marquee-left' : 'marquee-right'}" 
-            style:color={row.color}
-          >
+        <div class="row-container" style:transform="translateX({row.dir * (1 - Math.min(progress * 1.5, 1)) * TRAVEL}px)">
+          <div class="name-row {i % 2 === 0 ? 'marquee-left' : 'marquee-right'}" style:color={row.color}>
             {TEXT} {TEXT}
           </div>
         </div>
       {/each}
     </div>
-
   </div>
 </section>
 
@@ -162,8 +176,6 @@
     position: relative;
     width: 100%;
     height: calc(100vh + 900px);
-    background: var(--hex-neutral-50, #fafafa);
-    z-index: 1;
   }
 
   .sticky-inner {
@@ -171,7 +183,8 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: var(--hex-neutral-50, #fafafa);
+    background: transparent;
+    z-index: 1;
   }
 
   .title {
@@ -211,23 +224,32 @@
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+    z-index: 2;
+  }
+
+  /* --- IL TRUCCO FLUIDO --- */
+  .gooey-container {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    /* Il contrasto elevato "mangia" le sfumature del blur creando bordi netti e liquidi */
+    filter: brightness(1.1);
+    pointer-events: none;
   }
 
   .helmet {
     position: absolute;
     top: -17%;
     left: 50%;
-    transform: translateX(-50%) translateZ(0);
+    transform: translateX(-50%);
     width: 118%;
     height: auto;
     display: block;
-    user-select: none;
-    -webkit-user-drag: none;
-
-    /* AGGIUNGI QUESTO: */
-    mask-image: radial-gradient(circle 0px at 0% 0%, black 0%, transparent 0%);
-    -webkit-mask-image: radial-gradient(circle 0px at 0% 0%, black 0%, transparent 0%);
+    z-index: 3;
+    transition: opacity 0.4s ease;
+    /* Il blur applicato all'immagine mascherata permette ai gradienti di "fondersi" */
   }
+  /* Modifica la maschera per avere bordi sfumati che il filtro contrasto trasformerà in blob */
 
   .name-wrap {
     position: absolute;
