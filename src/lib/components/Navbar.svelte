@@ -9,7 +9,7 @@
     { num: '01', label: 'Athlete',  href: '#athlete' },
     { num: '02', label: 'Helmet',   href: '#helmet' },
     { num: '03', label: 'Insight',  href: '#verdict' },
-    { num: '',   label: 'About Us', href: '#about-us' },
+    { num: '',   label: 'About Us', href: '/about' },
   ]
 
   function toggle() { open = !open }
