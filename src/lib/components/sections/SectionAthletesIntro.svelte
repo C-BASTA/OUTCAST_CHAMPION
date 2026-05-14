@@ -4,7 +4,9 @@
   const SCROLL_HEIGHT = 1400
 
   let wrapper = $state(null)
-  let quoteOpacity = $state(0)
+  let quoteTranslateY = $state(100) // vh: 100 = sotto schermo, 0 = in posizione, -100 = sopra
+
+  const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t))
 
   onMount(() => {
     const onScroll = () => {
@@ -12,8 +14,17 @@
       const rect     = wrapper.getBoundingClientRect()
       const total    = wrapper.offsetHeight - window.innerHeight
       const progress = Math.max(0, Math.min(1, -rect.top / total))
-      // Fade in rapido (0→1 nel primo 40% dello scroll)
-      quoteOpacity = Math.min(1, progress / 0.4)
+
+      // 0→0.35  : entra dal basso (100vh → 0)
+      // 0.35→0.65: resta ferma
+      // 0.65→1  : esce verso l'alto (0 → -100vh)
+      if (progress < 0.35) {
+        quoteTranslateY = lerp(100, 0, progress / 0.35)
+      } else if (progress < 0.65) {
+        quoteTranslateY = 0
+      } else {
+        quoteTranslateY = lerp(0, -100, (progress - 0.65) / 0.35)
+      }
     }
 
     window.addEventListener('scroll', onScroll, { passive: true })
@@ -24,7 +35,7 @@
 
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
-    <div class="quote-overlay" style:opacity={quoteOpacity}>
+    <div class="quote-overlay" style:transform="translateY({quoteTranslateY}vh)">
       <p class="quote">
         I believe they deserve to be here today with me,<br>
         and also they deserve to be with me on competition day.
@@ -47,13 +58,16 @@
     height: 100vh;
     display: flex;
     align-items: center;
-    background: #030404;
+    z-index: 10;
+    background: transparent;
+    overflow: hidden;
   }
 
   .quote-overlay {
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
+    will-change: transform;
   }
 
   .quote {

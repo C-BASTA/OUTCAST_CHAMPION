@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { Canvas } from '@threlte/core'
   import HelmetZoomScene from '../HelmetZoomScene.svelte'
+  import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   let paddingLateral = $state(80)
   let paddingTopMain = $state(80)
@@ -186,6 +187,22 @@
       const rect = section.getBoundingClientRect()
       const totalScrollable = section.offsetHeight - window.innerHeight
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
+
+      // Attiva il canvas globale quando la bio finisce (dezoom completo)
+      // e mantienilo finché l'utente è nella zona di transizione verso athletes
+      const bioEnding = progress >= 0.98
+      if (bioEnding !== helmetStore.visible) {
+        helmetStore.visible = bioEnding
+        if (bioEnding) {
+          helmetStore.cameraY = 0.25
+          helmetStore.cameraZ = 8.5
+          helmetStore.lookAtY = 0.20
+          helmetStore.rotX   = 0.25
+          helmetStore.rotY   = Math.PI
+          helmetStore.rotZ   = 0
+          helmetStore.viewerPaddingLeft = '0%'
+        }
+      }
     }
 
     checkMobile()
@@ -244,8 +261,8 @@
         {/each}
       </div>
 
-      <!-- Casco 3D: sibling di cards-track, sopra il pixel canvas -->
-      {#if helmetVisible}
+      <!-- Casco 3D: nascosto quando il canvas globale è attivo -->
+      {#if helmetVisible && !helmetStore.visible}
         <div class="helmet-card" style:left="{maxOffsetX - offsetX}px">
           <Canvas renderMode="always">
             <HelmetZoomScene {cameraZ} {bgColor} />
