@@ -90,7 +90,7 @@
   let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral)
   let maxOffsetX = $derived(Math.max(0, trackWidth - vpW))
 
-  // P_STOP dinamico: fraction of total scroll at which horizontal ends, zoom begins
+  // pStop: fraction of total scroll at which horizontal ends, zoom begins
   let pStop         = $derived(maxOffsetX > 0 ? maxOffsetX / (maxOffsetX + ZOOM_PX) : 0.59)
   let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX + ZOOM_PX}px)`)
 
@@ -108,11 +108,61 @@
   })
 
   let bgColor = $derived.by(() => {
+    // Durante il dezoom: Three.js canvas trasparente, il pixel canvas è visibile sotto
+    if (zoomP >= 0.84) return 'transparent'
     const t = ease(remap(zoomP, 0.10, 0.36, 0, 1))
     const r = Math.round(lerp(0xfa, 0x03, t)).toString(16).padStart(2, '0')
     const g = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
     const b = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
     return `#${r}${g}${b}`
+  })
+
+  // ── Pixel canvas (dezoom background) ─────────────────────────────────────
+  const PIXEL_COLS = 40
+  const PIXEL_ROWS = 25
+  let pixelCanvas  = $state(null)
+  let pixelCellOrder = []
+
+  function shuffleArr(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    return arr
+  }
+
+  // Progresso pixel: 0 quando dezoom inizia (zoomP=0.84), 1 quando finisce (zoomP=0.97)
+  let pixelProgress = $derived(clamp(remap(zoomP, 0.84, 0.97, 0, 1), 0, 1))
+
+  // Inizializza canvas una volta montato
+  $effect(() => {
+    if (!pixelCanvas || pixelCellOrder.length > 0) return
+    pixelCanvas.width  = window.innerWidth
+    pixelCanvas.height = window.innerHeight
+    pixelCellOrder = shuffleArr([...Array(PIXEL_COLS * PIXEL_ROWS).keys()])
+  })
+
+  // Disegna i pixel al variare dello scroll
+  $effect(() => {
+    if (!pixelCanvas || zoomP < 0.84) return
+    const ctx   = pixelCanvas.getContext('2d')
+    const w     = pixelCanvas.width
+    const h     = pixelCanvas.height
+    const cellW = w / PIXEL_COLS
+    const cellH = h / PIXEL_ROWS
+    const total = PIXEL_COLS * PIXEL_ROWS
+
+    ctx.fillStyle = '#FAFAFA'
+    ctx.fillRect(0, 0, w, h)
+
+    const count = Math.floor(pixelProgress * total)
+    for (let i = 0; i < count; i++) {
+      const idx = pixelCellOrder[i]
+      const col = idx % PIXEL_COLS
+      const row = Math.floor(idx / PIXEL_COLS)
+      ctx.fillStyle = '#030404'
+      ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
+    }
   })
 
   // Precarica il modello GLB quando il casco sta per entrare nel viewport
@@ -166,6 +216,9 @@
     <div class="grain-overlay"></div>
     <div class="sticky-wrap">
 
+      <!-- Pixel background: visibile durante il dezoom, dietro il casco 3D -->
+      <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
+
       <div
         class="cards-track"
         style:width="{trackWidth}px"
@@ -189,16 +242,16 @@
             <span class="quote-text">{quote.text}</span>
           </div>
         {/each}
-
-        <!-- Casco 3D: entra da destra alla fine dello scroll orizzontale -->
-        {#if helmetVisible}
-          <div class="helmet-card" style:left="{maxOffsetX}px">
-            <Canvas renderMode="always">
-              <HelmetZoomScene {cameraZ} {bgColor} />
-            </Canvas>
-          </div>
-        {/if}
       </div>
+
+      <!-- Casco 3D: sibling di cards-track, sopra il pixel canvas -->
+      {#if helmetVisible}
+        <div class="helmet-card" style:left="{maxOffsetX - offsetX}px">
+          <Canvas renderMode="always">
+            <HelmetZoomScene {cameraZ} {bgColor} />
+          </Canvas>
+        </div>
+      {/if}
 
       <!-- Quadratini bandiera ucraina: svaniscono all'inizio dello zoom -->
       {#if zoomP > 0 && squaresOpacity > 0.01}
@@ -273,7 +326,7 @@
   .grain-overlay {
     position: absolute;
     inset: 0;
-    z-index: 5;
+    z-index: 7;
     pointer-events: none;
   }
 
@@ -285,10 +338,22 @@
     background: #fafafa;
   }
 
+  /* Pixel canvas: sfondo dezoom — z-index 2 (copre le foto bio) */
+  .pixel-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
+  }
+
   .cards-track {
     position: absolute;
     top: 0;
     height: 100vh;
+    z-index: 1;
     will-change: transform;
   }
 
@@ -334,12 +399,13 @@
     color: #1a1a1a;
   }
 
-  /* ── Helmet card ─────────────────────────────────────────────────────── */
+  /* ── Helmet card — z-index 3 (sopra pixel canvas) ───────────────────── */
   .helmet-card {
     position: absolute;
     top: 0;
     width: 100vw;
     height: 100vh;
+    z-index: 3;
   }
 
   /* ── Flag squares ────────────────────────────────────────────────────── */
@@ -347,7 +413,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    z-index: 3;
+    z-index: 4;
   }
   .sq-pair   { position: absolute; display: flex; align-items: flex-end; }
   .sq-single { position: absolute; }
@@ -363,7 +429,7 @@
     align-items: flex-start;
     overflow: hidden;
     pointer-events: none;
-    z-index: 4;
+    z-index: 4;  /* sopra helmet (3), sotto quote-screen (5) */
   }
   .text-scroll {
     display: flex;

@@ -9,8 +9,13 @@
   const { renderer, scene } = useThrelte()
 
   // Background colour driven by parent's scroll progress
+  // 'transparent' → scene senza sfondo (pixel canvas visibile sotto via CSS)
   $effect(() => {
-    scene.background = new THREE.Color(bgColor)
+    if (!bgColor || bgColor === 'transparent') {
+      scene.background = null
+    } else {
+      scene.background = new THREE.Color(bgColor)
+    }
   })
 
   // Room environment for metallic reflections on the visor
