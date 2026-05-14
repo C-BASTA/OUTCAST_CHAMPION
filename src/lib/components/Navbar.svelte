@@ -19,9 +19,9 @@
 <!-- ── Header bar (sempre visibile) ──────────────────────────── -->
 <header class="nav-bar" class:dark class:hidden={open}>
   {#if showLogo}
-    <span class="logo">Outcast Champion</span>
+    <a class="logo" href="./">Outcast Champion</a>
   {:else}
-    <span class="logo" style="opacity:0; pointer-events:none;">Outcast Champion</span>
+    <a class="logo" href="./" style="opacity:0; pointer-events:none;">Outcast Champion</a>
   {/if}
   <button class="dots-btn" onclick={toggle} aria-label="Apri menu">
     <svg width="28" height="6" viewBox="0 0 28 6" fill="none" aria-hidden="true">
@@ -82,7 +82,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 28px 48px;
+    padding: 28px var(--padding-lateral);
     pointer-events: none;
     --ink: #030404;
     transition: opacity 0.2s;
@@ -97,6 +97,7 @@
     letter-spacing: -0.01em;
     pointer-events: auto;
     user-select: none;
+    text-decoration: none;
   }
 
   .dots-btn {

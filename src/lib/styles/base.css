@@ -16,7 +16,6 @@ body {
 	font-weight: 500;
 	color: var(--color-ink);
 
-	background: var(--color-canvas);
 	max-inline-size: 100vw;
 
 	scroll-behavior: auto;

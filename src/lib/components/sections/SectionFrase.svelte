@@ -16,9 +16,12 @@
 
 <section bind:this={section} class="frase-section">
   <blockquote class:visible>
-    <span class="line">"I COMPETE NOT ONLY</span>
-    <span class="line">FOR <em>RESULTS,</em></span>
-    <span class="line">BUT FOR MY <em>COUNTRY</em>"</span>
+    <span class="line">For me, the sacrifice of the people</span>
+    <span class="line">depicted on the helmet</span>
+    <span class="line">means more than any medal</span>
+    <span class="line">because they gave</span>
+    <span class="line">the most precious thing they had,</span>
+    <span class="line"><em>their lives.</em></span>
   </blockquote>
 </section>
 
@@ -27,12 +30,11 @@
     position: relative;
     width: 100%;
     height: 100vh;
-    background: #fafafa;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    z-index: 1;
+    z-index: -1;
   }
 
   blockquote {
@@ -54,7 +56,7 @@
 
   .line {
     display: block;
-    font-family: var(--font-primary);
+    font-family: var(--font-secondary);
     font-size: clamp(28px, 3.8vw, 58px);
     font-weight: 400;
     color: #030404;
@@ -64,7 +66,8 @@
 
   /* "RESULTS," e "COUNTRY" in gold */
   em {
+    font-family: var(--font-primary);
     font-style: normal;
-    color: #ffd700;
+    color: #0914f1;
   }
 </style>

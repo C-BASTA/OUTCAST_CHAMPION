@@ -47,67 +47,90 @@
   }
 </script>
 
+<!-- La section padre ha solo lo sfondo, niente padding -->
 <section class="regolamento-section" id="verdict">
-  <!--
-    .has-active → quando un folder è aperto, gli altri mostrano
-    solo la parte alta del titolo (effetto cartelle sovrapposte).
-  -->
-  <div class="folders" class:has-active={active !== null}>
-    {#each ITEMS as item}
-      <div
-        class="folder"
-        class:is-open={active === item.key}
-        onmouseenter={() => hovered = item.key}
-        onmouseleave={() => hovered = null}
-      >
-        <!--
-          Header: titolo grande outlined a sinistra, sottotitolo a destra (solo hover).
-          Quando .has-active e il folder non è aperto: overflow: hidden taglia il titolo
-          mostrando solo la parte alta delle lettere → effetto "tab cartella".
-        -->
-        <button class="folder-header" onclick={() => toggle(item.key)}>
-          <span class="folder-title" class:is-active={active === item.key}>
-            {item.title}
-          </span>
-          <span class="folder-sub" class:visible={hovered === item.key || active === item.key}>
-            {item.sub}
-          </span>
-        </button>
+  <!-- Questo contenitore è sticky e contiene tutto l'interfaccia delle cartelle -->
+  <div class="sticky-wrapper">
+    <div class="folders" class:has-active={active !== null}>
+      {#each ITEMS as item}
+        <div
+          class="folder"
+          class:is-open={active === item.key}
+          onmouseenter={() => hovered = item.key}
+          onmouseleave={() => hovered = null}
+        >
+          <button class="folder-header" onclick={() => toggle(item.key)}>
+            <span class="folder-title" class:is-active={active === item.key}>
+              {item.title}
+            </span>
+            <span class="folder-sub" class:visible={hovered === item.key || active === item.key}>
+              {item.sub}
+            </span>
+          </button>
 
-        <!-- Separatore + contenuto (slide in/out) -->
-        {#if active === item.key}
-          <div class="folder-body" transition:slide={{ duration: 400 }}>
-            <div class="body-sep"></div>
-            <div class="body-grid">
-              <div class="body-text">
-                {#each item.body as para}
-                  <p>{para}</p>
-                {/each}
-              </div>
-              {#if item.img}
-                <div class="body-img-wrap">
-                  <img src={item.img} alt={item.title} />
+          {#if active === item.key}
+            <div class="folder-body" transition:slide={{ duration: 400 }}>
+              <div class="body-sep"></div>
+              <div class="body-grid">
+                <div class="body-text">
+                  {#each item.body as para}
+                    <p>{para}</p>
+                  {/each}
                 </div>
-              {/if}
+                {#if item.img}
+                  <div class="body-img-wrap">
+                    <img src={item.img} alt={item.title} />
+                  </div>
+                {/if}
+              </div>
             </div>
-          </div>
-        {/if}
-      </div>
-    {/each}
+          {/if}
+        </div>
+      {/each}
+    </div>
   </div>
 </section>
 
 <style>
+  /* La section è solo un contenitore che occupa tutto lo spazio disponibile */
   .regolamento-section {
     background: #030404;
-    padding: 80px 80px 120px;
-    min-height: 100vh;
+    position: relative;
+    /* Altezza: la viewport + spazio extra per far sì che lo sticky abbia senso */
+    /* Se vuoi che la sezione "passi" dopo un po', aumenta questo valore */
+    height: 200vh; /* 100vh di sticky + 50vh di scroll extra per uscire */
   }
 
-  /* ── Stack cartelle ───────────────────────────────────────────── */
+  /* Il wrapper sticky rimane attaccato al top finché la section è visibile */
+  .sticky-wrapper {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 80px 80px 0 80px;
+    
+    /* Scrollbar personalizzata */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(250, 250, 250, 0.3) rgba(250, 250, 250, 0.05);
+  }
+  
+  .sticky-wrapper::-webkit-scrollbar {
+    width: 6px;
+  }
+  .sticky-wrapper::-webkit-scrollbar-track {
+    background: rgba(250, 250, 250, 0.05);
+  }
+  .sticky-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(250, 250, 250, 0.3);
+    border-radius: 3px;
+  }
+
+  /* Folders - uguale a prima */
   .folders {
     display: flex;
     flex-direction: column;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
   .folder {
@@ -117,7 +140,6 @@
     border-bottom: 1px solid rgba(250, 250, 250, 0.14);
   }
 
-  /* ── Header (tab della cartella) ──────────────────────────────── */
   .folder-header {
     width: 100%;
     background: none;
@@ -128,31 +150,20 @@
     justify-content: space-between;
     cursor: pointer;
     text-align: left;
-    /*
-     * Altezza libera di default (tutti i titoli visibili per intero).
-     * Diventa fissa (clipping) solo quando .has-active e non è aperto.
-     */
     overflow: visible;
   }
 
-  /*
-   * Effetto "folder nascosta dietro la precedente":
-   * quando un folder è aperto, i folder CHIUSI mostrano solo la parte
-   * alta delle lettere del titolo (come tab di cartella che sbucano).
-   */
   .has-active .folder:not(.is-open) .folder-header {
     height: clamp(56px, 7.5vh, 80px);
     overflow: hidden;
   }
 
-  /* Folder aperto: header senza clip, con spazio sotto il titolo */
   .folder.is-open .folder-header {
     padding-bottom: 20px;
     overflow: visible;
     height: auto;
   }
 
-  /* ── Titolo outlined → bianco quando attivo ────────────────────── */
   .folder-title {
     font-family: var(--font-primary);
     font-size: clamp(52px, 8.5vw, 126px);
@@ -175,7 +186,6 @@
     -webkit-text-stroke-color: rgba(250, 250, 250, 0.75);
   }
 
-  /* ── Sottotitolo: invisibile di default, appare su hover o aperto ── */
   .folder-sub {
     font-family: var(--font-secondary);
     font-size: 0.88rem;
@@ -191,20 +201,17 @@
     opacity: 1;
   }
 
-  /* ── Contenuto espanso ─────────────────────────────────────────── */
   .folder-body {
     padding-bottom: 60px;
     overflow: hidden;
   }
 
-  /* Linea separatrice tra titolo e contenuto */
   .body-sep {
     height: 1px;
     background: rgba(250, 250, 250, 0.14);
     margin-bottom: 40px;
   }
 
-  /* Griglia: testo a sinistra, immagine a destra */
   .body-grid {
     display: grid;
     grid-template-columns: 1fr clamp(240px, 34vw, 470px);
@@ -230,5 +237,22 @@
     height: auto;
     display: block;
     object-fit: cover;
+  }
+
+  @media (max-width: 900px) {
+    .sticky-wrapper {
+      padding: 40px 24px 0 24px;
+    }
+    
+    .body-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    
+    .folder-sub {
+      white-space: normal;
+      max-width: 30%;
+      text-align: right;
+    }
   }
 </style>

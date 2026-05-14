@@ -23,8 +23,8 @@
   import { Canvas } from '@threlte/core'
   // import { dev } from '$app/environment'
   import { Studio } from '@threlte/studio'
-  import Scene from '$lib/components/Scene.svelte'
-  import Configurator from '$lib/components/Configurator.svelte'
+  import Scene from '$lib/components/helmetConfigurator/Scene.svelte'
+  import Configurator from '$lib/components/helmetConfigurator/Configurator.svelte'
   const dev = true 
 </script>
 
