@@ -24,7 +24,7 @@
 	--hex-neutral-900: #030404;
 
 	/* ── Semantic tokens: light mode (default) ───────────────── */
-	--color-canvas:  var(--hex-neutral-900);
+	--color-canvas:  var(--hex-neutral-50);
 	--color-surface: var(--hex-neutral-800);
 
 	--color-ink:           var(--hex-neutral-50);

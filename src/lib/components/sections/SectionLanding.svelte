@@ -137,14 +137,19 @@
       />
     </div>
 
-    <div class="name-wrap" style:opacity={textOpacity}>
-      {#each ROWS as row}
-        <div
-          class="name-row"
-          style:color={row.color}
+<div class="name-wrap" style:opacity={textOpacity}>
+      {#each ROWS as row, i}
+        <div 
+          class="row-container" 
           style:transform="translateX({row.dir * (1 - Math.min(progress * 1.5, 1)) * TRAVEL}px)"
         >
-          {TEXT}
+          <!-- Se i è 0 o 2 (righe 1 e 3) -> marquee-left, se i è 1 -> marquee-right -->
+          <div 
+            class="name-row {i % 2 === 0 ? 'marquee-left' : 'marquee-right'}" 
+            style:color={row.color}
+          >
+            {TEXT} {TEXT}
+          </div>
         </div>
       {/each}
     </div>
@@ -237,12 +242,37 @@
     will-change: opacity;
   }
 
+  .row-container {
+    width: 100%;
+    will-change: transform;
+  }
+
   .name-row {
+    display: inline-block;
     font-family: var(--font-primary);
     font-size: clamp(72px, 8.5vw, 128px);
     font-weight: 400;
     line-height: 1.05;
     white-space: nowrap;
-    will-change: transform;
+  }
+
+  /* RIGA 1 e 3: scorrono verso SINISTRA */
+  .marquee-left {
+    animation: marquee-l 25s linear infinite;
+  }
+
+  /* RIGA 2: scorre verso DESTRA */
+  .marquee-right {
+    animation: marquee-r 25s linear infinite;
+  }
+
+  @keyframes marquee-l {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @keyframes marquee-r {
+    from { transform: translateX(-50%); }
+    to   { transform: translateX(0); }
   }
 </style>
