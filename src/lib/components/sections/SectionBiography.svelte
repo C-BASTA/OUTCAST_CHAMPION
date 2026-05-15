@@ -19,7 +19,7 @@
   // ── Helmet zoom constants ─────────────────────────────────────────────────
   const CAM_FAR   = 8.5
   const CAM_CLOSE = 1.8
-  const ZOOM_PX   = 3200  // extra px di scroll per la fase zoom
+  const ZOOM_PX   = 4000  // 4 step circa: 3 frasi + uscita verso la sezione successiva
 
   const VISOR_TEXTS = [
     'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',
@@ -32,6 +32,8 @@
   const invlerp = (a, b, x) => (x - a) / (b - a)
   const remap   = (x, a, b, c, d) => lerp(c, d, clamp(invlerp(a, b, x), 0, 1))
   const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
+  const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
+  const T_IN = 0.055, T_OUT = 0.055
 
   // ── Card data (versione team) ─────────────────────────────────────────────
   const CARDS_DATA = [
@@ -101,17 +103,16 @@
 
   let cameraZ = $derived.by(() => {
     const p = zoomP
-    if (p < 0.10) return CAM_FAR
-    if (p < 0.36) return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.10, 0.36, 0, 1)))
-    if (p < 0.84) return CAM_CLOSE
-    if (p < 0.97) return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.84, 0.97, 0, 1)))
+    if (p < 0.20) return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
+    if (p < 0.86) return CAM_CLOSE
+    if (p < 0.98) return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
     return CAM_FAR
   })
 
   let bgColor = $derived.by(() => {
     // Durante il dezoom: Three.js canvas trasparente, il pixel canvas è visibile sotto
-    if (zoomP >= 0.84) return 'transparent'
-    const t = ease(remap(zoomP, 0.10, 0.36, 0, 1))
+    if (zoomP >= 0.86) return 'transparent'
+    const t = ease(remap(zoomP, 0.00, 0.20, 0, 1))
     const r = Math.round(lerp(0xfa, 0x03, t)).toString(16).padStart(2, '0')
     const g = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
     const b = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
@@ -132,8 +133,8 @@
     return arr
   }
 
-  // Progresso pixel: 0 quando dezoom inizia (zoomP=0.84), 1 quando finisce (zoomP=0.97)
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.84, 0.97, 0, 1), 0, 1))
+  // Progresso pixel: 0 quando dezoom inizia (zoomP=0.86), 1 quando finisce (zoomP=0.98)
+  let pixelProgress = $derived(clamp(remap(zoomP, 0.86, 0.98, 0, 1), 0, 1))
 
   // Inizializza canvas una volta montato
   $effect(() => {
@@ -145,7 +146,7 @@
 
   // Disegna i pixel al variare dello scroll
   $effect(() => {
-    if (!pixelCanvas || zoomP < 0.84) return
+    if (!pixelCanvas || zoomP < 0.86) return
     const ctx   = pixelCanvas.getContext('2d')
     const w     = pixelCanvas.width
     const h     = pixelCanvas.height
@@ -168,9 +169,22 @@
 
   // Precarica il modello GLB quando il casco sta per entrare nel viewport
   let helmetVisible  = $derived(!isMobile && progress >= pStop * 0.65)
-  let squaresOpacity = $derived(1 - ease(remap(zoomP, 0.10, 0.20, 0, 1)))
-  let textY          = $derived(lerp(100, -300, clamp(invlerp(0.42, 0.84, zoomP), 0, 1)))
-  let textVisible    = $derived(zoomP > 0.40 && zoomP < 0.86)
+  let squaresOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.10, 0, 1)))
+
+  function textAnim(i) {
+    const [ws, we] = TEXT_WINDOWS[i]
+    const p = zoomP
+    if (p <= ws || p >= we) return { opacity: 0, y: p < ws ? 56 : -56 }
+    if (p < ws + T_IN) {
+      const t = ease(remap(p, ws, ws + T_IN, 0, 1))
+      return { opacity: t, y: lerp(56, 0, t) }
+    }
+    if (p > we - T_OUT) {
+      const t = ease(remap(p, we - T_OUT, we, 0, 1))
+      return { opacity: 1 - t, y: lerp(0, -56, t) }
+    }
+    return { opacity: 1, y: 0 }
+  }
 
   onMount(() => {
     const style = getComputedStyle(document.documentElement)
@@ -291,14 +305,18 @@
         </div>
       {/if}
 
-      <!-- Testi visor: scorrono dal basso verso l'alto durante lo zoom -->
-      {#if textVisible}
+      <!-- Testi visor: uno step di scroll per frase, con fade in/out -->
+      {#if zoomP > 0.16 && zoomP < 0.90}
         <div class="text-stage" aria-live="polite">
-          <div class="text-scroll" style:transform="translateY({textY}vh)">
-            {#each VISOR_TEXTS as txt}
-              <p class="visor-text">{txt}</p>
-            {/each}
-          </div>
+          {#each VISOR_TEXTS as txt, i}
+            {@const { opacity, y } = textAnim(i)}
+            <p
+              class="visor-text"
+              style:opacity
+              style:transform="translateY({y}px)"
+              aria-hidden={opacity < 0.05 ? 'true' : 'false'}
+            >{txt}</p>
+          {/each}
         </div>
       {/if}
 
@@ -443,34 +461,25 @@
     inset: 0;
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     overflow: hidden;
     pointer-events: none;
     z-index: 4;  /* sopra helmet (3), sotto quote-screen (5) */
-  }
-  .text-scroll {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    will-change: transform;
+    padding-bottom: 10vh;
   }
   .visor-text {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: absolute;
     padding: 0 3rem;
     box-sizing: border-box;
     max-width: 700px;
-    margin: 0 auto;
+    margin: 0;
     text-align: center;
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: clamp(1.1rem, 1.8vw, 1.75rem);
     line-height: 1.75;
-    color: rgba(18, 14, 10, 0.92);
+    color: rgba(225, 220, 205, 0.86);
     letter-spacing: 0.01em;
+    will-change: opacity, transform;
   }
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */

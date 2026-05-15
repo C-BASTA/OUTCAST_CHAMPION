@@ -10,17 +10,15 @@
   ]
 
   // Scroll phase boundaries (0 = section top, 1 = section bottom)
-  //  0.00–0.10  initial: full helmet on white
-  //  0.10–0.36  zoom in (cameraZ 8.5 → 1.8, bg white → dark)
-  //  0.36–0.42  pause: visor fills screen
-  //  0.42–0.56  text 1
-  //  0.56–0.70  text 2
-  //  0.70–0.84  text 3
-  //  0.84–0.97  zoom out (cameraZ 1.8 → 8.5, bg stays dark → Gallery)
+  //  0.00–0.20  initial/zoom in: helmet starts empty
+  //  0.20–0.42  scroll step 1: text 1 fades in/out
+  //  0.42–0.64  scroll step 2: text 2 fades in/out
+  //  0.64–0.86  scroll step 3: text 3 fades in/out
+  //  0.86–0.98  scroll step 4: zoom out and pass to next section
   const CAM_FAR   = 8.5
   const CAM_CLOSE = 1.8
-  const TEXT_WINDOWS = [[0.42, 0.56], [0.56, 0.70], [0.70, 0.84]]
-  const T_IN = 0.06, T_OUT = 0.05
+  const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
+  const T_IN = 0.055, T_OUT = 0.055
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp    = (a, b, t) => a + (b - a) * t
@@ -47,17 +45,16 @@
   // ─── Camera Z ──────────────────────────────────────────────────────────────
   let cameraZ = $derived.by(() => {
     const p = progress
-    if (p < 0.10)  return CAM_FAR
-    if (p < 0.36)  return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.10, 0.36, 0, 1)))
-    if (p < 0.84)  return CAM_CLOSE
-    if (p < 0.97)  return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.84, 0.97, 0, 1)))
+    if (p < 0.20)  return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
+    if (p < 0.86)  return CAM_CLOSE
+    if (p < 0.98)  return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
     return CAM_FAR
   })
 
   // ─── Background colour (passed to scene — no HTML overlay needed) ──────────
   // White (#fafafa) → dark (#030404) during zoom-in, stays dark during zoom-out
   let bgColor = $derived.by(() => {
-    const t = ease(remap(progress, 0.10, 0.36, 0, 1))
+    const t = ease(remap(progress, 0.00, 0.20, 0, 1))
     const r = Math.round(lerp(0xfa, 0x03, t)).toString(16).padStart(2, '0')
     const g = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
     const b = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
@@ -65,7 +62,7 @@
   })
 
   // ─── Ukrainian flag squares: fade out as zoom begins ──────────────────────
-  let squaresOpacity = $derived(1 - ease(remap(progress, 0.10, 0.18, 0, 1)))
+  let squaresOpacity = $derived(1 - ease(remap(progress, 0.00, 0.10, 0, 1)))
 
   // ─── Text animations ───────────────────────────────────────────────────────
   function textAnim(i) {
@@ -135,7 +132,7 @@
   /* overflow-x: clip prevents horizontal bleed without breaking position:sticky */
   .zoom-wrapper {
     position: relative;
-    height: calc(100vh + 3200px);
+    height: 500vh;
     overflow-x: clip;
   }
 
@@ -186,7 +183,7 @@
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: clamp(0.85rem, 1.35vw, 1.3rem);
     line-height: 1.7;
-    color: rgba(225, 220, 205, 0.82);
+    color: var(--color-dark);
     padding: 0 1rem;
     margin: 0;
     will-change: transform, opacity;
