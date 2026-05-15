@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import Navbar from '$lib/components/Navbar.svelte'
-  import Quadratini from '$lib/components/Quadratini.svelte'
+  import BackgroundGrid from '$lib/components/BackgroundGrid.svelte'
   import HelmetGlobal from '$lib/components/helmetConfigurator/HelmetGlobal.svelte'
   import SectionLanding from '$lib/components/sections/SectionLanding.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
@@ -10,10 +10,9 @@
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
 
-  let scrollY        = $state(0)
-  let navDark        = $state(false)
-  let navShowLogo    = $state(false)
-  let showQuadratini = $state(true)
+  let scrollY     = $state(0)
+  let navDark     = $state(false)
+  let navShowLogo = $state(false)
 
   onMount(() => {
     const handler = () => {
@@ -24,8 +23,6 @@
 
       if (bioEl) {
         const bioScrollable = bioEl.offsetHeight - window.innerHeight
-
-        showQuadratini = window.scrollY < bioEl.offsetTop + bioScrollable * 0.54
 
         const bioDarkStart  = bioEl.offsetTop + bioScrollable * 0.63
         const athletesStart = athletesEl?.offsetTop ?? Infinity
@@ -43,10 +40,8 @@
   })
 </script>
 
-<!-- Quadratini bandiera ucraina (fissi, svaniscono con la bio) -->
-{#if showQuadratini}
-  <Quadratini />
-{/if}
+<!-- Pixel twinkling background (fisso, sempre visibile) -->
+<BackgroundGrid />
 
 <!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
 <HelmetGlobal />
