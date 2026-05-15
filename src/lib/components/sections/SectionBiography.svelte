@@ -20,6 +20,7 @@
   const CAM_FAR   = 8.5
   const CAM_CLOSE = 1.8
   const ZOOM_PX   = 4000  // 4 step circa: 3 frasi + uscita verso la sezione successiva
+  const EXTRA_PAD = 2400  // spazio vuoto dopo l'ultima card → casco appare da solo
 
   const VISOR_TEXTS = [
     'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',
@@ -90,7 +91,7 @@
 
   // ── Scroll geometry ───────────────────────────────────────────────────────
   let lastCardX  = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
-  let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral)
+  let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral + EXTRA_PAD)
   let maxOffsetX = $derived(Math.max(0, trackWidth - vpW))
 
   // pStop: fraction of total scroll at which horizontal ends, zoom begins
