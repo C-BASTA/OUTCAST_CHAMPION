@@ -329,7 +329,7 @@
       style:transform="translateX(-50%) scale({photoScale})"
       style:opacity={photoOpacity}
     >
-      <img class="vlad" src="/images/vlad-face-hd-transparent3.png" alt="Vlad" draggable="false" />
+      <img class="vlad" src="/images/vlad-espanso-hd-nobg.png" alt="Vlad" draggable="false" />
       <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
     </div>
 
