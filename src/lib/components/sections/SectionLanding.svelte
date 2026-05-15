@@ -26,8 +26,8 @@
   const MAX_TILES = 280
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
-  const HELMET_SCALE = 1.18
-  const HELMET_OFFSET_Y = -0.17
+  const HELMET_SCALE = 0.84
+  const HELMET_OFFSET_Y = 0.14
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 900
@@ -379,10 +379,10 @@
 
   .photo-wrap {
     position: absolute;
-    bottom: -8%;
+    bottom: 0;
     left: 50%;
-    width: min(105vh, 74vw);
-    height: min(105vh, 74vw);
+    width: min(130vh, 92vw);
+    height: min(130vh, 92vw);
     cursor: crosshair;
     transform-origin: 50% 40%;
     will-change: transform, opacity;
@@ -394,7 +394,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    object-position: top center;
+    object-position: bottom center;
     display: block;
     user-select: none;
     -webkit-user-drag: none;
