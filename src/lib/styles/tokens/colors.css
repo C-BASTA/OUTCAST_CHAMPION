@@ -44,7 +44,7 @@
 	--color-ink-secondary: var(--hex-neutral-400);
 	--color-ink-inverted:  var(--hex-neutral-900);
 	--color-link:          var(--hex-brand-blue-500);
-	--color-dark:     	   var(--hex-brand-blue-900);
+	--color-dark:     	   var(--hex-neutral-900);
 
 	--color-filter--hover:    var(--hex-neutral-800);
 	--color-filter--selected: var(--hex-brand-blue-600);
@@ -60,7 +60,7 @@
 		--color-ink-secondary: var(--hex-neutral-500);
 		--color-ink-inverted:  var(--hex-neutral-50);
 		--color-link:          var(--hex-brand-blue-600);
-		--color-dark:     	   var(--hex-brand-blue-900);
+		--color-dark:     	   var(--hex-neutral-900);
 
 		--color-filter--hover:    var(--hex-neutral-700);
 		--color-filter--selected: var(--hex-brand-blue-500);

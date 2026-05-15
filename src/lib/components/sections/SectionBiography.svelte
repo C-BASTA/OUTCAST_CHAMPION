@@ -477,7 +477,7 @@
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: clamp(1.1rem, 1.8vw, 1.75rem);
     line-height: 1.75;
-    color: rgba(225, 220, 205, 0.86);
+    color: var(--color-dark);
     letter-spacing: 0.01em;
     will-change: opacity, transform;
   }
