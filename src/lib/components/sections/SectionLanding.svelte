@@ -9,6 +9,8 @@
   let _hovering = false
   let lastMoveTime = Date.now()
   let isAutoPlaying = false
+  let photoW = 0
+  let photoH = 0
   let canvasW = 0
   let canvasH = 0
   let lastPointerX = 0
@@ -22,6 +24,10 @@
   const STIFFNESS = 0.15
   const DAMPING = 0.85
   const MAX_TILES = 280
+  const REVEAL_PAD_X = 0.09
+  const REVEAL_PAD_TOP = 0.22
+  const HELMET_SCALE = 1.18
+  const HELMET_OFFSET_Y = -0.17
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 900
@@ -45,8 +51,10 @@
     if (!wrap || !revealCanvas) return
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    canvasW = wrap.offsetWidth
-    canvasH = wrap.offsetHeight
+    photoW = wrap.offsetWidth
+    photoH = wrap.offsetHeight
+    canvasW = photoW * (1 + REVEAL_PAD_X * 2)
+    canvasH = photoH * (1 + REVEAL_PAD_TOP)
     revealCanvas.width = Math.max(1, Math.floor(canvasW * dpr))
     revealCanvas.height = Math.max(1, Math.floor(canvasH * dpr))
     ctx = revealCanvas.getContext('2d')
@@ -76,7 +84,7 @@
   }
 
   function spawnTiles(x, y, amount, speed = 0, dirX = 0, dirY = 0, isAuto = false) {
-    const unit = Math.max(0.72, Math.min(canvasW, canvasH) / 900)
+    const unit = Math.max(0.72, Math.min(photoW, photoH) / 900)
     const fast = speed > 28 || isAuto
     const sizes = fast
       ? [15, 20, 30, 45, 84, 112, 140]
@@ -98,7 +106,7 @@
   function spawnTrail(x, y, speed, dirX, dirY, isAuto = false) {
     if (!dirX && !dirY) return
 
-    const unit = Math.max(0.72, Math.min(canvasW, canvasH) / 900)
+    const unit = Math.max(0.72, Math.min(photoW, photoH) / 900)
     const length = clamp((isAuto ? 86 : 34) + speed * 1.05, 42, 170) * unit
     const steps = isAuto ? 6 : clamp(Math.ceil(speed / 15), 2, 5)
     const sizes = isAuto ? [10, 14, 20, 28, 38] : [8, 12, 16, 22, 30]
@@ -117,15 +125,17 @@
   function drawHelmetTile(tile, alpha, offsetX = 0, offsetY = 0) {
     if (!ctx || !helmetImage?.complete || !helmetImage.naturalWidth) return
 
-    const helmetW = canvasW * 1.18
-    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth)
-    const helmetX = canvasW * 0.5 - helmetW * 0.5
-    const helmetY = -canvasH * 0.17
+    const padX = photoW * REVEAL_PAD_X
+    const padY = photoH * REVEAL_PAD_TOP
+    const helmetW = photoW * HELMET_SCALE
+    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth) 
+    const helmetX = padX + photoW * 0.5 - helmetW * 0.5
+    const helmetY = padY + photoH * HELMET_OFFSET_Y
 
     ctx.save()
     ctx.globalAlpha = alpha
     ctx.beginPath()
-    ctx.rect(tile.x + offsetX, tile.y + offsetY, tile.size, tile.size)
+    ctx.rect(tile.x + padX + offsetX, tile.y + padY + offsetY, tile.size, tile.size)
     ctx.clip()
     ctx.drawImage(helmetImage, helmetX, helmetY, helmetW, helmetH)
     ctx.restore()
@@ -162,7 +172,7 @@
 
   onMount(() => {
     helmetImage = new Image()
-    helmetImage.src = '/images/vlad-hover-black.png'
+    helmetImage.src = '/images/vlad-hover-black2.png'
     resizeCanvas()
 
     const resizeObserver = new ResizeObserver(resizeCanvas)
@@ -196,8 +206,8 @@
       const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16
       lastFrameTime = now
       const wallNow = Date.now()
-      const w = canvasW || wrap?.offsetWidth || 0
-      const h = canvasH || wrap?.offsetHeight || 0
+      const w = photoW || wrap?.offsetWidth || 0
+      const h = photoH || wrap?.offsetHeight || 0
 
       // Gestione Idle Animation (Tua logica originale)
       if (!_hovering && (wallNow - lastMoveTime > IDLE_WAIT)) {
@@ -393,9 +403,10 @@
 
   .helmet-reveal {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: -22%;
+    left: -9%;
+    width: 118%;
+    height: 122%;
     display: block;
     z-index: 3;
     pointer-events: none;
