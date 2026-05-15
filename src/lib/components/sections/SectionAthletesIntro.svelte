@@ -4,9 +4,12 @@
   const SCROLL_HEIGHT = 1400
 
   let wrapper = $state(null)
-  let quoteTranslateY = $state(100) // vh: 100 = sotto schermo, 0 = in posizione, -100 = sopra
+  let quoteOpacity = $state(0)
+  let quoteBlur = $state(10)
 
-  const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t))
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+  const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2
+  const lerp = (a, b, t) => a + (b - a) * t
 
   onMount(() => {
     const onScroll = () => {
@@ -15,15 +18,20 @@
       const total    = wrapper.offsetHeight - window.innerHeight
       const progress = Math.max(0, Math.min(1, -rect.top / total))
 
-      // 0→0.35  : entra dal basso (100vh → 0)
-      // 0.35→0.65: resta ferma
-      // 0.65→1  : esce verso l'alto (0 → -100vh)
-      if (progress < 0.35) {
-        quoteTranslateY = lerp(100, 0, progress / 0.35)
-      } else if (progress < 0.65) {
-        quoteTranslateY = 0
+      // 0→0.34  : emerge lentamente in posizione
+      // 0.34→0.56: resta piena
+      // 0.56→0.92: si dissolve lentamente in posizione
+      if (progress < 0.34) {
+        const t = ease(clamp(progress / 0.34, 0, 1))
+        quoteOpacity = t
+        quoteBlur = lerp(10, 0, t)
+      } else if (progress < 0.56) {
+        quoteOpacity = 1
+        quoteBlur = 0
       } else {
-        quoteTranslateY = lerp(0, -100, (progress - 0.65) / 0.35)
+        const t = ease(clamp((progress - 0.56) / 0.36, 0, 1))
+        quoteOpacity = 1 - t
+        quoteBlur = lerp(0, 10, t)
       }
     }
 
@@ -35,7 +43,12 @@
 
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
-    <div class="quote-overlay" style:transform="translateY({quoteTranslateY}vh)">
+    <div
+      class="quote-overlay"
+      style:opacity={quoteOpacity}
+      style:filter="blur({quoteBlur}px)"
+      aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
+    >
       <p class="quote">
         I believe they deserve to be here today with me,<br>
         and also they deserve to be with me on competition day.
@@ -67,7 +80,7 @@
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
-    will-change: transform;
+    will-change: opacity, filter;
   }
 
   .quote {

@@ -42,7 +42,7 @@
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 0;
+    z-index: -999;
   }
   .sq {
     position: absolute;
