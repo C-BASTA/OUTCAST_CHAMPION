@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { Canvas } from '@threlte/core'
-  import HelmetZoomScene from '../HelmetZoomScene.svelte'
+  import HelmetZoomScene from '../helmetConfigurator/HelmetZoomScene.svelte'
 
   const VISOR_TEXTS = [
     'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',

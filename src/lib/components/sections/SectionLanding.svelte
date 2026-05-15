@@ -1,17 +1,27 @@
 <script>
   import { onMount } from 'svelte'
 
-  let wrap, helmetLayer
+  let wrap, revealCanvas
+  let ctx
+  let helmetImage
   let _cx = 0, _cy = 0, _r = 0, _vx = 0, _vy = 0, _vr = 0
-  let _t1x = 0, _t1y = 0, _t1r = 0, _t1vx = 0, _t1vy = 0, _t1vr = 0
   let _tCx = 0, _tCy = 0, _tR = 0
   let _hovering = false
   let lastMoveTime = Date.now()
   let isAutoPlaying = false
+  let canvasW = 0
+  let canvasH = 0
+  let lastPointerX = 0
+  let lastPointerY = 0
+  let lastPointerTime = 0
+  let lastFrameTime = 0
+  let lastTilePulse = 0
+  let tiles = []
 
-  const RADIUS = 220
+  const RADIUS = 190
   const STIFFNESS = 0.15
   const DAMPING = 0.85
+  const MAX_TILES = 280
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 900
@@ -27,7 +37,137 @@
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
   let textOpacity = $derived(Math.min(1, progress * 2.5))
 
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
+  const rand = (min, max) => min + Math.random() * (max - min)
+  const pick = (items) => items[Math.floor(Math.random() * items.length)]
+
+  function resizeCanvas() {
+    if (!wrap || !revealCanvas) return
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    canvasW = wrap.offsetWidth
+    canvasH = wrap.offsetHeight
+    revealCanvas.width = Math.max(1, Math.floor(canvasW * dpr))
+    revealCanvas.height = Math.max(1, Math.floor(canvasH * dpr))
+    ctx = revealCanvas.getContext('2d')
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    ctx.imageSmoothingEnabled = true
+  }
+
+  function addTile(x, y, size, ttl, delay = 0, isTrail = false) {
+    if (!canvasW || !canvasH) return
+
+    const s = Math.round(size)
+    tiles.push({
+      x: Math.round(x - s / 2),
+      y: Math.round(y - s / 2),
+      size: s,
+      age: -delay,
+      ttl,
+      isTrail,
+      flickerSeed: rand(0, Math.PI * 2),
+      glitchX: rand(-10, 10),
+      glitchY: rand(-6, 6)
+    })
+
+    if (tiles.length > MAX_TILES) {
+      tiles.splice(0, tiles.length - MAX_TILES)
+    }
+  }
+
+  function spawnTiles(x, y, amount, speed = 0, dirX = 0, dirY = 0, isAuto = false) {
+    const unit = Math.max(0.72, Math.min(canvasW, canvasH) / 900)
+    const fast = speed > 28 || isAuto
+    const sizes = fast
+      ? [15, 20, 30, 45, 84, 112, 140]
+      : [13, 18, 28, 40, 56]
+    const spread = clamp((isAuto ? 96 : 28) + speed * 1.35, 26, 190) * unit
+    const ttlBase = isAuto ? 760 : clamp(300 + speed * 9, 240, 940)
+
+    for (let i = 0; i < amount; i++) {
+      const size = pick(sizes) * unit * rand(0.82, 1.18)
+      const angle = Math.random() * Math.PI * 2
+      const distance = spread * Math.pow(Math.random(), 0.56)
+      const trail = fast ? rand(0, spread * 0.75) : 0
+      const px = x + Math.cos(angle) * distance - dirX * trail + rand(-size * 0.3, size * 0.3)
+      const py = y + Math.sin(angle) * distance - dirY * trail + rand(-size * 0.3, size * 0.3)
+      addTile(px, py, size, ttlBase * rand(0.72, 1.26), i * rand(0, 12))
+    }
+  }
+
+  function spawnTrail(x, y, speed, dirX, dirY, isAuto = false) {
+    if (!dirX && !dirY) return
+
+    const unit = Math.max(0.72, Math.min(canvasW, canvasH) / 900)
+    const length = clamp((isAuto ? 86 : 34) + speed * 1.05, 42, 170) * unit
+    const steps = isAuto ? 6 : clamp(Math.ceil(speed / 15), 2, 5)
+    const sizes = isAuto ? [10, 14, 20, 28, 38] : [8, 12, 16, 22, 30]
+    const ttlBase = isAuto ? 620 : clamp(220 + speed * 4, 220, 560)
+
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps
+      const size = pick(sizes) * unit * rand(0.78, 1.12)
+      const wobble = rand(-24, 24) * unit * t
+      const px = x - dirX * length * t - dirY * wobble
+      const py = y - dirY * length * t + dirX * wobble
+      addTile(px, py, size, ttlBase * rand(0.68, 1.05), i * rand(10, 24), true)
+    }
+  }
+
+  function drawHelmetTile(tile, alpha, offsetX = 0, offsetY = 0) {
+    if (!ctx || !helmetImage?.complete || !helmetImage.naturalWidth) return
+
+    const helmetW = canvasW * 1.18
+    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth)
+    const helmetX = canvasW * 0.5 - helmetW * 0.5
+    const helmetY = -canvasH * 0.17
+
+    ctx.save()
+    ctx.globalAlpha = alpha
+    ctx.beginPath()
+    ctx.rect(tile.x + offsetX, tile.y + offsetY, tile.size, tile.size)
+    ctx.clip()
+    ctx.drawImage(helmetImage, helmetX, helmetY, helmetW, helmetH)
+    ctx.restore()
+  }
+
+  function drawTiles(dt) {
+    if (!ctx) return
+
+    ctx.clearRect(0, 0, canvasW, canvasH)
+
+    for (let i = tiles.length - 1; i >= 0; i--) {
+      const tile = tiles[i]
+      tile.age += dt
+      if (tile.age < 0) continue
+
+      const p = tile.age / tile.ttl
+      if (p >= 1) {
+        tiles.splice(i, 1)
+        continue
+      }
+
+      const dying = clamp((p - 0.58) / 0.42, 0, 1)
+      const flicker = Math.sin(tile.age * 0.13 + tile.flickerSeed) + Math.sin(tile.age * 0.047 + tile.flickerSeed * 2)
+      const isBlinkingOff = dying > 0 && flicker < -0.18 - dying * 0.42
+
+      if (isBlinkingOff) continue
+
+      const shouldGlitch = dying > 0.18 && flicker > 0.74
+      const offsetX = shouldGlitch ? Math.round(tile.glitchX * dying) : 0
+      const offsetY = shouldGlitch ? Math.round(tile.glitchY * dying) : 0
+      drawHelmetTile(tile, tile.isTrail ? 0.62 : 1, offsetX, offsetY)
+    }
+  }
+
   onMount(() => {
+    helmetImage = new Image()
+    helmetImage.src = '/images/vlad-hover-black.png'
+    resizeCanvas()
+
+    const resizeObserver = new ResizeObserver(resizeCanvas)
+    if (wrap) resizeObserver.observe(wrap)
+
     const onScroll = () => {
       const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
       progress = p
@@ -43,20 +183,27 @@
     const PAUSE_BETWEEN = 2000
     const TARGET_TOLERANCE = 100
     const idlePoints = [
-      { x: 0.3, y: 0.2 }, { x: 0.7, y: 0.4 }, { x: 0.2, y: 0.6 }, { x: 0.8, y: 0.8 }
+      { x: 0.24, y: 0.18 },
+      { x: 0.78, y: 0.78 },
+      { x: 0.22, y: 0.62 },
+      { x: 0.78, y: 0.22 },
+      { x: 0.24, y: 0.18 }
     ]
 
     let raf
     const tick = () => {
-      const now = Date.now()
-      const w = wrap?.offsetWidth || 0
-      const h = wrap?.offsetHeight || 0
+      const now = performance.now()
+      const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16
+      lastFrameTime = now
+      const wallNow = Date.now()
+      const w = canvasW || wrap?.offsetWidth || 0
+      const h = canvasH || wrap?.offsetHeight || 0
 
       // Gestione Idle Animation (Tua logica originale)
-      if (!_hovering && (now - lastMoveTime > IDLE_WAIT)) {
+      if (!_hovering && (wallNow - lastMoveTime > IDLE_WAIT)) {
         if (isPausing) {
           _tR = 0
-          if (now - pauseStartTime > PAUSE_BETWEEN) {
+          if (wallNow - pauseStartTime > PAUSE_BETWEEN) {
             isPausing = false
             idleStep = 0
           }
@@ -70,7 +217,7 @@
           if (dist < TARGET_TOLERANCE) {
             if (idleStep === idlePoints.length - 1) {
               isPausing = true
-              pauseStartTime = now
+              pauseStartTime = wallNow
               isAutoPlaying = false
             } else { idleStep++ }
           }
@@ -88,30 +235,20 @@
       _vy += (_tCy - _cy) * currentStiffness; _vy *= currentDamping; _cy += _vy
       _vr += (_tR - _r) * 0.05; _vr *= 0.8; _r += _vr
 
-      // Scia (Effetto acqua/blob)
-      _t1vx += (_cx - _t1x) * 0.12; _t1vx *= 0.75; _t1x += _t1vx
-      _t1vy += (_cy - _t1y) * 0.12; _t1vy *= 0.75; _t1y += _t1vy
-      _t1r += (_r * 0.85 - _t1r) * 0.1; _t1r *= 0.8
-
-      if (helmetLayer) {
-        if (!isAutoPlaying && !_hovering && _r < 1) {
-          helmetLayer.style.opacity = "0"
-        } else {
-          helmetLayer.style.opacity = "1"
-          const stretch = Math.min(Math.abs(_vx + _vy) * 0.6, 60)
-          
-          const g = (x, y, r, sx) => {
-            const px = (x / w) * 100
-            const py = (y / h) * 100
-            // Usiamo 80% -> 100% per lasciare un po' di "morbidezza" che il filtro contrasto trasformerà in liquido
-            return `radial-gradient(${r + sx}px ${r}px at ${px}% ${py}%, black 80%, transparent 100%)`
-          }
-
-          const maskVal = [g(_cx, _cy, _r, stretch), g(_t1x, _t1y, _t1r, 0)].join(', ')
-          helmetLayer.style.webkitMaskImage = maskVal
-          helmetLayer.style.maskImage = maskVal
-        }
+      if (isAutoPlaying && now - lastTilePulse > 62) {
+        const autoSpeed = Math.hypot(_vx, _vy) * 1.7
+        const dirLen = Math.hypot(_vx, _vy) || 1
+        spawnTiles(_cx, _cy, 5, autoSpeed, _vx / dirLen, _vy / dirLen, true)
+        spawnTrail(_cx, _cy, autoSpeed, _vx / dirLen, _vy / dirLen, true)
+        lastTilePulse = now
       }
+
+      if (_hovering && !isAutoPlaying && wallNow - lastMoveTime > 120 && now - lastTilePulse > 145) {
+        spawnTiles(_tCx, _tCy, 2, 0, 0, 0)
+        lastTilePulse = now
+      }
+
+      drawTiles(dt)
       raf = requestAnimationFrame(tick)
     }
     tick()
@@ -119,19 +256,55 @@
     const onMove = (e) => {
       _hovering = true
       lastMoveTime = Date.now()
+      const now = performance.now()
       const hr = wrap.getBoundingClientRect()
-      _tCx = (e.clientX - hr.left) / _scale
-      _tCy = (e.clientY - hr.top) / _scale
+      const x = (e.clientX - hr.left) / _scale
+      const y = (e.clientY - hr.top) / _scale
+      _tCx = x
+      _tCy = y
       _tR = RADIUS
+
+      const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
+      const dx = lastPointerTime ? x - lastPointerX : 0
+      const dy = lastPointerTime ? y - lastPointerY : 0
+      const distance = Math.hypot(dx, dy)
+      const speed = distance / (dt / 16.67)
+      const steps = Math.max(1, Math.min(7, Math.ceil(distance / 46)))
+      const dirLen = distance || 1
+      const dirX = dx / dirLen
+      const dirY = dy / dirLen
+
+      for (let i = 0; i < steps; i++) {
+        const t = steps === 1 ? 1 : i / (steps - 1)
+        const px = lastPointerTime ? lastPointerX + dx * t : x
+        const py = lastPointerTime ? lastPointerY + dy * t : y
+        const amount = Math.ceil(clamp(2 + speed / 9, 3, 18) / steps)
+        spawnTiles(px, py, amount, speed, dirX, dirY)
+      }
+
+      if (distance > 12) {
+        spawnTrail(x, y, speed, dirX, dirY)
+      }
+
+      lastPointerX = x
+      lastPointerY = y
+      lastPointerTime = now
     }
 
-    const onLeave = () => { _hovering = false; _tR = 0 }
+    const onLeave = () => {
+      _hovering = false
+      _tR = 0
+      lastPointerTime = 0
+    }
     wrap.addEventListener('mousemove', onMove)
     wrap.addEventListener('mouseleave', onLeave)
 
     return () => {
       cancelAnimationFrame(raf)
+      resizeObserver.disconnect()
       window.removeEventListener('scroll', onScroll)
+      wrap?.removeEventListener('mousemove', onMove)
+      wrap?.removeEventListener('mouseleave', onLeave)
     }
   })
 </script>
@@ -146,17 +319,8 @@
       style:transform="translateX(-50%) scale({photoScale})"
       style:opacity={photoOpacity}
     >
-      <img class="vlad" src="/images/vlad-face-hd-transparent.png" alt="Vlad" draggable="false" />
-      
-      <div class="gooey-container">
-        <img
-          class="helmet"
-          src="/images/vlad-hover-black.png"
-          alt=""
-          bind:this={helmetLayer}
-          draggable="false"
-        />
-      </div>
+      <img class="vlad" src="/images/vlad-face-hd-transparent3.png" alt="Vlad" draggable="false" />
+      <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
     </div>
 
     <div class="name-wrap" style:opacity={textOpacity}>
@@ -227,29 +391,15 @@
     z-index: 2;
   }
 
-  /* --- IL TRUCCO FLUIDO --- */
-  .gooey-container {
+  .helmet-reveal {
     position: absolute;
     inset: 0;
-    z-index: 3;
-    /* Il contrasto elevato "mangia" le sfumature del blur creando bordi netti e liquidi */
-    filter: brightness(1.1);
-    pointer-events: none;
-  }
-
-  .helmet {
-    position: absolute;
-    top: -17%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 118%;
-    height: auto;
+    width: 100%;
+    height: 100%;
     display: block;
     z-index: 3;
-    transition: opacity 0.4s ease;
-    /* Il blur applicato all'immagine mascherata permette ai gradienti di "fondersi" */
+    pointer-events: none;
   }
-  /* Modifica la maschera per avere bordi sfumati che il filtro contrasto trasformerà in blob */
 
   .name-wrap {
     position: absolute;

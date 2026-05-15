@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import { Canvas } from '@threlte/core'
-  import HelmetZoomScene from '../HelmetZoomScene.svelte'
+  import HelmetZoomScene from '../helmetConfigurator/HelmetZoomScene.svelte'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   let paddingLateral = $state(80)
@@ -337,7 +337,7 @@
   .bio-section--horizontal {
     position: relative;
     width: 100%;
-    background: #fafafa;
+    /*background: #fafafa;*/
   }
 
   .grain-overlay {
@@ -352,7 +352,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: #fafafa;
+    /*background: #fafafa;*/
   }
 
   /* Pixel canvas: sfondo dezoom — z-index 2 (copre le foto bio) */
