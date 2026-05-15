@@ -19,7 +19,8 @@
   // ── Helmet zoom constants ─────────────────────────────────────────────────
   const CAM_FAR   = 8.5
   const CAM_CLOSE = 1.8
-  const ZOOM_PX   = 3200  // extra px di scroll per la fase zoom
+  const ZOOM_PX   = 4000  // extra px di scroll per la fase zoom
+  const EXTRA_PAD = 2400  // spazio vuoto dopo l'ultima card → casco appare da solo
 
   const VISOR_TEXTS = [
     'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',
@@ -88,7 +89,7 @@
 
   // ── Scroll geometry ───────────────────────────────────────────────────────
   let lastCardX  = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
-  let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral)
+  let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral + EXTRA_PAD)
   let maxOffsetX = $derived(Math.max(0, trackWidth - vpW))
 
   // pStop: fraction of total scroll at which horizontal ends, zoom begins
@@ -108,15 +109,7 @@
     return CAM_FAR
   })
 
-  let bgColor = $derived.by(() => {
-    // Durante il dezoom: Three.js canvas trasparente, il pixel canvas è visibile sotto
-    if (zoomP >= 0.84) return 'transparent'
-    const t = ease(remap(zoomP, 0.10, 0.36, 0, 1))
-    const r = Math.round(lerp(0xfa, 0x03, t)).toString(16).padStart(2, '0')
-    const g = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
-    const b = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
-    return `#${r}${g}${b}`
-  })
+  const zoomBgOpacity = 0
 
   // ── Pixel canvas (dezoom background) ─────────────────────────────────────
   const PIXEL_COLS = 40
@@ -153,8 +146,7 @@
     const cellH = h / PIXEL_ROWS
     const total = PIXEL_COLS * PIXEL_ROWS
 
-    ctx.fillStyle = '#FAFAFA'
-    ctx.fillRect(0, 0, w, h)
+    ctx.clearRect(0, 0, w, h)
 
     const count = Math.floor(pixelProgress * total)
     for (let i = 0; i < count; i++) {
@@ -263,33 +255,14 @@
 
       <!-- Casco 3D: nascosto quando il canvas globale è attivo -->
       {#if helmetVisible && !helmetStore.visible}
-        <div class="helmet-card" style:left="{maxOffsetX - offsetX}px">
+        <div class="helmet-card" style:left="{maxOffsetX - offsetX}px"
+          style:background="rgba(3,4,4,{zoomBgOpacity})">
           <Canvas renderMode="always">
-            <HelmetZoomScene {cameraZ} {bgColor} />
+            <HelmetZoomScene {cameraZ} bgColor="transparent" />
           </Canvas>
         </div>
       {/if}
 
-      <!-- Quadratini bandiera ucraina: svaniscono all'inizio dello zoom -->
-      {#if zoomP > 0 && squaresOpacity > 0.01}
-        <div class="squares" style:opacity={squaresOpacity} aria-hidden="true">
-          <div class="sq-pair" style="left:4%;bottom:7%">
-            <span class="sq-b" style="width:44px;height:44px"></span>
-            <span class="sq-y" style="width:44px;height:44px"></span>
-          </div>
-          <div class="sq-single sq-y" style="left:26%;top:64%;width:32px;height:32px"></div>
-          <div class="sq-single sq-y" style="right:26%;top:32%;width:52px;height:52px"></div>
-          <div class="sq-pair" style="right:7%;top:32%">
-            <span class="sq-y" style="width:44px;height:44px"></span>
-            <span class="sq-b" style="width:38px;height:38px"></span>
-          </div>
-          <div class="sq-single sq-b" style="right:16%;top:75%;width:38px;height:38px"></div>
-          <div class="sq-pair" style="right:14%;bottom:8%">
-            <span class="sq-y" style="width:42px;height:42px"></span>
-            <span class="sq-b" style="width:42px;height:42px"></span>
-          </div>
-        </div>
-      {/if}
 
       <!-- Testi visor: scorrono dal basso verso l'alto durante lo zoom -->
       {#if textVisible}
@@ -337,7 +310,7 @@
   .bio-section--horizontal {
     position: relative;
     width: 100%;
-    background: #fafafa;
+    background: transparent;
   }
 
   .grain-overlay {
@@ -352,7 +325,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: #fafafa;
+    background: transparent;
   }
 
   /* Pixel canvas: sfondo dezoom — z-index 2 (copre le foto bio) */
@@ -368,7 +341,7 @@
 
   .cards-track {
     position: absolute;
-    top: 0;
+    top: 8vh;
     height: 100vh;
     z-index: 1;
     will-change: transform;

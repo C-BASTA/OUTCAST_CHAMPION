@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
   import Navbar from '$lib/components/Navbar.svelte'
-  import Quadratini from '$lib/components/Quadratini.svelte'
+  // import Quadratini from '$lib/components/Quadratini.svelte'
   import HelmetGlobal from '$lib/components/HelmetGlobal.svelte'
   import SectionLanding from '$lib/components/sections/SectionLanding.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
@@ -43,10 +43,6 @@
   })
 </script>
 
-<!-- Quadratini bandiera ucraina (fissi, svaniscono con la bio) -->
-{#if showQuadratini}
-  <Quadratini />
-{/if}
 
 <!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
 <HelmetGlobal />

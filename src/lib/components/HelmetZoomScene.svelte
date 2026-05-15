@@ -11,11 +11,8 @@
   // Background colour driven by parent's scroll progress
   // 'transparent' → scene senza sfondo (pixel canvas visibile sotto via CSS)
   $effect(() => {
-    if (!bgColor || bgColor === 'transparent') {
-      scene.background = null
-    } else {
-      scene.background = new THREE.Color(bgColor)
-    }
+    scene.background = null
+    renderer.setClearColor(0x000000, 0)
   })
 
   // Room environment for metallic reflections on the visor
