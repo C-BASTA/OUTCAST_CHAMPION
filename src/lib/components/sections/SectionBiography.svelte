@@ -145,12 +145,19 @@
     pixelCellOrder = shuffleArr([...Array(PIXEL_COLS * PIXEL_ROWS).keys()])
   })
 
-  // Disegna i pixel al variare dello scroll
+  // Disegna i pixel al variare dello scroll. Quando si torna indietro,
+  // il canvas va pulito: altrimenti resta sopra alle card della bio.
   $effect(() => {
-    if (!pixelCanvas || zoomP < 0.86) return
+    if (!pixelCanvas) return
     const ctx   = pixelCanvas.getContext('2d')
     const w     = pixelCanvas.width
     const h     = pixelCanvas.height
+
+    if (zoomP < 0.86) {
+      ctx.clearRect(0, 0, w, h)
+      return
+    }
+
     const cellW = w / PIXEL_COLS
     const cellH = h / PIXEL_ROWS
     const total = PIXEL_COLS * PIXEL_ROWS
@@ -203,9 +210,10 @@
       const totalScrollable = section.offsetHeight - window.innerHeight
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
 
-      // Attiva il canvas globale quando la bio finisce (dezoom completo)
-      // e mantienilo finché l'utente è nella zona di transizione verso athletes
-      const bioEnding = progress >= 0.98
+      // Attiva il canvas globale solo quando la bio ha lasciato la viewport.
+      // Prima resta attiva la scena locale, così lo sfondo fisso non copre le card
+      // quando si scrolla verso l'alto.
+      const bioEnding = rect.bottom <= window.innerHeight + 1
       if (bioEnding !== helmetStore.visible) {
         helmetStore.visible = bioEnding
         if (bioEnding) {
@@ -223,6 +231,7 @@
     checkMobile()
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', checkMobile)
+    onScroll()
     return () => {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', checkMobile)

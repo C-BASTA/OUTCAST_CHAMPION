@@ -255,6 +255,7 @@
   const PX_PER_STEP  = 300
   const SCROLL_HEIGHT = PX_PER_STEP * (faces.length - 1)
   const INTRO_PX     = 1200  // scroll per la transizione intro
+  const ROTATION_DELAY = 250
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp    = (a, b, t) => a + (b - a) * t
@@ -276,6 +277,7 @@
   let wrapper  = null
   let selected = $state(0)
   let introP   = $state(0)
+  let rotationDelayId = null
 
   // Nomi: salgono dal basso durante intro
   let namesTranslateY = $derived(
@@ -308,6 +310,13 @@
     helmetStore.rotZ = 0
   }
 
+  function scheduleRotation(index) {
+    clearTimeout(rotationDelayId)
+    rotationDelayId = setTimeout(() => {
+      updateRotation(index)
+    }, ROTATION_DELAY)
+  }
+
   function onScroll() {
     if (!wrapper) return
     const scrolledInside = -wrapper.getBoundingClientRect().top
@@ -315,6 +324,7 @@
     // Uscita dalla sezione: disattiva canvas globale
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       helmetStore.visible = false
+      clearTimeout(rotationDelayId)
       return
     }
 
@@ -350,23 +360,28 @@
       const newSelected = Math.min(faces.length - 1, Math.floor(galleryScrolled / PX_PER_STEP))
       if (newSelected !== selected) {
         selected = newSelected
-        updateRotation(selected)
       }
+      scheduleRotation(newSelected)
     }
   }
 
   function selectFace(index) {
     if (index === -1) return
 
-    // If this athlete has detail data, open the overlay instead of scrolling
     const name = faces[index].name
-    if (athleteDetails[name]) {
-      activeAthlete = athleteDetails[name]
+
+    if (index === selected) {
+      if (athleteDetails[name]) {
+        activeAthlete = athleteDetails[name]
+      }
       return
     }
 
+    activeAthlete = null
+    clearTimeout(rotationDelayId)
     selected = index
     updateRotation(selected)
+
     const target = wrapper.offsetTop + INTRO_PX + index * PX_PER_STEP
     window.scrollTo({ top: target, behavior: 'smooth' })
   }
@@ -381,6 +396,7 @@
     return () => {
       window.removeEventListener('scroll', handler)
       cancelAnimationFrame(rafId)
+      clearTimeout(rotationDelayId)
     }
   })
 </script>
@@ -408,8 +424,8 @@
             class:has-detail={!!athleteDetails[faces[slot.index]?.name]}
             role="button"
             tabindex="0"
-            on:click={() => selectFace(slot.index)}
-            on:keydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
+            onclick={() => selectFace(slot.index)}
+            onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
           >
             {slot.name}
           </div>
@@ -459,8 +475,8 @@
     font-family: var(--font-primary, 'GeistPixel'), monospace;
     font-size: var(--font-size-h1);
     font-weight: 500;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--color-ink);
+    color: var(--color-ink, #fff);
+    opacity: 0.32;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     letter-spacing: -0.03em;
@@ -472,8 +488,7 @@
   .name.empty { pointer-events: none; }
 
   .name.selected {
-    color: var(--color-ink, #fff);
-    -webkit-text-stroke: 0;
+    opacity: 1;
     transform: scale(1.30);
     transform-origin: left center;
   }
@@ -494,7 +509,6 @@
     .name {
       font-size: var(--font-size-h2, 2rem);
       text-align: center;
-      -webkit-text-stroke: 1px var(--color-ink, #fff6);
       letter-spacing: 0.01em;
     }
     .name.selected {

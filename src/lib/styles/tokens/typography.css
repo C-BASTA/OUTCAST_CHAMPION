@@ -1,15 +1,16 @@
 :root {
   --font-primary:   'GeistPixel', monospace;
   --font-secondary: 'Geist', sans-serif;
+  --font-third: 'GeistBold', sans-serif;
 
   font-feature-settings: "liga" 1, "calt" 1;
 }
 
 @font-face {
   font-family: 'GeistPixel';
-  src: url('/fonts/GeistPixel-Square.woff2') format('woff2'),
-       url('/fonts/GeistPixel-Square.woff') format('woff'),
-       url('/fonts/GeistPixel-Square.ttf') format('truetype');
+  src: url('/fonts/GeistPixel-Grid.woff2') format('woff2'),
+       url('/fonts/GeistPixel-Grid.woff') format('woff'),
+       url('/fonts/GeistPixel-Grid.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }
@@ -20,5 +21,14 @@
        url('/fonts/Geist-Regular.woff') format('woff'),
        url('/fonts/Geist-Regular.ttf') format('truetype');
   font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GeistBold';
+  src: url('/fonts/Geist-Bold.woff2') format('woff2'),
+       url('/fonts/Geist-Bold.woff') format('woff'),
+       url('/fonts/Geist-Bold.ttf') format('truetype');
+  font-weight: bold;
   font-style: normal;
 }
