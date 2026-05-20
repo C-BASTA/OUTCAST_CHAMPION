@@ -1,72 +1,86 @@
 <script>
   import { onMount } from 'svelte';
 
-  let canvas;
-  let ctx;
+  let canvasLight;
+  let canvasDark;
+  let ctxLight, ctxDark;
   let w, h;
-  let stars = [];
   let animId;
 
   let colorYellow = '#ffd700';
-  let colorBlue = '#0057b7';
+  let colorBlue   = '#0057b7';
 
-  const MAX_STARS = 120;
-  const STAR_SIZE = 18; // px, quadratino fisso piccolo
+  // ── Contatori ────────────────────────────────────────────────────────
+  const MAX_COLORED = 25;   // quadratini colorati per le sezioni chiare
+  const MAX_BW      = 60;   // quadratini grigi per le sezioni scure
+  const STAR_SIZE   = 18;
+
+  let coloredStars = [];
+  let bwStars      = [];
 
   function hexToRgb(hex) {
-    const r = parseInt(hex.slice(1,3),16);
-    const g = parseInt(hex.slice(3,5),16);
-    const b = parseInt(hex.slice(5,7),16);
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
     return `${r},${g},${b}`;
   }
 
-  function spawnStar() {
-    const color = Math.random() > 0.5 ? colorYellow : colorBlue;
-    // fase casuale così non lampeggiano tutte in sincrono
-    const phase = Math.random() * Math.PI * 2;
-    // velocità del lampeggio: ciclo tra 40 e 90 frame
+  function spawnStar(pool, rgbList) {
+    const rgb    = rgbList[Math.floor(Math.random() * rgbList.length)];
+    const phase  = Math.random() * Math.PI * 2;
     const period = 280 + Math.random() * 200;
-    stars.push({
+    pool.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      rgb: hexToRgb(color),
+      rgb,
       phase,
       period,
       age: 0,
-      // ogni stella vive 2-4 cicli poi muore e viene sostituita
-      maxAge: period * (2 + Math.random() * 2)
+      maxAge: period * (2 + Math.random() * 2),
     });
   }
 
-  function draw() {
+  function drawPool(ctx, pool, max, rgbList, maxAlpha) {
     ctx.clearRect(0, 0, w, h);
+    while (pool.length < max) spawnStar(pool, rgbList);
 
-    // Mantieni sempre MAX_STARS stelle vive
-    while (stars.length < MAX_STARS) spawnStar();
-
-    for (let i = stars.length - 1; i >= 0; i--) {
-      const s = stars[i];
+    for (let i = pool.length - 1; i >= 0; i--) {
+      const s = pool[i];
       s.age++;
-
-      // Alpha: onda sinusoidale — fa lampeggiare la stella
       const alpha = Math.max(0, Math.sin(s.phase + (s.age / s.period) * Math.PI * 2));
-
       if (alpha > 0.01) {
-        ctx.globalAlpha = alpha * 0.85;
-        ctx.fillStyle = `rgb(${s.rgb})`;
+        ctx.globalAlpha = alpha * maxAlpha;
+        ctx.fillStyle   = `rgb(${s.rgb})`;
         ctx.fillRect(s.x, s.y, STAR_SIZE, STAR_SIZE);
       }
-
-      if (s.age >= s.maxAge) stars.splice(i, 1);
+      if (s.age >= s.maxAge) pool.splice(i, 1);
     }
-
     ctx.globalAlpha = 1;
+  }
+
+  function draw() {
+    // Canvas 1: quadratini giallo/blu su sfondo chiaro
+    drawPool(
+      ctxLight, coloredStars, MAX_COLORED,
+      [hexToRgb(colorYellow), hexToRgb(colorBlue)],
+      0.85
+    );
+
+    // Canvas 2: quadratini grigi (mix-blend-mode screen → visibili solo su scuro)
+    drawPool(
+      ctxDark, bwStars, MAX_BW,
+      ['245,245,245', '210,210,210', '175,175,175'],
+      0.65
+    );
+
     animId = requestAnimationFrame(draw);
   }
 
   function init() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvasLight.width  = canvasDark.width  = w;
+    canvasLight.height = canvasDark.height = h;
   }
 
   onMount(() => {
@@ -74,7 +88,8 @@
     colorYellow = style.getPropertyValue('--hex-brand-yellow-500').trim() || '#ffd700';
     colorBlue   = style.getPropertyValue('--hex-brand-blue-500').trim()   || '#0057b7';
 
-    ctx = canvas.getContext('2d');
+    ctxLight = canvasLight.getContext('2d');
+    ctxDark  = canvasDark.getContext('2d');
     init();
     draw();
 
@@ -86,16 +101,31 @@
   });
 </script>
 
-<div class="bg-container">
-  <canvas bind:this={canvas}></canvas>
+<!-- Canvas colorato: z-index basso, coperto dalle sezioni scure -->
+<div class="bg-layer bg-light">
+  <canvas bind:this={canvasLight}></canvas>
+</div>
+
+<!-- Canvas B&W: z-index sopra le sezioni scure, mix-blend-mode:screen
+     → invisibile sul bianco (bianco+bianco=bianco), visibile sul nero -->
+<div class="bg-layer bg-dark-bw">
+  <canvas bind:this={canvasDark}></canvas>
 </div>
 
 <style>
-  .bg-container {
+  .bg-layer {
     position: fixed;
     inset: 0;
-    z-index: 0;
     pointer-events: none;
+  }
+
+  .bg-light {
+    z-index: 0;
+  }
+
+  .bg-dark-bw {
+    z-index: 1;
+    mix-blend-mode: screen;
   }
 
   canvas {

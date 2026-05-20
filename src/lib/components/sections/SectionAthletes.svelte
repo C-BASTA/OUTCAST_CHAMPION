@@ -225,7 +225,8 @@
     },
   }
 
-  let activeAthlete = $state(null)
+  let activeAthlete      = $state(null)
+  let activeAthleteIndex = $state(-1)
 
   const faces = [
     { name: 'Maksym Halinichev',     rotation: { x: 0, y: 1.83,  z: 0 } },
@@ -266,7 +267,7 @@
   const BIO_CAM_Z   = 8.5
   const BIO_LOOK_Y  = 0.20
   const BIO_ROT_X   = 0.25
-  const BIO_ROT_Y   = Math.PI  // visiera frontale
+  const BIO_ROT_Y   = Math.PI - 0.35  // allineato alla posizione post-zoom
 
   // Valori target gallery
   const ATH_CAM_Y  = -0.01
@@ -372,7 +373,8 @@
 
     if (index === selected) {
       if (athleteDetails[name]) {
-        activeAthlete = athleteDetails[name]
+        activeAthlete      = athleteDetails[name]
+        activeAthleteIndex = index
       }
       return
     }
@@ -407,6 +409,8 @@
   id="helmet"
   style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT}px)"
 >
+  <!-- Anchor che punta all'inizio effettivo dell'elenco nomi (dopo l'intro) -->
+  <div id="helmet-list" style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;" aria-hidden="true"></div>
   <div class="gallery-sticky">
     <!-- I nomi salgono dal basso durante la fase intro -->
     <div
@@ -437,7 +441,11 @@
 </div>
 
 <!-- Athlete detail overlay -->
-<AthleteDetail athlete={activeAthlete} onClose={() => (activeAthlete = null)} />
+<AthleteDetail
+  athlete={activeAthlete}
+  athleteIndex={activeAthleteIndex}
+  onClose={() => { activeAthlete = null; activeAthleteIndex = -1 }}
+/>
 
 <style>
   .gallery-wrapper {

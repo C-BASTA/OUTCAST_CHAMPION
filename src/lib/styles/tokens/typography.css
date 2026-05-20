@@ -16,6 +16,15 @@
 }
 
 @font-face {
+  font-family: 'GeistPixel-Square';
+  src: url('/fonts/GeistPixel-Square.woff2') format('woff2'),
+       url('/fonts/GeistPixel-Square.ttf')   format('truetype'),
+       url('/fonts/GeistPixel-Square.otf')   format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
   font-family: 'Geist';
   src: url('/fonts/Geist-Regular.woff2') format('woff2'),
        url('/fonts/Geist-Regular.woff') format('woff'),

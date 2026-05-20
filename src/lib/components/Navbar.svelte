@@ -6,10 +6,10 @@
   let open = $state(false)
 
   const items = [
-    { num: '01', label: 'Athlete',  href: '#athlete' },
-    { num: '02', label: 'Helmet',   href: '#helmet' },
-    { num: '03', label: 'Insight',  href: '#verdict' },
-    { num: '',   label: 'About us', href: '/about' },
+    { num: '01', label: 'Athlete',  href: '#athlete', grid: false },
+    { num: '02', label: 'Helmet',   href: '#helmet-list', grid: false },
+    { num: '03', label: 'Insight',  href: '#verdict', grid: false },
+    { num: '',   label: 'About us', href: '/about',   grid: true  },
   ]
 
   function toggle() { open = !open }
@@ -36,11 +36,14 @@
 {#if open}
   <div class="overlay" transition:fade={{ duration: 260 }}>
 
+    <!-- Logo in alto a sinistra -->
+    <a class="overlay-logo" href="./" onclick={close}>Outcast Champion</a>
+
     <!-- Tasto chiudi (×) in alto a destra -->
     <button class="close-btn" onclick={close} aria-label="Chiudi menu">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="21" y1="3" x2="3" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="21" y1="3" x2="3"  y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     </button>
 
@@ -54,13 +57,11 @@
           class="menu-item"
           href={item.href}
           onclick={close}
-          in:fly={{ y: 32, delay: i * 55, duration: 360 }}
-          out:fade={{ duration: 120 }}
+          in:fly={{ y: 28, delay: i * 60, duration: 380 }}
+          out:fade={{ duration: 110 }}
         >
-          {#if item.num}
-            <span class="item-num">{item.num}</span>
-          {/if}
-          <span class="item-label">{item.label}</span>
+          <span class="item-num">{item.num}</span>
+          <span class="item-label" class:grid={item.grid}>{item.label}</span>
         </a>
       {/each}
     </nav>
@@ -70,6 +71,7 @@
       <span>@Politecnico di Milano</span>
       <span>Corso di Digital e Web Design</span>
     </footer>
+
   </div>
 {/if}
 
@@ -87,7 +89,7 @@
     --ink: #030404;
     transition: opacity 0.2s;
   }
-  .nav-bar.dark  { --ink: #fafafa; }
+  .nav-bar.dark   { --ink: #fafafa; }
   .nav-bar.hidden { opacity: 0; pointer-events: none; }
 
   .logo {
@@ -118,21 +120,29 @@
     position: fixed;
     inset: 0;
     z-index: 250;
-    /* Il backdrop blur sfoca il contenuto dietro */
-    backdrop-filter: blur(36px) saturate(0.7);
-    -webkit-backdrop-filter: blur(36px) saturate(0.7);
-    background: rgba(250, 250, 250, 0.22);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    /* Tutto il contenuto spinto a destra */
-    padding: 0 10vw 0 46vw;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(28px) saturate(0.75);
+    -webkit-backdrop-filter: blur(28px) saturate(0.75);
   }
 
-  /* tasto × */
-  .close-btn {
+  /* Logo in overlay */
+  .overlay-logo {
     position: absolute;
     top: 28px;
+    left: var(--padding-lateral, 56px);
+    font-family: var(--font-primary);
+    font-size: 1.05rem;
+    color: #030404;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    z-index: 1;
+    pointer-events: auto;
+  }
+
+  /* Tasto × */
+  .close-btn {
+    position: absolute;
+    top: 22px;
     right: 44px;
     background: none;
     border: none;
@@ -146,70 +156,80 @@
   }
   .close-btn:hover { opacity: 0.4; }
 
-  /* area cliccabile per chiudere toccando lo sfondo */
+  /* Area cliccabile per chiudere lo sfondo */
   .bg-close {
     position: absolute;
     inset: 0;
     background: none;
     border: none;
-    cursor: pointer;
+    cursor: default;
     z-index: 0;
   }
 
-  /* ── Voci menu ────────────────────────────────────────────── */
+  /* ── Menu nav ─────────────────────────────────────────────── */
   .menu-nav {
-    position: relative;
-    z-index: 1;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: clamp(28px, 5.5vh, 56px);
+    z-index: 1;
   }
 
   .menu-item {
     display: flex;
     align-items: baseline;
-    gap: 1.4rem;
     text-decoration: none;
     color: #030404;
-    line-height: 1.05;
     cursor: pointer;
   }
 
+  /* Numero: fisso, non si sposta all'hover */
   .item-num {
-    font-family: var(--font-primary);     /* GeistPixel */
-    font-size: clamp(13px, 1.3vw, 18px);
+    font-family: var(--font-secondary);
+    font-size: 36px;
     font-weight: 400;
-    opacity: 0.45;
-    min-width: 2.4rem;
-    padding-bottom: 0.1em;
+    line-height: 1.12;
+    min-width: 64px;
+    flex-shrink: 0;
+    /* nessuna transition: rimane fermo */
   }
 
+  /* Label: si sposta a destra all'hover */
   .item-label {
-    font-family: 'GeistPixel', monospace;
-    font-size: clamp(52px, 8.5vw, 124px);
+    font-family: 'GeistPixel-Square', monospace;
+    font-size: clamp(52px, 5.3vw, 80px);
     font-weight: 400;
+    line-height: 1.12;
     letter-spacing: 0;
-    transition: opacity 0.18s;
+    white-space: nowrap;
+    transition: transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
-  .menu-item:hover .item-label { opacity: 0.35; }
+  /* About Us usa GeistPixel-Grid (font pixel outline) */
+  .item-label.grid {
+    font-family: var(--font-primary);
+  }
 
-  /* "About Us" senza numero → nessun indent extra */
-  .menu-item:last-child {
-    padding-left: 0;
+  .menu-item:hover .item-label {
+    transform: translateX(18px);
   }
 
   /* ── Footer overlay ───────────────────────────────────────── */
   .menu-footer {
     position: absolute;
     bottom: 28px;
-    left: 48px;
-    right: 48px;
+    left: var(--padding-lateral, 56px);
+    right: var(--padding-lateral, 56px);
     display: flex;
     justify-content: space-between;
     font-family: var(--font-secondary);
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     color: #030404;
     opacity: 0.5;
+    z-index: 1;
+    pointer-events: none;
   }
 </style>

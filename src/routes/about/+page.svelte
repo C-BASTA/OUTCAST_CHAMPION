@@ -60,7 +60,7 @@
 
     <!-- Sinistra: About Us + domanda corrente -->
     <aside class="left-col">
-      <h1 class="about-title">About<br/>Us</h1>
+      <h1 class="about-title">About<br/>us</h1>
       <p class="question-label">{question}</p>
     </aside>
 

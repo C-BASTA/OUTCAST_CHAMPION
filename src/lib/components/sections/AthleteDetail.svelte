@@ -1,13 +1,11 @@
 <script>
-  let { athlete, onClose } = $props()
+  let { athlete, onClose, athleteIndex = -1 } = $props()
 
   let overlayEl = $state(null)
   let scrollTop  = $state(0)
 
   // ── Scroll constants ──────────────────────────────────────────────
   const TEXT_REVEAL_PX = 600   // px of overlay-internal scroll to clear all text
-  const PHOTO_PAN_PX   = 400   // px for photo horizontal pan
-  const TOTAL_EXTRA_PX = TEXT_REVEAL_PX + PHOTO_PAN_PX
 
   // ── Helpers ───────────────────────────────────────────────────────
   const clamp      = (x, a, b) => Math.max(a, Math.min(b, x))
@@ -60,12 +58,18 @@
     })
   })
 
-  // ── Photos: start shifted right, slide to position on scroll ─────
-  let photosTranslateX = $derived.by(() => {
-    const start = TEXT_REVEAL_PX * 0.35
-    const t     = easeInOut(clamp((scrollTop - start) / PHOTO_PAN_PX, 0, 1))
-    return lerp(130, 0, t)
+  // ── Gallery orizzontale scroll-driven (solo indice 0, prova) ────────
+  const LOOP_COUNT = 6
+
+  let loopedPhotos = $derived.by(() => {
+    if (!athlete?.photos) return []
+    if (athleteIndex !== 0) return athlete.photos
+    return Array.from({ length: LOOP_COUNT }, () => athlete.photos).flat()
   })
+
+  // La track scorre a sinistra proporzionalmente allo scroll interno
+  // velocità 1.4 → a 600px scroll la gallery si sposta di ~840px
+  let galleryX = $derived(athleteIndex === 0 ? -scrollTop * 1.4 : 0)
 
   // ── Lock body scroll while overlay is open ────────────────────────
   $effect(() => {
@@ -98,7 +102,7 @@
     on:scroll={handleScroll}
   >
     <!-- Scroll track: provides the extra scrollable height -->
-    <div class="scroll-track" style="height: calc(100vh + {TOTAL_EXTRA_PX}px)">
+    <div class="scroll-track" style="height: calc(100vh + {TEXT_REVEAL_PX}px)">
 
       <!-- Sticky visual panel -->
       <div class="sticky-panel">
@@ -138,9 +142,9 @@
             <div class="photos-strip">
               <div
                 class="photos-track"
-                style:transform="translateX({photosTranslateX}px)"
+                style:transform="translateX({galleryX}px)"
               >
-                {#each athlete.photos as photo, i}
+                {#each loopedPhotos as photo, i}
                   <div class="photo-frame">
                     <img src={photo} alt="{athlete.name} {i + 1}" />
                   </div>
@@ -242,12 +246,12 @@
     padding: 120px 0 48px 45px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   .athlete-name {
     font-family: var(--font-primary, 'GeistPixel'), monospace;
-    font-size: clamp(72px, 13vw, 200px);
+    font-size: clamp(56px, 9vw, 140px);
     font-weight: 500;
     color: var(--color-ink, #fafafa);
     line-height: 0.96;
@@ -264,8 +268,8 @@
     color: #d3d5d8;
     letter-spacing: -0.019em;
     line-height: 1.5;
-    margin: 0;
-    padding-left: 13px;   /* 58px from edge - 45px panel padding */
+    margin: 20px 0 0 0;
+    padding-left: 4px;
   }
 
   /* ── Right panel ── */
@@ -296,7 +300,22 @@
     flex-shrink: 0;
     height: 220px;
     overflow: hidden;
-    margin-top: 8px;
+    margin-top: 48px;
+    max-width: 576px;
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 88%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 10%,
+      black 88%,
+      transparent 100%
+    );
   }
 
   .photos-track {
@@ -304,6 +323,7 @@
     gap: 14px;
     height: 100%;
     will-change: transform;
+    transition: none;
   }
 
   .photo-frame {
@@ -332,11 +352,11 @@
       padding: 90px 24px 0 24px;
     }
     .athlete-name {
-      font-size: clamp(56px, 18vw, 100px);
+      font-size: clamp(44px, 13vw, 90px);
     }
     .role {
       padding-left: 0;
-      margin-top: 12px;
+      margin-top: 16px;
     }
     .right-panel {
       padding: 24px 24px 24px 24px;

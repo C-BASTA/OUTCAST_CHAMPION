@@ -4,7 +4,7 @@
   import * as THREE from 'three'
   import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 
-  let { cameraZ = 8.5, bgColor = '#fafafa' } = $props()
+  let { cameraZ = 8.5, bgColor = '#fafafa', zoomP = 0 } = $props()
 
   const { renderer, scene } = useThrelte()
 
@@ -24,8 +24,28 @@
 
   let camera = $state(null)
 
-  // Update camera position every frame (scroll-driven)
-  // cameraZ interpolates between 8.5 (full helmet) and 1.8 (visor fills screen)
+  const SIDE = 0.35
+  const clampZ = (x, a, b) => Math.max(a, Math.min(b, x))
+  const lerpZ  = (a, b, t) => a + (b - a) * t
+  const easeZ  = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
+
+  // rotY guida la rotazione orizzontale del casco in funzione dello scroll-zoom
+  let rotY = $derived.by(() => {
+    if (zoomP <= 0.20) {
+      // zoom-in: da leggermente storto → dritto
+      return lerpZ(Math.PI + SIDE, Math.PI, easeZ(clampZ(zoomP / 0.20, 0, 1)))
+    }
+    if (zoomP <= 0.86) {
+      // casco dritto (visiera frontale) durante i testi del visore
+      return Math.PI
+    }
+    if (zoomP <= 0.98) {
+      // zoom-out: dritto → leggermente storto dall'altra parte
+      return lerpZ(Math.PI, Math.PI - SIDE, easeZ(clampZ((zoomP - 0.86) / 0.12, 0, 1)))
+    }
+    return Math.PI - SIDE
+  })
+
   useTask(() => {
     if (!camera) return
     camera.position.set(0, 0.25, cameraZ)
@@ -57,5 +77,5 @@
   quindi y=0 è la faccia liscia davanti (visiera verso il viewer).
 -->
 {#if $gltf}
-  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0.25, Math.PI, 0]} />
+  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0.25, rotY, 0]} />
 {/if}

@@ -72,15 +72,15 @@
       3780 * scaleFactor,
       4180 * scaleFactor,
     ]
-    const topMap = [paddingTopMain, 370, 430, 200, 450, 80, 90, 180, 80, 440, 200]
+    const topMap = [paddingTopMain + 80, 450, 510, 280, 530, 160, 170, 260, 160, 520, 280]
     return { ...card, x: xMap[i] ?? 0, top: topMap[i] ?? 100 }
   }))
 
   let horizontalQuotes = $derived(isMobile ? [] : QUOTES_DATA.map((quote, i) => {
     const positions = [
-      { x: 650 * scaleFactor,  top: 70  },
-      { x: 1950 * scaleFactor, top: 85  },
-      { x: 3500 * scaleFactor, top: 515 },
+      { x: 650 * scaleFactor,  top: 150 },
+      { x: 1950 * scaleFactor, top: 165 },
+      { x: 3500 * scaleFactor, top: 540 },
     ]
     return { ...quote, ...positions[i] }
   }))
@@ -221,7 +221,7 @@
           helmetStore.cameraZ = 8.5
           helmetStore.lookAtY = 0.20
           helmetStore.rotX   = 0.25
-          helmetStore.rotY   = Math.PI
+          helmetStore.rotY   = Math.PI - 0.35   // allineato alla posizione post-zoom di HelmetZoomScene
           helmetStore.rotZ   = 0
           helmetStore.viewerPaddingLeft = '0%'
         }
@@ -289,7 +289,7 @@
       {#if helmetVisible && !helmetStore.visible}
         <div class="helmet-card" style:left="{maxOffsetX - offsetX}px">
           <Canvas renderMode="always">
-            <HelmetZoomScene {cameraZ} {bgColor} />
+            <HelmetZoomScene {cameraZ} {bgColor} {zoomP} />
           </Canvas>
         </div>
       {/if}
