@@ -72,7 +72,7 @@
   onMount(() => {
     const style = getComputedStyle(document.documentElement)
     paddingLateral = parseInt(style.getPropertyValue('--padding-lateral')) || 80
-    paddingTopMain = parseInt(style.getPropertyValue('--padding-top-main')) || 80
+    paddingTopMain = parseInt(style.getPropertyValue('--padding-top-biography')) || 80
 
     const checkMobile = () => {
       isMobile = window.innerWidth < MOBILE_BREAKPOINT

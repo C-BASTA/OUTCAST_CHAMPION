@@ -2,7 +2,7 @@
 :root {
     --padding-lateral: var(--size-10); /* 80px */
     --padding-top-header: var(--size-6); /* 32px */
-    --padding-top-main: var(--size-12); /* 160px */
+    --padding-top-biography: var(--size-12); /* 160px */
 
     --gap-header-links: var(--size-6); /* 32px */
     --gap-filter-options: var(--size-4); /* 16px */
@@ -19,7 +19,7 @@
   :root {
     --padding-lateral: var(--size-5); /* 24px */
     --padding-top-header: var(--size-4); /* 16px */ 
-    --padding-top-main: var(--size-8); /* 56px */
+    --padding-top-biography: var(--size-8); /* 56px */
 
     --gap-header-links: var(--size-6); /* 32px */
     --gap-filter-options: var(--size-4); /* 16px */
@@ -37,7 +37,7 @@
   :root {
     --padding-lateral: var(--size-7); /* 40px */
     --padding-top-header: var(--size-5); /* 24px */
-    --padding-top-main: var(--size-10); /* 80px */
+    --padding-top-biography: var(--size-10); /* 80px */
 
     --gap-header-links: var(--size-6); /* 32px */
     --gap-filter-options: var(--size-4); /* 16px */
@@ -55,7 +55,7 @@
   :root {
     --padding-lateral: var(--size-10); /* 80px */
     --padding-top-header: var(--size-6); /* 32px */
-    --padding-top-main: var(--size-12); /* 160px */
+    --padding-top-biography: var(--size-10); /* 80px */
 
     --gap-header-links: var(--size-6); /* 32px */
     --gap-filter-options: var(--size-4); /* 16px */

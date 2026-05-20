@@ -18,6 +18,7 @@
   const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
   const T_IN = 0.055, T_OUT = 0.055
 
+  // The helmet start the parrallax as soon as the section enters
   let progress = $state(0)
   let section  = $state(null)
   let vpH      = $state(900)
@@ -49,7 +50,8 @@
   })
 
   // Vertical parallax on the bg photo: pans upward continuously from first scroll
-  let bgParallaxY = $derived(-progress * vpH * 0.15)
+  //let bgParallaxY = $derived(-progress * vpH )
+  let bgParallaxY = $derived(-ease(progress) * vpH * 0.5)
 
   // Background photo fades out as camera starts zooming in
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
