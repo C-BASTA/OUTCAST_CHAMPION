@@ -48,8 +48,8 @@
     return `translateY(${ty.toFixed(3)}vh)`
   })
 
-  // Vertical parallax on the bg photo: image pans upward as we scroll in
-  let bgParallaxY = $derived(-entryP * vpH * 0.07)
+  // Vertical parallax on the bg photo: pans upward continuously from first scroll
+  let bgParallaxY = $derived(-progress * vpH * 0.15)
 
   // Background photo fades out as camera starts zooming in
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
