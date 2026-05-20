@@ -7,11 +7,20 @@
   let progress  = $state(0)
   let section   = $state()
   let vpW       = $state(1440)
+  let vpH       = $state(900)
   let isMobile  = $state(false)
 
   const REFERENCE_WIDTH   = 1440
   const MOBILE_BREAKPOINT = 768
-  let scaleFactor = $derived(isMobile ? 1 : vpW / REFERENCE_WIDTH)
+
+  // Vertical extents of the reference layout (top of highest element, bottom of lowest)
+  const REFERENCE_CONTENT_TOP    = 150
+  const REFERENCE_CONTENT_BOTTOM = 763
+  const REFERENCE_CONTENT_HEIGHT = REFERENCE_CONTENT_BOTTOM - REFERENCE_CONTENT_TOP
+
+  let scaleFactor    = $derived(isMobile ? 1 : vpW / REFERENCE_WIDTH)
+  let verticalScale  = $derived(isMobile ? 1 : (vpH - 2 * paddingTopMain) / REFERENCE_CONTENT_HEIGHT)
+  let verticalOffset = $derived(isMobile ? 0 : paddingTopMain - REFERENCE_CONTENT_TOP * verticalScale)
 
   const CARDS_DATA = [
     { boldPart: '1999', rest: ' - Born in Kyiv',              img: '/images/atleti/bio-kyiv.png',              imgW: 350, imgH: 220 },
@@ -47,17 +56,27 @@
       3780 * scaleFactor,
       4180 * scaleFactor,
     ]
-    const topMap = [paddingTopMain + 80, 450, 510, 280, 530, 160, 170, 260, 160, 520, 280]
-    return { ...card, x: xMap[i] ?? 0, top: topMap[i] ?? 100 }
+    // Raw top values from the reference design (reference_content_top = 150, reference_content_bottom = 763)
+    const rawTopMap = [160, 450, 510, 280, 530, 160, 170, 260, 160, 520, 280]
+    return {
+      ...card,
+      x: xMap[i] ?? 0,
+      top: Math.round((rawTopMap[i] ?? 160) * verticalScale + verticalOffset),
+      imgH: Math.round(card.imgH * verticalScale),
+    }
   }))
 
   let horizontalQuotes = $derived(isMobile ? [] : QUOTES_DATA.map((quote, i) => {
     const positions = [
-      { x: 650 * scaleFactor,  top: 150 },
-      { x: 1950 * scaleFactor, top: 165 },
-      { x: 3500 * scaleFactor, top: 540 },
+      { x: 650 * scaleFactor,  rawTop: 150 },
+      { x: 1950 * scaleFactor, rawTop: 165 },
+      { x: 3500 * scaleFactor, rawTop: 540 },
     ]
-    return { ...quote, ...positions[i] }
+    return {
+      ...quote,
+      x: positions[i].x,
+      top: Math.round(positions[i].rawTop * verticalScale + verticalOffset),
+    }
   }))
 
   let verticalCards  = $derived(isMobile ? CARDS_DATA  : [])
@@ -77,6 +96,7 @@
     const checkMobile = () => {
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
       vpW = window.innerWidth
+      vpH = window.innerHeight
     }
 
     const onScroll = () => {
