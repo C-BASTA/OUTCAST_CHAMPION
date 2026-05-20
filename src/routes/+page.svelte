@@ -6,6 +6,7 @@
   import SectionLanding from '$lib/components/sections/SectionLanding.svelte'
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
   import SectionBiography from '$lib/components/sections/SectionBiography.svelte'
+  import SectionHelmetVisor from '$lib/components/sections/SectionHelmetVisor.svelte'
   import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
@@ -19,19 +20,14 @@
       scrollY = window.scrollY
 
       const bioEl      = document.getElementById('athlete-bio')
+      const visorEl    = document.getElementById('helmet-visor')
       const athletesEl = document.getElementById('athletes-section')
 
-      if (bioEl) {
-        const bioScrollable = bioEl.offsetHeight - window.innerHeight
-        const bioDarkStart  = bioEl.offsetTop + bioScrollable * 0.63
-        const athletesStart = athletesEl?.offsetTop ?? Infinity
+      const visorStart    = visorEl?.offsetTop ?? Infinity
+      const athletesStart = athletesEl?.offsetTop ?? Infinity
 
-        navDark = scrollY >= Math.min(bioDarkStart, athletesStart)
-        inBio   = scrollY >= bioEl.offsetTop
-      } else {
-        navDark = !!(athletesEl && scrollY >= athletesEl.offsetTop)
-        inBio   = navDark
-      }
+      navDark = scrollY >= Math.min(visorStart, athletesStart)
+      inBio   = !!(bioEl && scrollY >= bioEl.offsetTop)
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
     }
@@ -54,6 +50,7 @@
   <SectionLanding />
   <SectionFrase />
   <SectionBiography />
+  <SectionHelmetVisor />
 
   <div id="athletes-section">
     <SectionAthletesIntro />
