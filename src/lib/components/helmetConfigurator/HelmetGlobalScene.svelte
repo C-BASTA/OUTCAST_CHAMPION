@@ -11,8 +11,10 @@
     const pmrem = new THREE.PMREMGenerator(renderer)
     scene.environment = pmrem.fromScene(new RoomEnvironment()).texture
     pmrem.dispose()
-    // Sfondo gestito dalla div wrapper (trasparente per lasciare passare il colore CSS)
+    // Sfondo trasparente: il CSS background (#030404) di HelmetGlobal mostra sotto,
+    // e il pixel canvas (z-0) è visibile nelle aree senza helmet.
     scene.background = null
+    renderer.setClearColor(0x000000, 0)
   })
 
   /** @type {import('three').PerspectiveCamera | null} */

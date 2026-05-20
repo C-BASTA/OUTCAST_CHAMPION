@@ -1,22 +1,20 @@
 <script>
   import { onMount } from 'svelte';
 
+  let { hideColored = false } = $props();
+
   let canvasLight;
-  let canvasDark;
-  let ctxLight, ctxDark;
+  let ctxLight;
   let w, h;
   let animId;
 
   let colorYellow = '#ffd700';
   let colorBlue   = '#0057b7';
 
-  // ── Contatori ────────────────────────────────────────────────────────
-  const MAX_COLORED = 25;   // quadratini colorati per le sezioni chiare
-  const MAX_BW      = 60;   // quadratini grigi per le sezioni scure
+  const MAX_COLORED = 18;
   const STAR_SIZE   = 18;
 
   let coloredStars = [];
-  let bwStars      = [];
 
   function hexToRgb(hex) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -25,62 +23,50 @@
     return `${r},${g},${b}`;
   }
 
-  function spawnStar(pool, rgbList) {
-    const rgb    = rgbList[Math.floor(Math.random() * rgbList.length)];
+  function spawnStar() {
+    const rgb    = [hexToRgb(colorYellow), hexToRgb(colorBlue)][Math.floor(Math.random() * 2)];
     const phase  = Math.random() * Math.PI * 2;
     const period = 280 + Math.random() * 200;
-    pool.push({
+    coloredStars.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      rgb,
-      phase,
-      period,
+      rgb, phase, period,
       age: 0,
       maxAge: period * (2 + Math.random() * 2),
     });
   }
 
-  function drawPool(ctx, pool, max, rgbList, maxAlpha) {
-    ctx.clearRect(0, 0, w, h);
-    while (pool.length < max) spawnStar(pool, rgbList);
-
-    for (let i = pool.length - 1; i >= 0; i--) {
-      const s = pool[i];
-      s.age++;
-      const alpha = Math.max(0, Math.sin(s.phase + (s.age / s.period) * Math.PI * 2));
-      if (alpha > 0.01) {
-        ctx.globalAlpha = alpha * maxAlpha;
-        ctx.fillStyle   = `rgb(${s.rgb})`;
-        ctx.fillRect(s.x, s.y, STAR_SIZE, STAR_SIZE);
-      }
-      if (s.age >= s.maxAge) pool.splice(i, 1);
-    }
-    ctx.globalAlpha = 1;
-  }
-
   function draw() {
-    // Canvas 1: quadratini giallo/blu su sfondo chiaro
-    drawPool(
-      ctxLight, coloredStars, MAX_COLORED,
-      [hexToRgb(colorYellow), hexToRgb(colorBlue)],
-      0.85
-    );
+    if (ctxLight) {
+      if (hideColored) {
+        coloredStars.length = 0;
+        ctxLight.clearRect(0, 0, w, h);
+      } else {
+        ctxLight.clearRect(0, 0, w, h);
+        while (coloredStars.length < MAX_COLORED) spawnStar();
 
-    // Canvas 2: quadratini grigi (mix-blend-mode screen → visibili solo su scuro)
-    drawPool(
-      ctxDark, bwStars, MAX_BW,
-      ['245,245,245', '210,210,210', '175,175,175'],
-      0.65
-    );
-
+        for (let i = coloredStars.length - 1; i >= 0; i--) {
+          const s = coloredStars[i];
+          s.age++;
+          const alpha = Math.max(0, Math.sin(s.phase + (s.age / s.period) * Math.PI * 2));
+          if (alpha > 0.01) {
+            ctxLight.globalAlpha = alpha * 0.85;
+            ctxLight.fillStyle   = `rgb(${s.rgb})`;
+            ctxLight.fillRect(s.x, s.y, STAR_SIZE, STAR_SIZE);
+          }
+          if (s.age >= s.maxAge) coloredStars.splice(i, 1);
+        }
+        ctxLight.globalAlpha = 1;
+      }
+    }
     animId = requestAnimationFrame(draw);
   }
 
   function init() {
     w = window.innerWidth;
     h = window.innerHeight;
-    canvasLight.width  = canvasDark.width  = w;
-    canvasLight.height = canvasDark.height = h;
+    canvasLight.width  = w;
+    canvasLight.height = h;
   }
 
   onMount(() => {
@@ -89,7 +75,6 @@
     colorBlue   = style.getPropertyValue('--hex-brand-blue-500').trim()   || '#0057b7';
 
     ctxLight = canvasLight.getContext('2d');
-    ctxDark  = canvasDark.getContext('2d');
     init();
     draw();
 
@@ -101,31 +86,16 @@
   });
 </script>
 
-<!-- Canvas colorato: z-index basso, coperto dalle sezioni scure -->
-<div class="bg-layer bg-light">
+<div class="bg-layer">
   <canvas bind:this={canvasLight}></canvas>
-</div>
-
-<!-- Canvas B&W: z-index sopra le sezioni scure, mix-blend-mode:screen
-     → invisibile sul bianco (bianco+bianco=bianco), visibile sul nero -->
-<div class="bg-layer bg-dark-bw">
-  <canvas bind:this={canvasDark}></canvas>
 </div>
 
 <style>
   .bg-layer {
     position: fixed;
     inset: 0;
-    pointer-events: none;
-  }
-
-  .bg-light {
     z-index: 0;
-  }
-
-  .bg-dark-bw {
-    z-index: 1;
-    mix-blend-mode: screen;
+    pointer-events: none;
   }
 
   canvas {

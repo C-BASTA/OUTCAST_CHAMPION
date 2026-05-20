@@ -294,26 +294,6 @@
         </div>
       {/if}
 
-      <!-- Quadratini bandiera ucraina: svaniscono all'inizio dello zoom -->
-      {#if zoomP > 0 && squaresOpacity > 0.01}
-        <div class="squares" style:opacity={squaresOpacity} aria-hidden="true">
-          <div class="sq-pair" style="left:4%;bottom:7%">
-            <span class="sq-b" style="width:44px;height:44px"></span>
-            <span class="sq-y" style="width:44px;height:44px"></span>
-          </div>
-          <div class="sq-single sq-y" style="left:26%;top:64%;width:32px;height:32px"></div>
-          <div class="sq-single sq-y" style="right:26%;top:32%;width:52px;height:52px"></div>
-          <div class="sq-pair" style="right:7%;top:32%">
-            <span class="sq-y" style="width:44px;height:44px"></span>
-            <span class="sq-b" style="width:38px;height:38px"></span>
-          </div>
-          <div class="sq-single sq-b" style="right:16%;top:75%;width:38px;height:38px"></div>
-          <div class="sq-pair" style="right:14%;bottom:8%">
-            <span class="sq-y" style="width:42px;height:42px"></span>
-            <span class="sq-b" style="width:42px;height:42px"></span>
-          </div>
-        </div>
-      {/if}
 
       <!-- Testi visor: uno step di scroll per frase, con fade in/out -->
       {#if zoomP > 0.16 && zoomP < 0.90}
@@ -439,7 +419,6 @@
   .quote-text {
     font-family: var(--font-primary, serif);
     font-size: 2.5rem;
-    font-weight: 800;
     line-height: 1.1;
     color: #1a1a1a;
   }

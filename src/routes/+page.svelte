@@ -13,7 +13,7 @@
   let scrollY     = $state(0)
   let navDark     = $state(false)
   let navShowLogo = $state(false)
-
+  let inBio       = $state(false)
   onMount(() => {
     const handler = () => {
       scrollY = window.scrollY
@@ -23,12 +23,14 @@
 
       if (bioEl) {
         const bioScrollable = bioEl.offsetHeight - window.innerHeight
-
         const bioDarkStart  = bioEl.offsetTop + bioScrollable * 0.63
         const athletesStart = athletesEl?.offsetTop ?? Infinity
+
         navDark = scrollY >= Math.min(bioDarkStart, athletesStart)
+        inBio   = scrollY >= bioEl.offsetTop
       } else {
         navDark = !!(athletesEl && scrollY >= athletesEl.offsetTop)
+        inBio   = navDark
       }
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
@@ -41,7 +43,7 @@
 </script>
 
 <!-- Pixel twinkling background (fisso, sempre visibile) -->
-<BackgroundGrid />
+<BackgroundGrid hideColored={inBio} />
 
 <!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
 <HelmetGlobal />
