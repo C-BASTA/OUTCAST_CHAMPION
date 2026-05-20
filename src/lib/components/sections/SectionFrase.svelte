@@ -19,11 +19,13 @@
     <span class="line">
       For me, the <strong class="accent accent-sacrifice">sacrifice</strong>
     </span>
-    <span class="line">of the people depicted on this helmet</span>
+    <span class="line">of the people depicted </span>
+    <span class="line">on this helmet weighs </span>
     <span class="line">
-      weighs more than any <strong class="accent accent-medal">medal</strong>
+       more than any <strong class="accent accent-medal">medal</strong>
     </span>
-    <span class="line">because they gave the most precious thing</span>
+    <span class="line">because they gave</span>
+     <span class="line">the most precious thing</span>
     <span class="line">
       they had: <strong class="accent accent-lives">their lives.</strong>
     </span>
