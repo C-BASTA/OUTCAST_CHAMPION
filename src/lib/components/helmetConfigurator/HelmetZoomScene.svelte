@@ -6,7 +6,7 @@
 
   let { cameraZ = 8.5, zoomP = 0 } = $props()
 
-  const { renderer, scene, size } = useThrelte()
+  const { renderer, scene } = useThrelte()
 
   $effect(() => {
     scene.background = null
@@ -20,17 +20,6 @@
   })
 
   let camera = $state(null)
-
-  // Calcolo matematico pulito dell'aspetto: se size cambia, si aggiorna all'istante
-  let aspect = $derived($size ? $size.width / $size.height : 1)
-
-  // Ogni volta che l'aspect calcolato subisce variazioni, notifichiamo la matrice di Three.js
-  $effect(() => {
-    if (camera) {
-      camera.aspect = aspect
-      camera.updateProjectionMatrix()
-    }
-  })
 
   const SIDE = 0.35
   const clampZ = (x, a, b) => Math.max(a, Math.min(b, x))
@@ -54,6 +43,12 @@
     if (!camera) return
     camera.position.set(0, 0.25, cameraZ)
     camera.lookAt(0, 0.20, 0)
+    // Aspect ratio from window directly: immune to CSS transforms on the canvas container
+    const a = window.innerWidth / window.innerHeight
+    if (Math.abs(camera.aspect - a) > 0.0001) {
+      camera.aspect = a
+      camera.updateProjectionMatrix()
+    }
   })
 
   const gltf = useGltf('/models/casco_con_facce.glb', { dracoLoader: useDraco('/draco/') })
@@ -70,15 +65,7 @@
   })
 </script>
 
-<!-- Forziamo il montaggio solo quando l'aspect ratio è numericamente valido -->
-{#if $size && !isNaN(aspect)}
-  <T.PerspectiveCamera 
-    makeDefault 
-    fov={24} 
-    {aspect}
-    bind:ref={camera} 
-  />
-{/if}
+<T.PerspectiveCamera makeDefault fov={24} bind:ref={camera} />
 
 <T.DirectionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" castShadow />
 <T.AmbientLight intensity={0.5} />

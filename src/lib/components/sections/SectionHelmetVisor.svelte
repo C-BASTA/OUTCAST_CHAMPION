@@ -289,7 +289,7 @@
   .canvas-transform-wrapper {
     width: 100%;
     height: 100%;
-    transform-origin: 50% 50%; /* Cambiato da 100% 100% a 50% 50% */
+    transform-origin: 100% 100%;
     will-change: transform;
     pointer-events: auto;
   }
