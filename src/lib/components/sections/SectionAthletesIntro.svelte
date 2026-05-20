@@ -49,17 +49,10 @@
       style:filter="blur({quoteBlur}px)"
       aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
     >
-      <div class="quote-block quote-block--left">
-        <p class="quote">
-          I believe they deserve <br>to be here today <br>with me,
-        </p>
-      </div>
-
-      <div class="quote-block quote-block--right" aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}>
-        <p class="quote quote--right">
-          and also <br> they deserve <br>to be with me <br>on competition day.
-        </p>
-      </div>
+      <p class="quote">
+        I believe they deserve to be here<br>today with me,<br>
+        and also they deserve to be with me<br>on competition day.
+      </p>
     </div>
   </div>
 </div>
@@ -85,68 +78,26 @@
 
   .quote-overlay {
     width: 100%;
-    padding: 0 var(--padding-lateral, 80px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
     will-change: opacity, filter;
   }
 
-  .quote-block {
-    flex: 0 0 50%;
-    max-width: 100%;
-  }
-
-  .quote-block--left {
-    display: flex;
-    justify-content: flex-start;
-    transform: translateY(-60%);
-  }
-
-  .quote-block--right {
-    display: flex;
-    justify-content: flex-end;
-    transform: translateY(50%);
-  }
-
   .quote {
     font-family: var(--font-primary);
-    font-size: clamp(4rem, 2.8vw, 3rem);
+    font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
-    color: rgba(250, 250, 250, 0.92);
+    color: var(--color-canvas)
     line-height: 1.4;
     letter-spacing: -0.02em;
-    max-width: 100%;
-    width: 100%;
+    max-width: 50%;
     margin: 0;
-    white-space: normal;
   }
 
-  .quote--right {
-    text-align: right;
-  }
-
-  @media (max-width: 1168px) {
-    .quote-overlay {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 0 var(--padding-lateral, 80px);
-    }
-
-    .quote-block {
-      flex: 0 0 100%;
-      max-width: 100%;
-    }
-
+  @media (max-width: 768px) {
     .quote {
       max-width: 90%;
       font-size: clamp(1.2rem, 5vw, 1.8rem);
-      text-align: left;
-    }
-
-    .quote--right {
-      text-align: left;
     }
   }
 </style>
