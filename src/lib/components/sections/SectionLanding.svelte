@@ -30,11 +30,11 @@
   const HELMET_OFFSET_Y = 0.14
 
   // --- LOGICA SCROLL ORIGINALE ---
-  const SCROLL_RANGE = 900
+  const SCROLL_RANGE = 300
   const UNIT = 'Vladyslav Heraskevyč  '
   const TEXT = UNIT.repeat(6)
   const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
-  const TRAVEL = 520
+  const TRAVEL =420
 
   let progress = $state(0)
   let _scale = 1
@@ -189,7 +189,7 @@
     let idleStep = 0
     let isPausing = false
     let pauseStartTime = 0
-    const IDLE_WAIT = 3000
+    const IDLE_WAIT = 2500
     const PAUSE_BETWEEN = 2000
     const TARGET_TOLERANCE = 100
     const idlePoints = [
@@ -349,7 +349,7 @@
   .landing {
     position: relative;
     width: 100%;
-    height: calc(100vh + 900px);
+    height: calc(100vh + 250px);
   }
 
   .sticky-inner {
@@ -441,12 +441,12 @@
 
   /* RIGA 1 e 3: scorrono verso SINISTRA */
   .marquee-left {
-    animation: marquee-l 25s linear infinite;
+    animation: marquee-l 50s linear infinite;
   }
 
   /* RIGA 2: scorre verso DESTRA */
   .marquee-right {
-    animation: marquee-r 25s linear infinite;
+    animation: marquee-r 50s linear infinite;
   }
 
   @keyframes marquee-l {
