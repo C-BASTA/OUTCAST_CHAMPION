@@ -42,12 +42,10 @@
     return CAM_FAR
   })
 
-  // Applichiamo questa trasformazione solo al wrapper visivo, non al contenitore strutturale del Canvas
   let helmetTransform = $derived.by(() => {
     if (entryP >= 1) return ''
-    const s  = lerp(0.15, 1.0, entryP)
-    const rz = lerp(-20, 0, entryP)
-    return `scale(${s.toFixed(4)}) rotateZ(${rz.toFixed(2)}deg)`
+    const ty = lerp(100, 0, entryP)
+    return `translateY(${ty.toFixed(3)}vh)`
   })
 
   // Vertical parallax on the bg photo: image pans upward as we scroll in
@@ -285,11 +283,9 @@
     pointer-events: none; /* Evita che blocchi eventi di click sotto */
   }
 
-  /* NUOVO: Questo elemento gestisce l'animazione di scala senza alterare le dimensioni lette da Threlte */
   .canvas-transform-wrapper {
     width: 100%;
     height: 100%;
-    transform-origin: 100% 100%;
     will-change: transform;
     pointer-events: auto;
   }
