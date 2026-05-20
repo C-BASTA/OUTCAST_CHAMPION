@@ -42,8 +42,7 @@
     return CAM_FAR
   })
 
-  // CSS transform: scale from bottom-right corner (transform-origin: 100% 100% in CSS)
-  // entryP=0 → tiny in the corner; entryP=1 → full viewport (identity)
+  // Applichiamo questa trasformazione solo al wrapper visivo, non al contenitore strutturale del Canvas
   let helmetTransform = $derived.by(() => {
     if (entryP >= 1) return ''
     const s  = lerp(0.15, 1.0, entryP)
@@ -176,18 +175,24 @@
         <img
           src="/images/VladAfterBio.jpeg"
           alt="Vladyslav Heraskevych"
-          style:transform="translateY({bgParallaxY}px)"
+          style:transform="translate3d(0, {bgParallaxY}px, 0)"
         />
       </div>
 
       <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
       <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-      <!-- Helmet 3D: enters from bottom-right, then zooms in -->
-      <div class="helmet-card" style:transform={helmetTransform}>
-        <Canvas renderMode="always">
-          <HelmetZoomScene {cameraZ} bgColor="transparent" {zoomP} />
-        </Canvas>
+      <!-- MODIFICATO: .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
+      <!-- .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
+      <div class="helmet-card">
+        <!-- Spostiamo la transform CSS su questo div interno dedicato all'animazione di entrata -->
+        <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
+          <div class="canvas-container">
+            <Canvas>
+              <HelmetZoomScene {zoomP} {cameraZ} />
+            </Canvas>
+          </div>
+        </div>
       </div>
 
       <!-- Visor texts: appear during zoom hold phase -->
@@ -246,12 +251,13 @@
     z-index: 0;
     will-change: opacity;
   }
+  
   .bg-photo img {
     position: absolute;
-    top: -10%;
+    top: 0;
     left: 0;
     width: 100%;
-    height: 120%;
+    height: 130%;
     object-fit: cover;
     object-position: center 40%;
     display: block;
@@ -269,16 +275,35 @@
     pointer-events: none;
   }
 
-  /* Helmet canvas wrapper: scales from bottom-right corner to full viewport */
+  /* Helmet card contenitore: Rigidamente fisso e grande quanto lo schermo */
   .helmet-card {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100vw;
     height: 100vh;
     z-index: 3;
-    transform-origin: 100% 100%;
+    pointer-events: none; /* Evita che blocchi eventi di click sotto */
+  }
+
+  /* NUOVO: Questo elemento gestisce l'animazione di scala senza alterare le dimensioni lette da Threlte */
+  .canvas-transform-wrapper {
+    width: 100%;
+    height: 100%;
+    transform-origin: 50% 50%; /* Cambiato da 100% 100% a 50% 50% */
     will-change: transform;
+    pointer-events: auto;
+  }
+
+  .canvas-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .canvas-container :global(canvas) {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
   }
 
   /* Visor texts: above helmet */
@@ -293,6 +318,7 @@
     z-index: 4;
     padding-bottom: 10vh;
   }
+  
   .visor-text {
     position: absolute;
     padding: 0 3rem;
@@ -317,23 +343,27 @@
     flex-direction: column;
     gap: 48px;
   }
+  
   .mobile-photo {
     width: 100%;
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border-radius: 8px;
   }
+  
   .mobile-photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
+  
   .mobile-texts {
     display: flex;
     flex-direction: column;
     gap: 32px;
   }
+  
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: 1rem;
