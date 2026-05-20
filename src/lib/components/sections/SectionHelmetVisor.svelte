@@ -20,7 +20,6 @@
 
   let progress = $state(0)
   let section  = $state(null)
-  let vpW      = $state(1440)
   let vpH      = $state(900)
   let isMobile = $state(false)
 
@@ -43,16 +42,17 @@
     return CAM_FAR
   })
 
-  // CSS transform: helmet sweeps in from bottom-right corner
-  // At entryP=0: small box sitting near bottom-right; at entryP=1: full viewport
+  // CSS transform: scale from bottom-right corner (transform-origin: 100% 100% in CSS)
+  // entryP=0 → tiny in the corner; entryP=1 → full viewport (identity)
   let helmetTransform = $derived.by(() => {
-    const ep = entryP
-    const tx = lerp(vpW * 0.32, 0, ep)
-    const ty = lerp(vpH * 0.30, 0, ep)
-    const s  = lerp(0.20, 1.0, ep)
-    const rz = lerp(-18, 0, ep)
-    return `translate(${tx}px, ${ty}px) scale(${s}) rotateZ(${rz}deg)`
+    if (entryP >= 1) return ''
+    const s  = lerp(0.15, 1.0, entryP)
+    const rz = lerp(-20, 0, entryP)
+    return `scale(${s.toFixed(4)}) rotateZ(${rz.toFixed(2)}deg)`
   })
+
+  // Vertical parallax on the bg photo: image pans upward as we scroll in
+  let bgParallaxY = $derived(-entryP * vpH * 0.07)
 
   // Background photo fades out as camera starts zooming in
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
@@ -125,9 +125,8 @@
 
   onMount(() => {
     const checkSize = () => {
-      vpW = window.innerWidth
       vpH = window.innerHeight
-      isMobile = vpW < MOBILE_BREAKPOINT
+      isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
 
     const onScroll = () => {
@@ -173,9 +172,12 @@
     <div class="sticky-wrap">
 
       <!-- Full-bleed background photo: visible during entry, fades as zoom begins -->
-      <!-- Replace src with a higher-res portrait for best results -->
       <div class="bg-photo" style:opacity={bgOpacity}>
-        <img src="/images/VladAfterBio.jpeg" alt="Vladyslav Heraskevych" />
+        <img
+          src="/images/VladAfterBio.jpeg"
+          alt="Vladyslav Heraskevych"
+          style:transform="translateY({bgParallaxY}px)"
+        />
       </div>
 
       <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
@@ -236,19 +238,24 @@
     background: #030404;
   }
 
-  /* Full-bleed bg photo */
+  /* Full-bleed bg photo with vertical parallax room */
   .bg-photo {
     position: absolute;
     inset: 0;
+    overflow: hidden;
     z-index: 0;
     will-change: opacity;
   }
   .bg-photo img {
+    position: absolute;
+    top: -10%;
+    left: 0;
     width: 100%;
-    height: 100%;
+    height: 120%;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 40%;
     display: block;
+    will-change: transform;
   }
 
   /* Pixel canvas: sits above photo (z 2), below helmet (z 3) */
@@ -262,7 +269,7 @@
     pointer-events: none;
   }
 
-  /* Helmet canvas wrapper: full viewport, animates via JS transform */
+  /* Helmet canvas wrapper: scales from bottom-right corner to full viewport */
   .helmet-card {
     position: absolute;
     top: 0;
@@ -270,7 +277,7 @@
     width: 100vw;
     height: 100vh;
     z-index: 3;
-    transform-origin: center center;
+    transform-origin: 100% 100%;
     will-change: transform;
   }
 
