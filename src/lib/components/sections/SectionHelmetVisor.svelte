@@ -188,7 +188,7 @@
         <!-- Spostiamo la transform CSS su questo div interno dedicato all'animazione di entrata -->
         <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
           <div class="canvas-container">
-            <Canvas>
+            <Canvas renderMode="always">
               <HelmetZoomScene {zoomP} {cameraZ} />
             </Canvas>
           </div>
@@ -301,8 +301,6 @@
   }
 
   .canvas-container :global(canvas) {
-    width: 100% !important;
-    height: 100% !important;
     display: block;
   }
 
