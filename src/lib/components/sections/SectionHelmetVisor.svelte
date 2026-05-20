@@ -323,7 +323,7 @@
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: clamp(1.1rem, 1.8vw, 1.75rem);
     line-height: 1.75;
-    color: #fafafa;
+    color: var(--hex-neutral-900);
     letter-spacing: 0.01em;
     will-change: opacity, transform;
   }
@@ -362,7 +362,7 @@
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: 1rem;
     line-height: 1.75;
-    color: #fafafa;
+    color: var(--hex-neutral-900);
     margin: 0;
     padding: 0 0 0 16px;
     border-left: 2px solid rgba(250, 250, 250, 0.4);
