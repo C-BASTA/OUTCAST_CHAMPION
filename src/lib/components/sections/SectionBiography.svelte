@@ -1,8 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { Canvas } from '@threlte/core'
-  import HelmetZoomScene from '../helmetConfigurator/HelmetZoomScene.svelte'
-  import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   let paddingLateral = $state(80)
   let paddingTopMain = $state(80)
@@ -12,31 +9,10 @@
   let vpW       = $state(1440)
   let isMobile  = $state(false)
 
-  const REFERENCE_WIDTH    = 1440
-  const MOBILE_BREAKPOINT  = 768
+  const REFERENCE_WIDTH   = 1440
+  const MOBILE_BREAKPOINT = 768
   let scaleFactor = $derived(isMobile ? 1 : vpW / REFERENCE_WIDTH)
 
-  // ── Helmet zoom constants ─────────────────────────────────────────────────
-  const CAM_FAR   = 8.5
-  const CAM_CLOSE = 1.8
-  const ZOOM_PX   = 4000  // 4 step circa: 3 frasi + uscita verso la sezione successiva
-  const EXTRA_PAD = 2400  // spazio vuoto dopo l'ultima card → casco appare da solo
-
-  const VISOR_TEXTS = [
-    'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',
-    'The case of Vladyslav Heraskevych, the Ukrainian skeleton racer disqualified during the Milano Cortina 2026 Winter Olympics, represents a fundamental breaking point in this narrative.',
-    'Vladyslav Heraskevych is a symbol of moral resistance. His exclusion from competition—caused by a helmet honoring athletes killed in the war—has sparked debate about the limits of personal expression in sport.',
-  ]
-
-  const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
-  const lerp    = (a, b, t) => a + (b - a) * t
-  const invlerp = (a, b, x) => (x - a) / (b - a)
-  const remap   = (x, a, b, c, d) => lerp(c, d, clamp(invlerp(a, b, x), 0, 1))
-  const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
-  const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
-  const T_IN = 0.055, T_OUT = 0.055
-
-  // ── Card data (versione team) ─────────────────────────────────────────────
   const CARDS_DATA = [
     { boldPart: '1999', rest: ' - Born in Kyiv',              img: '/images/atleti/bio-kyiv.png',              imgW: 350, imgH: 220 },
     { noTitle: true,                                           img: '/images/atleti/bio-2016-prep.png',         imgW: 200, imgH: 250 },
@@ -57,7 +33,6 @@
     { text: "Some things are more important than sports" },
   ]
 
-  // ── Desktop: posizioni card responsive ───────────────────────────────────
   let horizontalCards = $derived(isMobile ? [] : CARDS_DATA.map((card, i) => {
     const xMap = [
       paddingLateral,
@@ -85,114 +60,14 @@
     return { ...quote, ...positions[i] }
   }))
 
-  // ── Mobile: layout verticale ──────────────────────────────────────────────
   let verticalCards  = $derived(isMobile ? CARDS_DATA  : [])
   let verticalQuotes = $derived(isMobile ? QUOTES_DATA : [])
 
-  // ── Scroll geometry ───────────────────────────────────────────────────────
-  let lastCardX  = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
-  let trackWidth = $derived(isMobile ? 0 : lastCardX + paddingLateral + EXTRA_PAD)
-  let maxOffsetX = $derived(Math.max(0, trackWidth - vpW))
-
-  // pStop: fraction of total scroll at which horizontal ends, zoom begins
-  let pStop         = $derived(maxOffsetX > 0 ? maxOffsetX / (maxOffsetX + ZOOM_PX) : 0.59)
-  let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX + ZOOM_PX}px)`)
-
-  // ── Derived scroll values ─────────────────────────────────────────────────
-  let offsetX = $derived(isMobile ? 0 : Math.min(1, progress / pStop) * maxOffsetX)
-  let zoomP   = $derived(isMobile ? 0 : clamp((progress - pStop) / (1 - pStop), 0, 1))
-
-  let cameraZ = $derived.by(() => {
-    const p = zoomP
-    if (p < 0.20) return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
-    if (p < 0.86) return CAM_CLOSE
-    if (p < 0.98) return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
-    return CAM_FAR
-  })
-
-  let bgColor = $derived.by(() => {
-    // Durante il dezoom: Three.js canvas trasparente, il pixel canvas è visibile sotto
-    if (zoomP >= 0.86) return 'transparent'
-    const t = ease(remap(zoomP, 0.00, 0.20, 0, 1))
-    const r = Math.round(lerp(0xfa, 0x03, t)).toString(16).padStart(2, '0')
-    const g = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
-    const b = Math.round(lerp(0xfa, 0x04, t)).toString(16).padStart(2, '0')
-    return `#${r}${g}${b}`
-  })
-
-  // ── Pixel canvas (dezoom background) ─────────────────────────────────────
-  const PIXEL_COLS = 40
-  const PIXEL_ROWS = 25
-  let pixelCanvas  = $state(null)
-  let pixelCellOrder = []
-
-  function shuffleArr(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]]
-    }
-    return arr
-  }
-
-  // Progresso pixel: 0 quando dezoom inizia (zoomP=0.86), 1 quando finisce (zoomP=0.98)
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.86, 0.98, 0, 1), 0, 1))
-
-  // Inizializza canvas una volta montato
-  $effect(() => {
-    if (!pixelCanvas || pixelCellOrder.length > 0) return
-    pixelCanvas.width  = window.innerWidth
-    pixelCanvas.height = window.innerHeight
-    pixelCellOrder = shuffleArr([...Array(PIXEL_COLS * PIXEL_ROWS).keys()])
-  })
-
-  // Disegna i pixel al variare dello scroll. Quando si torna indietro,
-  // il canvas va pulito: altrimenti resta sopra alle card della bio.
-  $effect(() => {
-    if (!pixelCanvas) return
-    const ctx   = pixelCanvas.getContext('2d')
-    const w     = pixelCanvas.width
-    const h     = pixelCanvas.height
-
-    if (zoomP < 0.86) {
-      ctx.clearRect(0, 0, w, h)
-      return
-    }
-
-    const cellW = w / PIXEL_COLS
-    const cellH = h / PIXEL_ROWS
-    const total = PIXEL_COLS * PIXEL_ROWS
-
-    ctx.fillStyle = '#FAFAFA'
-    ctx.fillRect(0, 0, w, h)
-
-    const count = Math.floor(pixelProgress * total)
-    for (let i = 0; i < count; i++) {
-      const idx = pixelCellOrder[i]
-      const col = idx % PIXEL_COLS
-      const row = Math.floor(idx / PIXEL_COLS)
-      ctx.fillStyle = '#030404'
-      ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
-    }
-  })
-
-  // Precarica il modello GLB quando il casco sta per entrare nel viewport
-  let helmetVisible  = $derived(!isMobile && progress >= pStop * 0.65)
-  let squaresOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.10, 0, 1)))
-
-  function textAnim(i) {
-    const [ws, we] = TEXT_WINDOWS[i]
-    const p = zoomP
-    if (p <= ws || p >= we) return { opacity: 0, y: p < ws ? 56 : -56 }
-    if (p < ws + T_IN) {
-      const t = ease(remap(p, ws, ws + T_IN, 0, 1))
-      return { opacity: t, y: lerp(56, 0, t) }
-    }
-    if (p > we - T_OUT) {
-      const t = ease(remap(p, we - T_OUT, we, 0, 1))
-      return { opacity: 1 - t, y: lerp(0, -56, t) }
-    }
-    return { opacity: 1, y: 0 }
-  }
+  let lastCardX     = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
+  let trackWidth    = $derived(isMobile ? 0 : lastCardX + paddingLateral)
+  let maxOffsetX    = $derived(Math.max(0, trackWidth - vpW))
+  let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX}px)`)
+  let offsetX       = $derived(isMobile ? 0 : progress * maxOffsetX)
 
   onMount(() => {
     const style = getComputedStyle(document.documentElement)
@@ -209,23 +84,6 @@
       const rect = section.getBoundingClientRect()
       const totalScrollable = section.offsetHeight - window.innerHeight
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
-
-      // Attiva il canvas globale solo quando la bio ha lasciato la viewport.
-      // Prima resta attiva la scena locale, così lo sfondo fisso non copre le card
-      // quando si scrolla verso l'alto.
-      const bioEnding = rect.bottom <= window.innerHeight + 1
-      if (bioEnding !== helmetStore.visible) {
-        helmetStore.visible = bioEnding
-        if (bioEnding) {
-          helmetStore.cameraY = 0.25
-          helmetStore.cameraZ = 8.5
-          helmetStore.lookAtY = 0.20
-          helmetStore.rotX   = 0.25
-          helmetStore.rotY   = Math.PI - 0.35   // allineato alla posizione post-zoom di HelmetZoomScene
-          helmetStore.rotZ   = 0
-          helmetStore.viewerPaddingLeft = '0%'
-        }
-      }
     }
 
     checkMobile()
@@ -246,7 +104,7 @@
   }
 </script>
 
-<!-- ── Desktop layout (orizzontale + helmet zoom) ──────────────────────── -->
+<!-- ── Desktop layout (orizzontale) ────────────────────────────────────── -->
 {#if !isMobile}
   <section
     bind:this={section}
@@ -256,10 +114,6 @@
   >
     <div class="grain-overlay"></div>
     <div class="sticky-wrap">
-
-      <!-- Pixel background: visibile durante il dezoom, dietro il casco 3D -->
-      <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
-
       <div
         class="cards-track"
         style:width="{trackWidth}px"
@@ -284,32 +138,6 @@
           </div>
         {/each}
       </div>
-
-      <!-- Casco 3D: nascosto quando il canvas globale è attivo -->
-      {#if helmetVisible && !helmetStore.visible}
-        <div class="helmet-card" style:left="{maxOffsetX - offsetX}px">
-          <Canvas renderMode="always">
-            <HelmetZoomScene {cameraZ} {bgColor} {zoomP} />
-          </Canvas>
-        </div>
-      {/if}
-
-
-      <!-- Testi visor: uno step di scroll per frase, con fade in/out -->
-      {#if zoomP > 0.16 && zoomP < 0.90}
-        <div class="text-stage" aria-live="polite">
-          {#each VISOR_TEXTS as txt, i}
-            {@const { opacity, y } = textAnim(i)}
-            <p
-              class="visor-text"
-              style:opacity
-              style:transform="translateY({y}px)"
-              aria-hidden={opacity < 0.05 ? 'true' : 'false'}
-            >{txt}</p>
-          {/each}
-        </div>
-      {/if}
-
     </div>
   </section>
 {/if}
@@ -345,7 +173,6 @@
   .bio-section--horizontal {
     position: relative;
     width: 100%;
-    /*background: #fafafa;*/
   }
 
   .grain-overlay {
@@ -360,18 +187,6 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    /*background: #fafafa;*/
-  }
-
-  /* Pixel canvas: sfondo dezoom — z-index 2 (copre le foto bio) */
-  .pixel-bg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    display: block;
-    pointer-events: none;
   }
 
   .cards-track {
@@ -421,54 +236,6 @@
     font-size: 2.5rem;
     line-height: 1.1;
     color: #1a1a1a;
-  }
-
-  /* ── Helmet card — z-index 3 (sopra pixel canvas) ───────────────────── */
-  .helmet-card {
-    position: absolute;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 3;
-  }
-
-  /* ── Flag squares ────────────────────────────────────────────────────── */
-  .squares {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 4;
-  }
-  .sq-pair   { position: absolute; display: flex; align-items: flex-end; }
-  .sq-single { position: absolute; }
-  .sq-b { display: block; background: #005BBB; flex-shrink: 0; }
-  .sq-y { display: block; background: #FFD500; flex-shrink: 0; }
-
-  /* ── Visor texts ─────────────────────────────────────────────────────── */
-  .text-stage {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 4;  /* sopra helmet (3), sotto quote-screen (5) */
-    padding-bottom: 10vh;
-  }
-  .visor-text {
-    position: absolute;
-    padding: 0 3rem;
-    box-sizing: border-box;
-    max-width: 700px;
-    margin: 0;
-    text-align: center;
-    font-family: var(--font-primary, 'GeistPixel', monospace);
-    font-size: clamp(1.1rem, 1.8vw, 1.75rem);
-    line-height: 1.75;
-    color: var(--color-dark);
-    letter-spacing: 0.01em;
-    will-change: opacity, transform;
   }
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
