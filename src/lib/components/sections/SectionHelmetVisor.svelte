@@ -175,7 +175,7 @@
       <!-- Full-bleed background photo: visible during entry, fades as zoom begins -->
       <!-- Replace src with a higher-res portrait for best results -->
       <div class="bg-photo" style:opacity={bgOpacity}>
-        <img src="/images/atleti/bio-2026-olympic.png" alt="Vladyslav Heraskevych" />
+        <img src="/images/VladAfterBio.jpeg" alt="Vladyslav Heraskevych" />
       </div>
 
       <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
@@ -211,7 +211,7 @@
 {#if isMobile}
   <section class="visor-section--mobile" id="helmet-visor">
     <div class="mobile-photo">
-      <img src="/images/atleti/bio-2026-olympic.png" alt="Vladyslav Heraskevych" />
+      <img src="/images/VladAfterBio.jpeg" alt="Vladyslav Heraskevych" />
     </div>
     <div class="mobile-texts">
       {#each VISOR_TEXTS as txt}
