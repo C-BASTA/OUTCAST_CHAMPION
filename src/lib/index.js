@@ -18,7 +18,9 @@ const lenis = new Lenis({
 
 // 3. Collega lo scroll di Lenis a ScrollTrigger di GSAP
 // Questo passaggio è FONDAMENTALE per far sì che le animazioni GSAP e lo scroll siano sincronizzati al millisecondo
-lenis.on('scroll', ScrollTrigger.update);
+lenis.on('scroll', () => {
+  ScrollTrigger.update();
+});
 
 // 4. Crea un loop di animazione (RequestAnimationFrame) per dire a Lenis e GSAP di aggiornarsi ad ogni frame grafico
 gsap.ticker.add((time) => {
