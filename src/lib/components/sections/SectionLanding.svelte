@@ -1,7 +1,10 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
   let wrap, revealCanvas
+  let section = $state()
   let _scale = 1 // fisso, serve solo per il calcolo del mouse
   let ctx
   let helmetImage
@@ -340,45 +343,49 @@
       raf = requestAnimationFrame(tick)
     }
 
-    // --- SCROLL HANDLER ---
-    const onScroll = () => {
-      const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
+    // --- SCROLL GSAP SCRUB ---
+    const proxy = { v: 0 }
+    const scrollTween = gsap.to(proxy, {
+      v: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: section,
+        start: 'top top',
+        end: `+=${SCROLL_RANGE}`,
+        scrub: 0.6,
+        invalidateOnRefresh: true,
+      }
+    })
+
+    // Legge il valore interpolato ogni frame e aggiorna progress + mask logic
+    const progressTickerFn = () => {
+      const p = proxy.v
       progress = p
-      // Attiva/disattiva la maschera in base allo scroll
-      if (progress > MASK_DISABLE_PROGRESS) {
-        if (maskActive) {
-          maskActive = false
-          stopMask()
-        }
+      if (p > MASK_DISABLE_PROGRESS) {
+        if (maskActive) { maskActive = false; stopMask() }
       } else {
-        if (!maskActive) {
-          maskActive = true
-          startMask()
-        }
+        if (!maskActive) { maskActive = true; startMask() }
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
+    gsap.ticker.add(progressTickerFn)
 
     // Avvio iniziale
-    if (progress > MASK_DISABLE_PROGRESS) {
-      maskActive = false
-      stopMask()
-    } else {
-      maskActive = true
-      tick()
-      addListeners()
-    }
+    maskActive = true
+    tick()
+    addListeners()
 
     return () => {
       cancelAnimationFrame(raf)
       resizeObserver.disconnect()
-      window.removeEventListener('scroll', onScroll)
+      scrollTween.scrollTrigger?.kill()
+      scrollTween.kill()
+      gsap.ticker.remove(progressTickerFn)
       removeListeners()
     }
   })
 </script>
 
-<section id="athlete" class="landing">
+<section id="athlete" class="landing" bind:this={section}>
   <div class="sticky-inner">
     <h1 class="title" style:opacity={titleOpacity}>Outcast<br />Champion</h1>
 

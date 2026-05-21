@@ -13,24 +13,19 @@
   ctx = gsap.context(() => {
     const lines = section.querySelectorAll('.line');
 
-    gsap.fromTo(lines, 
-      { 
-        opacity: 0,
-        y: 60 
-      }, 
+    gsap.fromTo(lines,
+      { opacity: 0, y: 60 },
       {
         opacity: 1,
-        y: 0, 
-        duration: 1,
-        ease: "power2.out",
-        stagger: 0.12, 
+        y: 0,
+        ease: 'power2.out',
+        stagger: 0.15,
         scrollTrigger: {
           trigger: section,
-          start: "top center", 
-          end: "bottom center", // Definisce anche il punto di uscita inferiore
+          start: 'top 75%',
+          end: 'center center',
+          scrub: 1,
           invalidateOnRefresh: true,
-          toggleActions: "play reverse play reverse", // <-- MODIFICATO QUI: l'animazione ora va avanti e indietro all'infinito
-          markers: false 
         }
       }
     );
