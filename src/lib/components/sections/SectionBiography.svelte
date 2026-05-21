@@ -1,14 +1,17 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
   let paddingLateral = $state(80)
   let paddingTopMain = $state(80)
 
-  let progress  = $state(0)
-  let section   = $state()
-  let vpW       = $state(1440)
-  let vpH       = $state(900)
-  let isMobile  = $state(false)
+  let section    = $state()
+  let cardsTrack = $state()
+  let offsetX    = $state(0)
+  let vpW        = $state(1440)
+  let vpH        = $state(900)
+  let isMobile   = $state(false)
 
   const REFERENCE_WIDTH   = 1440
   const MOBILE_BREAKPOINT = 768
@@ -86,7 +89,6 @@
   let trackWidth    = $derived(isMobile ? 0 : lastCardX + paddingLateral)
   let maxOffsetX    = $derived(Math.max(0, trackWidth - vpW))
   let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX}px)`)
-  let offsetX       = $derived(isMobile ? 0 : progress * maxOffsetX)
 
   onMount(() => {
     const style = getComputedStyle(document.documentElement)
@@ -99,20 +101,46 @@
       vpH = window.innerHeight
     }
 
-    const onScroll = () => {
-      if (!section || isMobile) return
-      const rect = section.getBoundingClientRect()
-      const totalScrollable = section.offsetHeight - window.innerHeight
-      progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
+    checkMobile()
+
+    let tween = null
+    let tickerFn = null
+
+    if (!isMobile) {
+      tween = gsap.to(cardsTrack, {
+        x: () => -maxOffsetX,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: section,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 1.5,
+          invalidateOnRefresh: true,
+        },
+      })
+
+      // Legge la x reale (interpolata dal scrub) ogni frame → parallax sincronizzato
+      tickerFn = () => {
+        if (cardsTrack) {
+          offsetX = Math.abs(gsap.getProperty(cardsTrack, 'x') || 0)
+        }
+      }
+      gsap.ticker.add(tickerFn)
     }
 
-    checkMobile()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', checkMobile)
-    onScroll()
+    const onResize = async () => {
+      checkMobile()
+      await tick()
+      ScrollTrigger.refresh()
+    }
+
+    window.addEventListener('resize', onResize)
+
     return () => {
-      window.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', checkMobile)
+      window.removeEventListener('resize', onResize)
+      tween?.scrollTrigger?.kill()
+      tween?.kill()
+      if (tickerFn) gsap.ticker.remove(tickerFn)
     }
   })
 
@@ -136,8 +164,8 @@
     <div class="sticky-wrap">
       <div
         class="cards-track"
+        bind:this={cardsTrack}
         style:width="{trackWidth}px"
-        style:transform="translateX(-{offsetX}px)"
       >
         {#each horizontalCards as card}
           <div class="card" style:left="{card.x}px" style:top="{card.top}px">
