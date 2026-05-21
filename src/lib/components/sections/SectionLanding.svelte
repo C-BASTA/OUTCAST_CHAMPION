@@ -37,12 +37,14 @@
   const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
   const TRAVEL =420
 
-
   let progress = $state(0)
-  let photoScale = $derived(1) // fisso a 1, nessuna scala
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
   let textOpacity = $derived(Math.min(1, progress * 2.5))
+
+  // Soglia oltre la quale la maschera viene disattivata
+  const MASK_DISABLE_PROGRESS = 0.17
+  let maskActive = true
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
   const rand = (min, max) => min + Math.random() * (max - min)
@@ -179,12 +181,10 @@
     const resizeObserver = new ResizeObserver(resizeCanvas)
     if (wrap) resizeObserver.observe(wrap)
 
-    const onScroll = () => {
-      const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
-      progress = p
-      // nessuna scala
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
+    // --- MASK LOGIC ---
+    let raf
+    let listenersActive = false
+    let stopped = false
 
     // --- CONFIGURAZIONE AUTO-PLAY (IL TUO ZIG-ZAG) ---
     let idleStep = 0
@@ -201,8 +201,85 @@
       { x: 0.24, y: 0.18 }
     ]
 
-    let raf
-    const tick = () => {
+    const onMove = (e) => {
+      if (!maskActive) return
+      _hovering = true
+      lastMoveTime = Date.now()
+      const now = performance.now()
+      const hr = wrap.getBoundingClientRect()
+      const x = (e.clientX - hr.left) / _scale
+      const y = (e.clientY - hr.top) / _scale
+      _tCx = x
+      _tCy = y
+      _tR = RADIUS
+
+      const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
+      const dx = lastPointerTime ? x - lastPointerX : 0
+      const dy = lastPointerTime ? y - lastPointerY : 0
+      const distance = Math.hypot(dx, dy)
+      const speed = distance / (dt / 16.67)
+      const steps = Math.max(1, Math.min(7, Math.ceil(distance / 46)))
+      const dirLen = distance || 1
+      const dirX = dx / dirLen
+      const dirY = dy / dirLen
+
+      for (let i = 0; i < steps; i++) {
+        const t = steps === 1 ? 1 : i / (steps - 1)
+        const px = lastPointerTime ? lastPointerX + dx * t : x
+        const py = lastPointerTime ? lastPointerY + dy * t : y
+        const amount = Math.ceil(clamp(2 + speed / 9, 3, 18) / steps)
+        spawnTiles(px, py, amount, speed, dirX, dirY)
+      }
+
+      if (distance > 12) {
+        spawnTrail(x, y, speed, dirX, dirY)
+      }
+
+      lastPointerX = x
+      lastPointerY = y
+      lastPointerTime = now
+    }
+
+    const onLeave = () => {
+      if (!maskActive) return
+      _hovering = false
+      _tR = 0
+      lastPointerTime = 0
+    }
+
+    function addListeners() {
+      if (!listenersActive && wrap) {
+        wrap.addEventListener('mousemove', onMove)
+        wrap.addEventListener('mouseleave', onLeave)
+        listenersActive = true
+      }
+    }
+    function removeListeners() {
+      if (listenersActive && wrap) {
+        wrap.removeEventListener('mousemove', onMove)
+        wrap.removeEventListener('mouseleave', onLeave)
+        listenersActive = false
+      }
+    }
+
+    function stopMask() {
+      stopped = true
+      removeListeners()
+      tiles = []
+      ctx?.clearRect(0, 0, canvasW, canvasH)
+      cancelAnimationFrame(raf)
+    }
+
+    function startMask() {
+      if (!stopped) return
+      stopped = false
+      lastFrameTime = 0
+      tick()
+      addListeners()
+    }
+
+    function tick() {
+      if (!maskActive) return
       const now = performance.now()
       const dt = lastFrameTime ? Math.min(48, now - lastFrameTime) : 16
       lastFrameTime = now
@@ -262,60 +339,41 @@
       drawTiles(dt)
       raf = requestAnimationFrame(tick)
     }
-    tick()
 
-    const onMove = (e) => {
-      _hovering = true
-      lastMoveTime = Date.now()
-      const now = performance.now()
-      const hr = wrap.getBoundingClientRect()
-      const x = (e.clientX - hr.left) / _scale
-      const y = (e.clientY - hr.top) / _scale
-      _tCx = x
-      _tCy = y
-      _tR = RADIUS
-
-      const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
-      const dx = lastPointerTime ? x - lastPointerX : 0
-      const dy = lastPointerTime ? y - lastPointerY : 0
-      const distance = Math.hypot(dx, dy)
-      const speed = distance / (dt / 16.67)
-      const steps = Math.max(1, Math.min(7, Math.ceil(distance / 46)))
-      const dirLen = distance || 1
-      const dirX = dx / dirLen
-      const dirY = dy / dirLen
-
-      for (let i = 0; i < steps; i++) {
-        const t = steps === 1 ? 1 : i / (steps - 1)
-        const px = lastPointerTime ? lastPointerX + dx * t : x
-        const py = lastPointerTime ? lastPointerY + dy * t : y
-        const amount = Math.ceil(clamp(2 + speed / 9, 3, 18) / steps)
-        spawnTiles(px, py, amount, speed, dirX, dirY)
+    // --- SCROLL HANDLER ---
+    const onScroll = () => {
+      const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
+      progress = p
+      // Attiva/disattiva la maschera in base allo scroll
+      if (progress > MASK_DISABLE_PROGRESS) {
+        if (maskActive) {
+          maskActive = false
+          stopMask()
+        }
+      } else {
+        if (!maskActive) {
+          maskActive = true
+          startMask()
+        }
       }
-
-      if (distance > 12) {
-        spawnTrail(x, y, speed, dirX, dirY)
-      }
-
-      lastPointerX = x
-      lastPointerY = y
-      lastPointerTime = now
     }
+    window.addEventListener('scroll', onScroll, { passive: true })
 
-    const onLeave = () => {
-      _hovering = false
-      _tR = 0
-      lastPointerTime = 0
+    // Avvio iniziale
+    if (progress > MASK_DISABLE_PROGRESS) {
+      maskActive = false
+      stopMask()
+    } else {
+      maskActive = true
+      tick()
+      addListeners()
     }
-    wrap.addEventListener('mousemove', onMove)
-    wrap.addEventListener('mouseleave', onLeave)
 
     return () => {
       cancelAnimationFrame(raf)
       resizeObserver.disconnect()
       window.removeEventListener('scroll', onScroll)
-      wrap?.removeEventListener('mousemove', onMove)
-      wrap?.removeEventListener('mouseleave', onLeave)
+      removeListeners()
     }
   })
 </script>
@@ -369,7 +427,7 @@
     font-family: var(--font-primary);
     font-size: clamp(40px, 4.5vw, 72px);
     font-weight: 400;
-    color: #030404;
+    color: var(--color-ink-inverted);
     line-height: 1.05;
     letter-spacing: -0.02em;
     z-index: 10;
