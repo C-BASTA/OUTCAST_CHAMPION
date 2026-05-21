@@ -5,6 +5,15 @@
 
   let open = $state(false)
 
+  // Blocca lo scroll del body quando overlay è aperto (runes mode)
+  $effect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  });
+
   const items = [
     { num: '01', label: 'Athlete',  href: '#athlete', grid: false },
     { num: '02', label: 'Helmet',   href: '#helmet-list', grid: false },
