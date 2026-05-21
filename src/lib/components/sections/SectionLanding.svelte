@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
 
   let wrap, revealCanvas
+  let _scale = 1 // fisso, serve solo per il calcolo del mouse
   let ctx
   let helmetImage
   let _cx = 0, _cy = 0, _r = 0, _vx = 0, _vy = 0, _vr = 0
@@ -36,7 +37,9 @@
   const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
   const TRAVEL =420
 
+
   let progress = $state(0)
+  let photoScale = $derived(1) // fisso a 1, nessuna scala
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
   let textOpacity = $derived(Math.min(1, progress * 2.5))
@@ -179,6 +182,7 @@
     const onScroll = () => {
       const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
       progress = p
+      // nessuna scala
     }
     window.addEventListener('scroll', onScroll, { passive: true })
 
