@@ -7,11 +7,9 @@
 
   let wrapper = $state(null)
   let quoteOpacity = $state(0)
-  let quoteBlur = $state(10)
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
   const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2
-  const lerp = (a, b, t) => a + (b - a) * t
 
   onMount(() => {
     const proxy = { v: 0 }
@@ -30,16 +28,11 @@
     const tickerFn = () => {
       const progress = proxy.v
       if (progress < 0.34) {
-        const t = ease(clamp(progress / 0.34, 0, 1))
-        quoteOpacity = t
-        quoteBlur = lerp(10, 0, t)
+        quoteOpacity = ease(clamp(progress / 0.34, 0, 1))
       } else if (progress < 0.56) {
         quoteOpacity = 1
-        quoteBlur = 0
       } else {
-        const t = ease(clamp((progress - 0.56) / 0.36, 0, 1))
-        quoteOpacity = 1 - t
-        quoteBlur = lerp(0, 10, t)
+        quoteOpacity = 1 - ease(clamp((progress - 0.56) / 0.36, 0, 1))
       }
     }
     gsap.ticker.add(tickerFn)
@@ -57,7 +50,6 @@
     <div
       class="quote-overlay"
       style:opacity={quoteOpacity}
-      style:filter="blur({quoteBlur}px)"
       aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
     >
       <p class="quote">
@@ -90,7 +82,7 @@
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
-    will-change: opacity, filter;
+    will-change: opacity;
   }
 
   .quote {
