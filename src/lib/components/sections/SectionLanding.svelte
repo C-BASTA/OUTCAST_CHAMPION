@@ -37,7 +37,6 @@
   const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
   const TRAVEL =420
 
-
   let progress = $state(0)
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
