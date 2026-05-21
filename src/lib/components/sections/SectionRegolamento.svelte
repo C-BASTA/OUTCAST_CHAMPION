@@ -94,7 +94,7 @@
 <style>
   /* La section è solo un contenitore che occupa tutto lo spazio disponibile */
   .regolamento-section {
-    background: #030404;
+    background: var(--color-canvas-dark);
     position: relative;
     /* Altezza: la viewport + spazio extra per far sì che lo sticky abbia senso */
     /* Se vuoi che la sezione "passi" dopo un po', aumenta questo valore */
@@ -170,16 +170,17 @@
     font-weight: 400;
     line-height: 0.92;
     padding-top: 14px;
-    color: transparent;
-    -webkit-text-stroke: 1.5px rgba(250, 250, 250, 0.38);
-    paint-order: stroke fill;
-    transition: color 0.25s, -webkit-text-stroke-color 0.25s;
+    color: rgba(250, 250, 250, 0.38);
+    transition: color 0.25s;
     flex-shrink: 0;
   }
 
+  .folder-header:hover .folder-title:not(.is-active) {
+    color: rgba(250, 250, 250, 0.85);
+  }
+
   .folder-title.is-active {
-    color: #fafafa;
-    -webkit-text-stroke: 0px transparent;
+    color: var(--color-ink);
   }
 
   .folder-header:hover .folder-title:not(.is-active) {

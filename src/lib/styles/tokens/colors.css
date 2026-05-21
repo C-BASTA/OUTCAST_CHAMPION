@@ -55,6 +55,7 @@
 	:root {
 		--color-canvas:  var(--hex-neutral-900);
 		--color-surface: var(--hex-neutral-800);
+		--color-canvas-dark:  var(--hex-neutral-900);
 
 		--color-ink:           var(--hex-neutral-50);
 		--color-ink-secondary: var(--hex-neutral-500);

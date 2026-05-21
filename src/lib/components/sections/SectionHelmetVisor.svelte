@@ -240,7 +240,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: #030404;
+    background: var(--color-surface);
   }
 
   /* Full-bleed bg photo with vertical parallax room */
@@ -332,7 +332,7 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .visor-section--mobile {
-    background: #030404;
+    background: var(--color-surface);
     padding: 80px 24px 80px;
     min-height: 100vh;
     display: flex;
