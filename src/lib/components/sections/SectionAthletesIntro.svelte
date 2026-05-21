@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
 
-  const SCROLL_HEIGHT = 2000
+  const SCROLL_HEIGHT = 1400
 
   let wrapper = $state(null)
   let quoteOpacity = $state(0)
@@ -50,8 +50,7 @@
       aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
     >
       <p class="quote">
-        I believe they deserve to be here<br>today with me,<br>
-        and also they deserve to be with me<br>on competition day.
+        I believe they deserve to be here today with me, and also they deserve to be with me on competition day.
       </p>
     </div>
   </div>

@@ -37,8 +37,6 @@
   const TRAVEL =420
 
   let progress = $state(0)
-  let _scale = 1
-  let photoScale = $derived(1 - progress * 0.78)
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
   let titleOpacity = $derived(Math.max(0, 1 - progress * 6))
   let textOpacity = $derived(Math.min(1, progress * 2.5))
@@ -181,7 +179,6 @@
     const onScroll = () => {
       const p = Math.max(0, Math.min(1, window.scrollY / SCROLL_RANGE))
       progress = p
-      _scale = 1 - p * 0.78
     }
     window.addEventListener('scroll', onScroll, { passive: true })
 
@@ -326,7 +323,7 @@
     <div
       class="photo-wrap"
       bind:this={wrap}
-      style:transform="translateX(-50%) scale({photoScale})"
+      style:transform="translateX(-50%)"
       style:opacity={photoOpacity}
     >
       <img class="vlad" src="/images/vlad-espanso-hd-nobg.png" alt="Vlad" draggable="false" />

@@ -184,7 +184,7 @@
   }
 
   .folder-header:hover .folder-title:not(.is-active) {
-    -webkit-text-stroke-color: rgba(250, 250, 250, 0.75);
+    color: rgba(250, 250, 250, 0.75);
   }
 
   .folder-sub {
@@ -221,16 +221,16 @@
   }
 
   .body-text {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    column-count: 2;
+    column-gap: 2.5rem;
   }
 
   .body-text p {
     font-family: var(--font-secondary);
-    font-size: 1.05rem;
+    font-size: 1.15rem;
     color: rgba(250, 250, 250, 0.80);
     line-height: 1.75;
+    margin-bottom: 1rem;
   }
 
   .body-img-wrap img {
