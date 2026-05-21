@@ -6,6 +6,7 @@
   let canvasLight;
   let ctxLight;
   let w, h;
+  let dpr = 1;
   let animId;
 
   let colorYellow = '#ffd700';
@@ -63,10 +64,12 @@
   }
 
   function init() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
     w = window.innerWidth;
     h = window.innerHeight;
-    canvasLight.width  = w;
-    canvasLight.height = h;
+    canvasLight.width  = Math.round(w * dpr);
+    canvasLight.height = Math.round(h * dpr);
+    if (ctxLight) ctxLight.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   onMount(() => {

@@ -7,6 +7,7 @@
   let pixelCanvas
   let ctx
   let w, h
+  let dpr = 1
   let animId
   let stars = []
 
@@ -49,9 +50,14 @@
   }
 
   function init() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2)
     w = window.innerWidth
     h = window.innerHeight
-    if (pixelCanvas) { pixelCanvas.width = w; pixelCanvas.height = h }
+    if (pixelCanvas) {
+      pixelCanvas.width  = Math.round(w * dpr)
+      pixelCanvas.height = Math.round(h * dpr)
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
   }
 
   onMount(() => {

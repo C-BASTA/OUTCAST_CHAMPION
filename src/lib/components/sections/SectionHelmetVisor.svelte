@@ -74,8 +74,9 @@
 
   $effect(() => {
     if (!pixelCanvas || pixelCellOrder.length > 0) return
-    pixelCanvas.width  = window.innerWidth
-    pixelCanvas.height = window.innerHeight
+    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    pixelCanvas.width  = Math.round(window.innerWidth * dpr)
+    pixelCanvas.height = Math.round(window.innerHeight * dpr)
     pixelCellOrder = shuffleArr([...Array(PIXEL_COLS * PIXEL_ROWS).keys()])
   })
 
