@@ -240,7 +240,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: var(--color-surface);
+    background: var(--color-surface)
   }
 
   /* Full-bleed bg photo with vertical parallax room */
