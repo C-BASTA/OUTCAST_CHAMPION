@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
   import AthleteDetail from '$lib/components/sections/AthleteDetail.svelte'
 
@@ -335,13 +337,12 @@
     // Attiva sempre il canvas globale quando siamo dentro questa sezione
     helmetStore.visible = true
 
-    const newIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
-    introP = newIntroP
+    const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
-    if (newIntroP < 1) {
+    if (rawIntroP < 1) {
       // ── Fase intro: scroll-driven, applica diretto (no lerp extra) ──
       helmetStore.smoothRotation = false
-      const ei = ease(clamp(newIntroP / 0.65, 0, 1))
+      const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
       helmetStore.viewerPaddingLeft = lerp(0, 45, ei) + '%'
       helmetStore.cameraY = lerp(BIO_CAM_Y,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(BIO_CAM_Z,  ATH_CAM_Z,  ei)
@@ -389,13 +390,34 @@
   }
 
   onMount(() => {
+    // GSAP smooths introP for the names slide-up animation
+    const proxy = { v: 0 }
+    const introTween = gsap.to(proxy, {
+      v: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: wrapper,
+        start: 'top top',
+        end: `+=${INTRO_PX}`,
+        scrub: 1,
+        invalidateOnRefresh: true,
+      }
+    })
+    const introTickerFn = () => { introP = proxy.v }
+    gsap.ticker.add(introTickerFn)
+
+    // Raw scroll for helmetStore + athlete selection (needs immediate response)
     let rafId
     const handler = () => {
       cancelAnimationFrame(rafId)
       rafId = requestAnimationFrame(onScroll)
     }
     window.addEventListener('scroll', handler, { passive: true })
+
     return () => {
+      introTween.scrollTrigger?.kill()
+      introTween.kill()
+      gsap.ticker.remove(introTickerFn)
       window.removeEventListener('scroll', handler)
       cancelAnimationFrame(rafId)
       clearTimeout(rotationDelayId)

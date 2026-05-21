@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
   const SCROLL_HEIGHT = 1400
 
@@ -12,15 +14,21 @@
   const lerp = (a, b, t) => a + (b - a) * t
 
   onMount(() => {
-    const onScroll = () => {
-      if (!wrapper) return
-      const rect     = wrapper.getBoundingClientRect()
-      const total    = wrapper.offsetHeight - window.innerHeight
-      const progress = Math.max(0, Math.min(1, -rect.top / total))
+    const proxy = { v: 0 }
+    const scrollTween = gsap.to(proxy, {
+      v: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: wrapper,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 1,
+        invalidateOnRefresh: true,
+      }
+    })
 
-      // 0→0.34  : emerge lentamente in posizione
-      // 0.34→0.56: resta piena
-      // 0.56→0.92: si dissolve lentamente in posizione
+    const tickerFn = () => {
+      const progress = proxy.v
       if (progress < 0.34) {
         const t = ease(clamp(progress / 0.34, 0, 1))
         quoteOpacity = t
@@ -34,10 +42,13 @@
         quoteBlur = lerp(0, 10, t)
       }
     }
+    gsap.ticker.add(tickerFn)
 
-    window.addEventListener('scroll', onScroll, { passive: true })
-    onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      scrollTween.scrollTrigger?.kill()
+      scrollTween.kill()
+      gsap.ticker.remove(tickerFn)
+    }
   })
 </script>
 
