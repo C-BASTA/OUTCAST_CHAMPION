@@ -70,7 +70,6 @@
 
           {#if active === item.key}
             <div class="folder-body" transition:slide={{ duration: 400 }}>
-              <div class="body-sep"></div>
               <div class="body-grid">
                 <div class="body-text">
                   {#each item.body as para}
@@ -107,8 +106,11 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
-    padding: 80px 80px 0 80px;
-    
+    padding: 0 80px 80px 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
     /* Scrollbar personalizzata */
     scrollbar-width: thin;
     scrollbar-color: rgba(250, 250, 250, 0.3) rgba(250, 250, 250, 0.05);
@@ -129,15 +131,13 @@
   .folders {
     display: flex;
     flex-direction: column;
+    width: 100%;
     max-width: 1400px;
     margin: 0 auto;
   }
 
   .folder {
     border-top: 1px solid rgba(250, 250, 250, 0.14);
-  }
-  .folder:last-child {
-    border-bottom: 1px solid rgba(250, 250, 250, 0.14);
   }
 
   .folder-header {
