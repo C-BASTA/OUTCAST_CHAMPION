@@ -112,7 +112,6 @@
     justify-content: flex-end;
   }
 
-  /* Folders - uguale a prima */
   .folders {
     display: flex;
     flex-direction: column;
@@ -141,7 +140,7 @@
   .folder.is-open .folder-header {
     padding-bottom: 20px;
     overflow: visible;
-    height: auto;
+    height: 20vh;
   }
 
   .folder-title {

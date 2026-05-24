@@ -33,10 +33,28 @@
     <a class="logo" href="./" style="opacity:0; pointer-events:none;">Outcast Champion</a>
   {/if}
   <button class="dots-btn" onclick={toggle} aria-label="Apri menu">
-    <svg width="28" height="6" viewBox="0 0 28 6" fill="none" aria-hidden="true">
-      <circle cx="3"  cy="3" r="2.5" fill="currentColor"/>
-      <circle cx="14" cy="3" r="2.5" fill="currentColor"/>
-      <circle cx="25" cy="3" r="2.5" fill="currentColor"/>
+    <svg width="22" height="20" viewBox="0 0 22 20" fill="none" aria-hidden="true">
+      <!-- riga 1 -->
+      <rect x="0"  y="0"  width="2" height="2" fill="currentColor"/>
+      <rect x="4"  y="0"  width="2" height="2" fill="currentColor"/>
+      <rect x="8"  y="0"  width="2" height="2" fill="currentColor"/>
+      <rect x="12" y="0"  width="2" height="2" fill="currentColor"/>
+      <rect x="16" y="0"  width="2" height="2" fill="currentColor"/>
+      <rect x="20" y="0"  width="2" height="2" fill="currentColor"/>
+      <!-- riga 2 -->
+      <rect x="0"  y="9"  width="2" height="2" fill="currentColor"/>
+      <rect x="4"  y="9"  width="2" height="2" fill="currentColor"/>
+      <rect x="8"  y="9"  width="2" height="2" fill="currentColor"/>
+      <rect x="12" y="9"  width="2" height="2" fill="currentColor"/>
+      <rect x="16" y="9"  width="2" height="2" fill="currentColor"/>
+      <rect x="20" y="9"  width="2" height="2" fill="currentColor"/>
+      <!-- riga 3 -->
+      <rect x="0"  y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="4"  y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="8"  y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="12" y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="16" y="18" width="2" height="2" fill="currentColor"/>
+      <rect x="20" y="18" width="2" height="2" fill="currentColor"/>
     </svg>
   </button>
 </header>
@@ -50,9 +68,19 @@
 
     <!-- Tasto chiudi (×) in alto a destra -->
     <button class="close-btn" onclick={close} aria-label="Chiudi menu">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        <line x1="21" y1="3" x2="3"  y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
+        <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
       </svg>
     </button>
 
@@ -116,13 +144,12 @@
     border: none;
     cursor: pointer;
     color: var(--ink);
-    padding: 6px 4px;
+    padding: 0 4px;
     pointer-events: auto;
     display: flex;
     align-items: center;
     transition: opacity 0.2s;
   }
-  .dots-btn:hover { opacity: 0.45; }
 
   /* ── Overlay ──────────────────────────────────────────────── */
   .overlay {
@@ -151,19 +178,18 @@
   /* Tasto × */
   .close-btn {
     position: absolute;
-    top: 22px;
-    right: 44px;
+    top: 28px;
+    right: var(--padding-lateral);
+    transform: translateX(4px);
     background: none;
     border: none;
     cursor: pointer;
-    color: #030404;
-    padding: 6px;
+    color: var(--hex-neutral-900);
+    padding: 0 4px;
     display: flex;
     align-items: center;
-    transition: opacity 0.2s;
     z-index: 1;
   }
-  .close-btn:hover { opacity: 0.4; }
 
   /* Area cliccabile per chiudere lo sfondo */
   .bg-close {
