@@ -88,15 +88,6 @@
     <!-- Click su sfondo chiude -->
     <button class="bg-close" onclick={close} aria-label="Chiudi"></button>
 
-    <!-- Immagine hover: sinistra, cambia per voce -->
-    {#each items as item}
-      {#if item.img && hovered === item.label}
-        <div class="hover-img" transition:fade={{ duration: 180 }}>
-          <img src={item.img} alt={item.label} />
-        </div>
-      {/if}
-    {/each}
-
     <!-- Voci di menu -->
     <nav class="menu-nav">
       {#each items as item, i}
@@ -109,6 +100,11 @@
           in:fly={{ y: 28, delay: i * 60, duration: 380 }}
           out:fade={{ duration: 110 }}
         >
+          {#if item.img && hovered === item.label}
+            <div class="hover-img" transition:fade={{ duration: 180 }}>
+              <img src={item.img} alt={item.label} />
+            </div>
+          {/if}
           <span class="item-num">{item.num}</span>
           <span class="item-label" class:grid={item.grid}>{item.label}</span>
           {#if item.sub}
@@ -234,6 +230,7 @@
   }
 
   .menu-item {
+    position: relative;
     display: flex;
     align-items: flex-start;
     text-decoration: none;
@@ -283,9 +280,8 @@
   /* ── Hover image (left side) ─────────────────────────────── */
   .hover-img {
     position: absolute;
-    left: 20%;
-    top: 50%;
-    transform: translateY(-50%);
+    left: -30vw;
+    top: -20px;
     width: clamp(130px, 15vw, 210px);
     aspect-ratio: 3 / 4;
     overflow: hidden;
