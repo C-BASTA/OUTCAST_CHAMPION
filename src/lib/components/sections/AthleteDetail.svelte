@@ -5,7 +5,7 @@
   let scrollTop  = $state(0)
 
   // ── Scroll constants ──────────────────────────────────────────────
-  const TEXT_REVEAL_PX = 2500  // px of overlay-internal scroll to clear all text
+  const TEXT_REVEAL_PX = 1800  // px of overlay-internal scroll to clear all text
 
   // ── Helpers ───────────────────────────────────────────────────────
   const clamp      = (x, a, b) => Math.max(a, Math.min(b, x))
@@ -58,16 +58,34 @@
     })
   })
 
-  // ── Gallery verticale scroll-driven ──────────────────────────────────
-  const PHOTO_STEP_PX = 700  // scroll necessario per far apparire ogni foto
+  // ── Gallery: un solo cover che sale, poi le foto si dissolvono ────────
+  const SLIDE_IN_PX  = 500   // scroll per portare il cover a schermo
+  const PHOTO_STEP_PX = 800  // scroll per ogni cambio foto
 
+  // coverT: 0 → 1 mentre il cover sale
+  let coverT = $derived(easeInOut(clamp((scrollTop - TEXT_REVEAL_PX) / SLIDE_IN_PX, 0, 1)))
+
+  // translateY del cover: 100vh → 0vh
+  let coverY = $derived(lerp(100, 0, coverT))
+
+  // Stili foto: foto 0 agganciata a coverT (non a scrollTop),
+  // foto 1+ guidate dallo scroll dopo che il cover è arrivato
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
+    const photoScroll = Math.max(0, scrollTop - (TEXT_REVEAL_PX + SLIDE_IN_PX))
+    const FADE        = PHOTO_STEP_PX * 0.4
+
     return athlete.photos.map((_, i) => {
-      const start = TEXT_REVEAL_PX + i * PHOTO_STEP_PX
-      const end   = start + PHOTO_STEP_PX * 0.75
-      const t     = easeInOut(clamp((scrollTop - start) / Math.max(end - start, 1), 0, 1))
-      return { y: lerp(100, 0, t) }   // 100vh → 0vh
+      let t
+      if (i === 0) {
+        // Prima foto: compare man mano che il cover sale (20%→100% del cover)
+        t = easeInOut(clamp((coverT - 0.2) / 0.8, 0, 1))
+      } else {
+        // Foto successive: scroll-driven dopo che il cover è arrivato
+        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX
+        t = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
+      }
+      return { opacity: t, blur: lerp(12, 0, t) }
     })
   })
 
@@ -78,7 +96,7 @@
 
     const onWheel = (e) => {
       e.preventDefault()
-      const maxScroll = TEXT_REVEAL_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 400
+      const maxScroll = TEXT_REVEAL_PX + SLIDE_IN_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 300
       scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
     }
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -128,14 +146,21 @@
           </svg>
         </button>
 
-        <!-- Foto: salgono dal basso in successione, coprono tutto il testo -->
-        {#each athlete.photos as photo, i}
-          <div class="photo-cover"
-               style:transform="translateY({photoStyles[i]?.y ?? 100}vh)"
-               style:z-index={10 + i}>
-            <img src={photo} alt="{athlete.name} {i + 1}" />
+        <!-- Cover unico che sale dal basso, poi le foto si dissolvono dentro -->
+        {#if athlete.photos?.length}
+          <div class="photo-cover" style:transform="translateY({coverY}vh)">
+            {#each athlete.photos as photo, i}
+              <img
+                class="photo-img"
+                src={photo}
+                alt="{athlete.name} {i + 1}"
+                style:opacity={photoStyles[i]?.opacity ?? 0}
+                style:filter={photoStyles[i]?.blur > 0 ? `blur(${photoStyles[i].blur}px)` : 'none'}
+                style:z-index={i}
+              />
+            {/each}
           </div>
-        {/each}
+        {/if}
 
         <!-- Upper: name (left) + paragraphs (right) -->
         <div class="upper">
@@ -249,7 +274,7 @@
     font-weight: 500;
     color: var(--color-ink, #fafafa);
     line-height: 0.96;
-    letter-spacing: -0.019em;
+    
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -260,7 +285,7 @@
     font-size: 20px;
     font-weight: 400;
     color: #d3d5d8;
-    letter-spacing: -0.019em;
+    
     line-height: 1.5;
     margin: 20px 0 0 0;
     padding-left: 4px;
@@ -268,7 +293,7 @@
 
   /* ── Right panel ── */
   .right-panel {
-    padding: calc(16.67vh) 60px 32px 10px;
+    padding: calc(16.67vh) 70px 32px 0px;
     display: flex;
     flex-direction: column;
     gap: 28px;
@@ -289,20 +314,21 @@
     flex-shrink: 0;
   }
 
-  /* ── Photo cover: sale dal basso, larga come la colonna testo ── */
+  /* ── Photo cover ── */
   .photo-cover {
     position: absolute;
-    left: 50%;        /* allineata al bordo sinistro del right-panel */
-    right: 60px;         /* fino al bordo destro dello schermo */
-    top: 16.67vh;        /* piccolo margine in alto */
-     max-width: 576px; 
-    bottom: 40px;     /* piccolo margine in basso */
+    left: 50%;
+    right: 60px;
+    top: 16.67vh;
+    bottom: 40px;
+    max-width: 576px;
     will-change: transform;
     overflow: hidden;
     border-radius: 2px;
+    z-index: 5;
   }
 
-  .photo-cover img {
+  .photo-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -310,6 +336,7 @@
     object-fit: cover;
     object-position: center center;
     display: block;
+    transition: opacity 0.1s ease;
   }
 
   /* ── Mobile ── */
