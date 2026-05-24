@@ -123,10 +123,10 @@
     justify-content: space-between;
     padding: 28px var(--padding-lateral);
     pointer-events: none;
-    --ink: #030404;
+   color: var(--hex-neutral-900);
     transition: opacity 0.2s;
   }
-  .nav-bar.dark   { --ink: #fafafa; }
+  .nav-bar.dark   { color: var(--hex-neutral-50); }
   .nav-bar.hidden { opacity: 0; pointer-events: none; }
 
   .logo {
@@ -143,7 +143,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--ink);
+    color: inherit;
     padding: 0 4px;
     pointer-events: auto;
     display: flex;
@@ -209,13 +209,13 @@
     transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    gap: clamp(28px, 5.5vh, 56px);
+    gap: clamp(36px, 7vh, 72px);
     z-index: 1;
   }
 
   .menu-item {
     display: flex;
-    align-items: baseline;
+    align-items: flex-start;
     text-decoration: none;
     color: #030404;
     cursor: pointer;
@@ -226,9 +226,10 @@
     font-family: var(--font-secondary);
     font-size: 36px;
     font-weight: 400;
-    line-height: 1.12;
-    min-width: 64px;
+    line-height: 1;
+    min-width: 80px;
     flex-shrink: 0;
+    padding-top: 0.08em;
     /* nessuna transition: rimane fermo */
   }
 
