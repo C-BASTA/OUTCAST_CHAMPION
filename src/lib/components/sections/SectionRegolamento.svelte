@@ -105,26 +105,11 @@
     position: sticky;
     top: 0;
     height: 100vh;
-    overflow-y: auto;
-    padding: 0 80px 80px 80px;
+    overflow: hidden;
+    padding: 0 80px 60px 80px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-
-    /* Scrollbar personalizzata */
-    scrollbar-width: thin;
-    scrollbar-color: rgba(250, 250, 250, 0.3) rgba(250, 250, 250, 0.05);
-  }
-  
-  .sticky-wrapper::-webkit-scrollbar {
-    width: 6px;
-  }
-  .sticky-wrapper::-webkit-scrollbar-track {
-    background: rgba(250, 250, 250, 0.05);
-  }
-  .sticky-wrapper::-webkit-scrollbar-thumb {
-    background: rgba(250, 250, 250, 0.3);
-    border-radius: 3px;
   }
 
   /* Folders - uguale a prima */
@@ -151,11 +136,6 @@
     cursor: pointer;
     text-align: left;
     overflow: visible;
-  }
-
-  .has-active .folder:not(.is-open) .folder-header {
-    height: clamp(56px, 7.5vh, 80px);
-    overflow: hidden;
   }
 
   .folder.is-open .folder-header {
@@ -203,8 +183,12 @@
   }
 
   .folder-body {
-    padding-bottom: 60px;
+    padding-bottom: 20px;
     overflow: hidden;
+    max-height: calc(100vh - clamp(56px, 7.5vh, 80px) * 3 - 60px - 120px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(250, 250, 250, 0.2) transparent;
   }
 
   .body-sep {
@@ -216,7 +200,7 @@
   .body-grid {
     display: grid;
     grid-template-columns: 1fr clamp(240px, 34vw, 470px);
-    gap: 64px;
+    gap: 40px;
     align-items: start;
   }
 
@@ -227,10 +211,10 @@
 
   .body-text p {
     font-family: var(--font-secondary);
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     color: rgba(250, 250, 250, 0.80);
-    line-height: 1.75;
-    margin-bottom: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.6rem;
   }
 
   .body-img-wrap img {
