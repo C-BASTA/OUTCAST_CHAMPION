@@ -134,7 +134,7 @@
     justify-content: space-between;
     padding: 28px var(--padding-lateral);
     pointer-events: none;
-   color: var(--hex-neutral-900);
+    color: var(--hex-neutral-50);
     transition: opacity 0.2s;
   }
   .nav-bar.dark   { color: var(--hex-neutral-50); }
@@ -143,7 +143,7 @@
   .logo {
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: var(--ink);
+    color: inherit;
     letter-spacing: -0.01em;
     pointer-events: auto;
     user-select: none;
@@ -303,8 +303,8 @@
     font-family: var(--font-secondary);
     font-size: 0.88rem;
     white-space: nowrap;
-    margin-left: 80px;
-    align-self: flex-start;
+    margin-left: 150px;
+    
     transform: translateY(-20px);
     opacity: 0;
     transition: opacity 0.22s;
