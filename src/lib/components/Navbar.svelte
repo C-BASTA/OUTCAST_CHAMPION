@@ -3,7 +3,8 @@
 
   const { dark = false, overlayDark = false, showLogo = true } = $props()
 
-  let open = $state(false)
+  let open    = $state(false)
+  let hovered = $state(null)
 
   // Blocca lo scroll del body quando overlay è aperto (runes mode)
   $effect(() => {
@@ -15,14 +16,14 @@
   });
 
   const items = [
-    { num: '01', label: 'Athlete',  href: '#athlete', grid: false },
-    { num: '02', label: 'Helmet',   href: '#helmet-list', grid: false },
-    { num: '03', label: 'Insight',  href: '#verdict', grid: false },
-    { num: '',   label: 'About us', href: '/about',   grid: true  },
+    { num: '01', label: 'Athlete',  href: '#athlete',     grid: false, sub: 'What has he achieved?',    img: '/images/athlete.png' },
+    { num: '02', label: 'Helmet',   href: '#helmet-list', grid: false, sub: 'Why those faces?',         img: '/images/helmet.png' },
+    { num: '03', label: 'Insight',  href: '#verdict',     grid: false, sub: "What's the full story?",  img: '/images/insight.png' },
+    { num: '',   label: 'About us', href: '/about',       grid: true,  sub: null,                       img: null },
   ]
 
   function toggle() { open = !open }
-  function close()  { open = false }
+  function close()  { open = false; hovered = null }
 </script>
 
 <!-- ── Header bar (sempre visibile) ──────────────────────────── -->
@@ -87,6 +88,15 @@
     <!-- Click su sfondo chiude -->
     <button class="bg-close" onclick={close} aria-label="Chiudi"></button>
 
+    <!-- Immagine hover: sinistra, cambia per voce -->
+    {#each items as item}
+      {#if item.img && hovered === item.label}
+        <div class="hover-img" transition:fade={{ duration: 180 }}>
+          <img src={item.img} alt={item.label} />
+        </div>
+      {/if}
+    {/each}
+
     <!-- Voci di menu -->
     <nav class="menu-nav">
       {#each items as item, i}
@@ -94,11 +104,16 @@
           class="menu-item"
           href={item.href}
           onclick={close}
+          onmouseenter={() => hovered = item.label}
+          onmouseleave={() => hovered = null}
           in:fly={{ y: 28, delay: i * 60, duration: 380 }}
           out:fade={{ duration: 110 }}
         >
           <span class="item-num">{item.num}</span>
           <span class="item-label" class:grid={item.grid}>{item.label}</span>
+          {#if item.sub}
+            <span class="item-sub" class:visible={hovered === item.label}>{item.sub}</span>
+          {/if}
         </a>
       {/each}
     </nav>
@@ -262,6 +277,45 @@
 
   .menu-item:hover .item-label.grid {
     transform: none;
+    opacity: 1;
+  }
+
+  /* ── Hover image (left side) ─────────────────────────────── */
+  .hover-img {
+    position: absolute;
+    left: 20%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(130px, 15vw, 210px);
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .hover-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    filter: grayscale(1);
+  }
+
+  /* Sub-testo a destra della label, stesso livello del numero */
+  .item-sub {
+    font-family: var(--font-secondary);
+    font-size: 0.88rem;
+    white-space: nowrap;
+    margin-left: 80px;
+    align-self: flex-start;
+    transform: translateY(-20px);
+    opacity: 0;
+    transition: opacity 0.22s;
+    flex-shrink: 0;
+  }
+
+  .item-sub.visible {
     opacity: 1;
   }
 
