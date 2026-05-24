@@ -58,27 +58,28 @@
     })
   })
 
-  // ── Gallery orizzontale scroll-driven (solo indice 0, prova) ────────
-  const LOOP_COUNT = 6
+  // ── Gallery verticale scroll-driven ──────────────────────────────────
+  const PHOTO_STEP_PX = 700  // scroll necessario per far apparire ogni foto
 
-  let loopedPhotos = $derived.by(() => {
+  let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
-    if (athleteIndex !== 0) return athlete.photos
-    return Array.from({ length: LOOP_COUNT }, () => athlete.photos).flat()
+    return athlete.photos.map((_, i) => {
+      const start = TEXT_REVEAL_PX + i * PHOTO_STEP_PX
+      const end   = start + PHOTO_STEP_PX * 0.75
+      const t     = easeInOut(clamp((scrollTop - start) / Math.max(end - start, 1), 0, 1))
+      return { y: lerp(100, 0, t) }   // 100vh → 0vh
+    })
   })
 
-  // La track scorre a sinistra proporzionalmente allo scroll interno
-  // velocità 1.4 → a 600px scroll la gallery si sposta di ~840px
-  let galleryX = $derived(athleteIndex === 0 ? -scrollTop * 1.4 : 0)
-
-  // ── Lock body scroll + cattura wheel per reveal testo ───────────────
+  // ── Lock body scroll + cattura wheel per reveal testo e foto ─────────
   $effect(() => {
     if (!athlete) return
     document.body.style.overflow = 'hidden'
 
     const onWheel = (e) => {
       e.preventDefault()
-      scrollTop = clamp(scrollTop + e.deltaY, 0, TEXT_REVEAL_PX)
+      const maxScroll = TEXT_REVEAL_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 400
+      scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
     }
     window.addEventListener('wheel', onWheel, { passive: false })
 
@@ -127,6 +128,15 @@
           </svg>
         </button>
 
+        <!-- Foto: salgono dal basso in successione, coprono tutto il testo -->
+        {#each athlete.photos as photo, i}
+          <div class="photo-cover"
+               style:transform="translateY({photoStyles[i]?.y ?? 100}vh)"
+               style:z-index={10 + i}>
+            <img src={photo} alt="{athlete.name} {i + 1}" />
+          </div>
+        {/each}
+
         <!-- Upper: name (left) + paragraphs (right) -->
         <div class="upper">
 
@@ -147,19 +157,6 @@
               >{para}</p>
             {/each}
 
-            <!-- Photos below paragraphs, in the right column -->
-            <div class="photos-strip">
-              <div
-                class="photos-track"
-                style:transform="translateX({galleryX}px)"
-              >
-                {#each loopedPhotos as photo, i}
-                  <div class="photo-frame">
-                    <img src={photo} alt="{athlete.name} {i + 1}" />
-                  </div>
-                {/each}
-              </div>
-            </div>
           </div>
 
         </div>
@@ -292,52 +289,27 @@
     flex-shrink: 0;
   }
 
-  /* ── Photos strip (inside right panel, below paragraphs) ── */
-  .photos-strip {
-    flex-shrink: 0;
-    height: 220px;
-    overflow: hidden;
-    margin-top: 48px;
-    max-width: 576px;
-    mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 10%,
-      black 88%,
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 10%,
-      black 88%,
-      transparent 100%
-    );
-  }
-
-  .photos-track {
-    display: flex;
-    gap: 14px;
-    height: 100%;
+  /* ── Photo cover: sale dal basso, larga come la colonna testo ── */
+  .photo-cover {
+    position: absolute;
+    left: 50%;        /* allineata al bordo sinistro del right-panel */
+    right: 60px;         /* fino al bordo destro dello schermo */
+    top: 16.67vh;        /* piccolo margine in alto */
+     max-width: 576px; 
+    bottom: 40px;     /* piccolo margine in basso */
     will-change: transform;
-    transition: none;
-  }
-
-  .photo-frame {
-    flex-shrink: 0;
-    width: 175px;
-    height: 100%;
     overflow: hidden;
     border-radius: 2px;
   }
 
-  .photo-frame img {
+  .photo-cover img {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center top;
+    object-position: center center;
     display: block;
-    mix-blend-mode: luminosity;
   }
 
   /* ── Mobile ── */
@@ -358,7 +330,6 @@
     .right-panel {
       padding: 24px 24px 24px 24px;
     }
-    .photos-strip { height: 180px; }
-    .photo-frame  { width: 140px; }
+    .photo-item { height: 180px; }
   }
 </style>
