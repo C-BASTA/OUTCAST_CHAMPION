@@ -58,40 +58,28 @@
     })
   })
 
-  // ── Gallery: un solo cover che sale, poi le foto si dissolvono ────────
-  const SLIDE_IN_PX   = 1400  // scroll per portare il cover a schermo
-  const PHOTO_STEP_PX = 1400  // scroll per ogni cambio foto
+  // ── Gallery ───────────────────────────────────────────────────────
+  const PHOTO_STEP_PX  = 1400  // scroll per ogni cambio foto dopo la prima
+  const PHOTO_INIT_BLUR    = 50
+  const PHOTO_INIT_OPACITY = 0.02
 
-  // Valori iniziali coerenti con il reveal del testo
-  const PHOTO_INIT_BLUR    = 50    // px di blur iniziale su ogni foto
-  const PHOTO_INIT_OPACITY = 0.02  // opacità iniziale su ogni foto
-
-  // Cover inizia a salire già durante il reveal dell'ultimo paragrafo
-  const COVER_START_PX = TEXT_REVEAL_PX * 0.5   // 70% del reveal testo
-
-  // coverT: 0 → 1 mentre il cover sale
-  let coverT = $derived(easeInOut(clamp((scrollTop - COVER_START_PX) / SLIDE_IN_PX, 0, 1)))
-
-  // translateY del cover: 100vh → 0vh
-  let coverY = $derived(lerp(100, 0, coverT))
-
-  // Stili foto: foto 0 agganciata a coverT (non a scrollTop),
-  // foto 1+ guidate dallo scroll dopo che il cover è arrivato
+  // Foto 0 subito visibile (cover entra con CSS animation)
+  // Foto 1+ scroll-driven dopo TEXT_REVEAL_PX
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
-    const photoScroll = Math.max(0, scrollTop - (COVER_START_PX + SLIDE_IN_PX))
-    const FADE        = PHOTO_STEP_PX * 1  // finestra più lunga = reveal più graduale
+    const photoScroll = Math.max(0, scrollTop - TEXT_REVEAL_PX)
+    const FADE        = PHOTO_STEP_PX
 
     return athlete.photos.map((_, i) => {
-      let t
       if (i === 0) {
-        // Prima foto: nitida e opaca solo quando il cover è arrivato (coverT = 1)
-        t = coverT
-      } else {
-        // Foto successive: scroll-driven dopo che il cover è arrivato
-        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.01
-        t = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
+        // Foto 0: si schiarisce esattamente quando l'ultimo paragrafo diventa nitido
+        const n = paragraphs.length
+        const textEnd = n > 1 ? ((n - 1) / n) * TEXT_REVEAL_PX : TEXT_REVEAL_PX
+        const t0 = easeInOut(clamp(scrollTop / textEnd, 0, 1))
+        return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t0), blur: lerp(PHOTO_INIT_BLUR, 0, t0 * t0 * t0 * t0 * t0 * t0) }
       }
+      const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.1
+      const t     = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
       return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t), blur: lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t) }
     })
   })
@@ -104,7 +92,7 @@
 
     const onWheel = (e) => {
       e.preventDefault()
-      const maxScroll = TEXT_REVEAL_PX + SLIDE_IN_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 300
+      const maxScroll = TEXT_REVEAL_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 300
       scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
     }
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -161,7 +149,7 @@
 
         <!-- Cover unico che sale dal basso, poi le foto si dissolvono dentro -->
         {#if athlete.photos?.length}
-          <div class="photo-cover" style:transform="translateY({coverY}vh)">
+          <div class="photo-cover">
             {#each athlete.photos as photo, i}
               <img
                 class="photo-img"
@@ -307,15 +295,19 @@
   .photo-cover {
     position: absolute;
     left: 50%;
-    right: 60px;
+    right: 45px;
     top: 16.67vh;
     bottom: 40px;
-    max-width: 576px;
     will-change: transform;
     overflow: hidden;
     border-radius: 2px;
     z-index: 5;
-    transition: transform 1.4s cubic-bezier(0.08, 1, 0.2, 1);
+    animation: photo-cover-in 1.4s cubic-bezier(0.08, 1, 0.2, 1) both;
+  }
+
+  @keyframes photo-cover-in {
+    from { transform: translateY(100vh); }
+    to   { transform: translateY(0); }
   }
 
   .photo-img {
