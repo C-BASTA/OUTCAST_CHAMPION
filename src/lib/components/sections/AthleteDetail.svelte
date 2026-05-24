@@ -175,7 +175,7 @@
           </div>
         {/if}
 
-        <!-- Upper: name (left) + paragraphs (right) -->
+        <!-- Upper: name + descrizione a sx, foto a dx -->
         <div class="upper">
 
           <div class="left-panel">
@@ -183,10 +183,6 @@
               <span>{nameParts[0]}</span>
               <span>{nameParts[1]}</span>
             </h1>
-            <p class="role">{athlete.role}</p>
-          </div>
-
-          <div class="right-panel">
             {#each paragraphs as para, i}
               <p
                 class="para"
@@ -194,7 +190,6 @@
                 style:opacity={paraStyles[i]?.opacity ?? 1}
               >{para}</p>
             {/each}
-
           </div>
 
         </div>
@@ -278,7 +273,10 @@
     padding: 120px 0 48px 45px;
     display: flex;
     flex-direction: column;
+    gap: 28px;
+    overflow: hidden;
     justify-content: flex-start;
+    z-index: 1;
   }
 
   .athlete-name {
@@ -287,33 +285,10 @@
     font-weight: 500;
     color: var(--color-ink, #fafafa);
     line-height: 0.96;
-    
-    margin: 0;
+    margin: 0 0 52px 0;
     display: flex;
     flex-direction: column;
-  }
-
-  .role {
-    font-family: var(--font-primary, 'GeistPixel'), monospace;
-    font-size: 20px;
-    font-weight: 400;
-    color: #d3d5d8;
-    opacity: 0.7;
-    
-    line-height: 1.5;
-    margin: 80px 0 0 0;
-    padding-left: 4px;
-  }
-
-  /* ── Right panel ── */
-  .right-panel {
-    padding: calc(16.67vh) 70px 32px 0px;
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    overflow: hidden;
-    position: relative;
-    z-index: 1;
+    flex-shrink: 0;
   }
 
   .para {
