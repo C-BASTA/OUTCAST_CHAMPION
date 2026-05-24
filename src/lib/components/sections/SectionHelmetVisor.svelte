@@ -320,14 +320,14 @@
     position: absolute;
     padding: 0 3rem;
     box-sizing: border-box;
-    max-width: 700px;
+    max-width: 900px;
     margin: 0;
     text-align: center;
-    font-family: var(--font-primary, 'GeistPixel', monospace);
-    font-size: clamp(1.1rem, 1.8vw, 1.75rem);
-    line-height: 1.75;
-    color: var(--color-canvas-dark);
-    letter-spacing: 0.01em;
+    font-family:'GeistPixel';
+    font-size: 48px;
+    
+    color: --hex-neutral-100;
+    
     will-change: opacity, transform;
   }
 

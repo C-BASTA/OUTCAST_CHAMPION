@@ -22,7 +22,7 @@
         stagger: 0.15,
         scrollTrigger: {
           trigger: section,
-          start: 'top 75%',
+          start: 'top 40%',
           end: 'center center',
           scrub: 1,
           invalidateOnRefresh: true,
@@ -44,17 +44,17 @@
 <section bind:this={section} class="frase-section">
   <blockquote>
     <span class="line">
-      For me, the <strong class="accent accent-sacrifice">sacrifice</strong>
+      For me, the <strong class="accent accent-sacrifice">sacrifice</strong> of
     </span>
-    <span class="line">of the people depicted </span>
-    <span class="line">on this helmet weighs </span>
+    <span class="line">the people depicted on </span>
+    <span class="line"> this helmet weighs more </span>
     <span class="line">
-       more than any <strong class="accent accent-sacrifice">medal</strong>
+        than any <strong class="accent accent-sacrifice">medal</strong>, because
     </span>
-    <span class="line">because they gave</span>
-     <span class="line">the most precious thing</span>
+    <span class="line"> they gave the most</span>
+     <span class="line"> precious thing they had:</span>
     <span class="line">
-      they had: <strong class="accent accent-sacrifice">their lives.</strong>
+      <strong class="accent accent-sacrifice">their lives</strong>.
     </span>
   </blockquote>
 </section>
@@ -63,7 +63,7 @@
   .frase-section {
     position: relative;
     width: 100%;
-    height: 80vh;
+    height: 130vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -78,7 +78,7 @@
     quotes: none;
     display: flex;
     flex-direction: column;
-    gap: clamp(3px, 0.45vw, 8px);
+    gap: clamp(1px, 0.2vw, 3px);
     max-width: min(1180px, 92vw);
   }
 
@@ -97,15 +97,15 @@
 
   .accent {
     display: inline-block;
-    font-family: var(--font-third);
-    font-weight: 900;
+    font-family: 'GeistPixel-Square';
+    font-weight: 400;
     font-style: normal;
     line-height: 0.86;
     transform: translateY(-0.035em);
   }
 
   .accent-sacrifice {
-    color: var(--hex-brand-blue-700);
+    color: var(--hex-brand-blue-500);
   }
 
   .accent-medal {
@@ -113,7 +113,7 @@
   }
 
   .accent-lives {
-    color: var(--hex-brand-blue-300);
+    color: var(--hex-brand-blue-500);
   }
 
   @media (max-width: 760px) {
