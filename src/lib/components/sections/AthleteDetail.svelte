@@ -63,22 +63,21 @@
   const PHOTO_INIT_BLUR    = 50
   const PHOTO_INIT_OPACITY = 0.02
 
-  // Foto 0 subito visibile (cover entra con CSS animation)
-  // Foto 1+ scroll-driven dopo TEXT_REVEAL_PX
+  // Foto 0: si schiarisce con il testo
+  // Foto 1+: partono esattamente quando foto 0 ha completato (stesso trigger)
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
-    const photoScroll = Math.max(0, scrollTop - TEXT_REVEAL_PX)
+    const n       = paragraphs.length
+    const textEnd = n > 1 ? ((n - 1) / n) * TEXT_REVEAL_PX : TEXT_REVEAL_PX
+    const photoScroll = Math.max(0, scrollTop - textEnd)
     const FADE        = PHOTO_STEP_PX
 
     return athlete.photos.map((_, i) => {
       if (i === 0) {
-        // Foto 0: si schiarisce esattamente quando l'ultimo paragrafo diventa nitido
-        const n = paragraphs.length
-        const textEnd = n > 1 ? ((n - 1) / n) * TEXT_REVEAL_PX : TEXT_REVEAL_PX
         const t0 = easeInOut(clamp(scrollTop / textEnd, 0, 1))
         return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t0), blur: lerp(PHOTO_INIT_BLUR, 0, t0 * t0 * t0 * t0 * t0 * t0) }
       }
-      const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.1
+      const start = (i - 1) * PHOTO_STEP_PX
       const t     = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
       return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t), blur: lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t) }
     })
