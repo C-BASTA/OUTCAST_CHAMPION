@@ -229,7 +229,7 @@
     line-height: 1;
     min-width: 80px;
     flex-shrink: 0;
-    padding-top: 0.08em;
+    transform: translateY(-20px);
     /* nessuna transition: rimane fermo */
   }
 
