@@ -298,9 +298,10 @@
     font-size: 20px;
     font-weight: 400;
     color: #d3d5d8;
+    opacity: 0.7;
     
     line-height: 1.5;
-    margin: 20px 0 0 0;
+    margin: 80px 0 0 0;
     padding-left: 4px;
   }
 
