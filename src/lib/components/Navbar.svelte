@@ -246,10 +246,17 @@
   /* About Us usa GeistPixel-Grid (font pixel outline) */
   .item-label.grid {
     font-family: var(--font-primary);
+    opacity: 0.6;
+    transition: opacity 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
   }
 
   .menu-item:hover .item-label {
     transform: translateX(18px);
+  }
+
+  .menu-item:hover .item-label.grid {
+    transform: none;
+    opacity: 1;
   }
 
   /* ── Footer overlay ───────────────────────────────────────── */
