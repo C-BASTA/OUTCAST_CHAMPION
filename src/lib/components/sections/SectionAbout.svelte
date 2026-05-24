@@ -30,7 +30,7 @@
 
 <style>
   .about-section {
-    background: #030404;
+    background: var(--hex-neutral-50);
     min-height: 100vh;
     padding: 120px 80px 80px;
     border-top: 1px solid rgba(250, 250, 250, 0.08);

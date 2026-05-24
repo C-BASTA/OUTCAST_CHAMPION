@@ -48,10 +48,19 @@
     <span></span>
     <span class="polimi-label">@Politecnico di Milano</span>
     <a href="/" class="back-dots" aria-label="Torna alla home">
-      <svg width="28" height="6" viewBox="0 0 28 6" fill="none">
-        <circle cx="3"  cy="3" r="2.5" fill="#030404"/>
-        <circle cx="14" cy="3" r="2.5" fill="#030404"/>
-        <circle cx="25" cy="3" r="2.5" fill="#030404"/>
+      <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
+        <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
       </svg>
     </a>
   </header>
@@ -130,10 +139,8 @@
   .back-dots {
     display: flex;
     align-items: center;
-    opacity: 0.65;
-    transition: opacity 0.18s;
+    color: #030404;
   }
-  .back-dots:hover { opacity: 0.3; }
 
   /* ── Layout due colonne ──────────────────────── */
   .layout {
