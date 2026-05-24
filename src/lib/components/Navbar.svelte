@@ -134,7 +134,7 @@
     justify-content: space-between;
     padding: 28px var(--padding-lateral);
     pointer-events: none;
-    color: var(--hex-neutral-50);
+    color: var(--hex-neutral-900);
     transition: opacity 0.2s;
   }
   .nav-bar.dark   { color: var(--hex-neutral-50); }

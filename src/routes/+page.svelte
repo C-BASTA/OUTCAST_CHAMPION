@@ -19,17 +19,11 @@
     const handler = () => {
       scrollY = window.scrollY
 
-      const bioEl      = document.getElementById('athlete-bio')
-      const visorEl    = document.getElementById('helmet-visor')
-      const athletesEl = document.getElementById('athletes-section')
+      const bioEl     = document.getElementById('athlete-bio')
+      const visorEl   = document.getElementById('helmet-visor')
 
-      const visorStart    = visorEl?.offsetTop ?? Infinity
-      const athletesStart = athletesEl?.offsetTop ?? Infinity
-
-      // dark text → landing/bio/frase (sfondo chiaro)
-      // light text → nella visiera del casco (sfondo scuro)
-      // dark text → dalla sezione nomi atleti in poi
-      navDark = scrollY >= visorStart && scrollY < athletesStart
+      // navDark = true (testo bianco) dall'inizio di helmet-visor in poi
+      navDark = scrollY >= (visorEl?.offsetTop ?? Infinity)
       inBio   = !!(bioEl && scrollY >= bioEl.offsetTop)
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
