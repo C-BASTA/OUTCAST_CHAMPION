@@ -12,7 +12,7 @@
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
 
   let scrollY     = $state(0)
-  let navDark     = $state(false)
+  let navDark     = $state(false)  // inizia scuro (landing ha sfondo chiaro)
   let navShowLogo = $state(false)
   let inBio       = $state(false)
   onMount(() => {
@@ -26,7 +26,10 @@
       const visorStart    = visorEl?.offsetTop ?? Infinity
       const athletesStart = athletesEl?.offsetTop ?? Infinity
 
-      navDark = scrollY >= Math.min(visorStart, athletesStart)
+      // dark text → landing/bio/frase (sfondo chiaro)
+      // light text → nella visiera del casco (sfondo scuro)
+      // dark text → dalla sezione nomi atleti in poi
+      navDark = scrollY >= visorStart && scrollY < athletesStart
       inBio   = !!(bioEl && scrollY >= bioEl.offsetTop)
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
@@ -44,7 +47,7 @@
 <!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
 <HelmetGlobal />
 
-<Navbar dark={navDark} showLogo={navShowLogo} />
+<Navbar dark={navDark} overlayDark={navDark} showLogo={navShowLogo} />
 
 <main>
   <SectionLanding />

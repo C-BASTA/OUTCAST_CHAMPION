@@ -1,7 +1,7 @@
 <script>
   import { fade, fly } from 'svelte/transition'
 
-  const { dark = false, showLogo = true } = $props()
+  const { dark = false, overlayDark = false, showLogo = true } = $props()
 
   let open = $state(false)
 
@@ -61,7 +61,7 @@
 
 <!-- ── Overlay a tutto schermo ────────────────────────────────── -->
 {#if open}
-  <div class="overlay" transition:fade={{ duration: 260 }}>
+  <div class="overlay" class:dark={overlayDark} transition:fade={{ duration: 260 }}>
 
     <!-- Logo in alto a sinistra -->
     <a class="overlay-logo" href="./" onclick={close}>Outcast Champion</a>
@@ -156,9 +156,14 @@
     position: fixed;
     inset: 0;
     z-index: 250;
-    background: rgba(255, 255, 255, 0.85);
+    background: transparent;
     backdrop-filter: blur(28px) saturate(0.75);
     -webkit-backdrop-filter: blur(28px) saturate(0.75);
+    color: var(--hex-neutral-900);
+  }
+
+  .overlay.dark {
+    color: var(--hex-neutral-50);
   }
 
   /* Logo in overlay */
@@ -168,7 +173,7 @@
     left: var(--padding-lateral, 56px);
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: #030404;
+    color: inherit;
     text-decoration: none;
     letter-spacing: -0.01em;
     z-index: 1;
@@ -184,7 +189,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: var(--hex-neutral-900);
+    color: inherit;
     padding: 0 4px;
     display: flex;
     align-items: center;
@@ -217,7 +222,7 @@
     display: flex;
     align-items: flex-start;
     text-decoration: none;
-    color: #030404;
+    color: inherit;
     cursor: pointer;
   }
 
@@ -270,7 +275,7 @@
     justify-content: space-between;
     font-family: var(--font-secondary);
     font-size: 0.875rem;
-    color: #030404;
+    color: inherit;
     opacity: 0.5;
     z-index: 1;
     pointer-events: none;

@@ -434,7 +434,7 @@
     font-family: var(--font-primary);
     font-size: clamp(40px, 4.5vw, 72px);
     font-weight: 400;
-    color: var(--color-ink-inverted);
+    color: var(--hex-neutral-900);;
     line-height: 1.05;
     letter-spacing: -0.02em;
     z-index: 10;

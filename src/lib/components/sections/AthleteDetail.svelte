@@ -112,9 +112,19 @@
 
         <!-- Close button -->
         <button class="close-btn" on:click={onClose} aria-label="Close">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <line x1="3" y1="3" x2="17" y2="17" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="17" y1="3" x2="3"  y2="17" stroke="currentColor" stroke-width="1.5"/>
+          <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
+            <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
+            <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
+            <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
+            <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
+            <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
+            <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
+            <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
+            <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
+            <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
+            <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
+            <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
+            <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
           </svg>
         </button>
 
