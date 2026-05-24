@@ -59,7 +59,7 @@
   })
 
   // ── Gallery: un solo cover che sale, poi le foto si dissolvono ────────
-  const SLIDE_IN_PX   = 900   // scroll per portare il cover a schermo
+  const SLIDE_IN_PX   = 1400  // scroll per portare il cover a schermo
   const PHOTO_STEP_PX = 1400  // scroll per ogni cambio foto
 
   // Valori iniziali coerenti con il reveal del testo
@@ -85,8 +85,8 @@
     return athlete.photos.map((_, i) => {
       let t
       if (i === 0) {
-        // Prima foto: si rivela insieme al cover (coverT 0→1), stessa curva del testo
-        t = easeInOut(clamp(coverT / 0.9, 0, 1))
+        // Prima foto: nitida e opaca solo quando il cover è arrivato (coverT = 1)
+        t = coverT
       } else {
         // Foto successive: scroll-driven dopo che il cover è arrivato
         const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.01
@@ -339,7 +339,7 @@
     overflow: hidden;
     border-radius: 2px;
     z-index: 5;
-    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 1.4s cubic-bezier(0.08, 1, 0.2, 1);
   }
 
   .photo-img {
