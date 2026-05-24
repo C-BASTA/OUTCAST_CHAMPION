@@ -64,6 +64,7 @@
     position: relative;
     width: 100%;
     height: 80vh;
+    margin-bottom: clamp(60px, 8vw, 140px);
     display: flex;
     align-items: center;
     justify-content: center;
