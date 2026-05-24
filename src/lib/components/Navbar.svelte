@@ -101,7 +101,7 @@
           out:fade={{ duration: 110 }}
         >
           {#if item.img && hovered === item.label}
-            <div class="hover-img" transition:fade={{ duration: 180 }}>
+            <div class="hover-img" transition:fade={{ duration: 300 }}>
               <img src={item.img} alt={item.label} />
             </div>
           {/if}
@@ -269,7 +269,7 @@
   }
 
   .menu-item:hover .item-label {
-    transform: translateX(18px);
+    transform: translateX(10px);
   }
 
   .menu-item:hover .item-label.grid {
@@ -307,7 +307,7 @@
     
     transform: translateY(-20px);
     opacity: 0;
-    transition: opacity 0.22s;
+    transition: opacity 0.4s;
     flex-shrink: 0;
   }
 
