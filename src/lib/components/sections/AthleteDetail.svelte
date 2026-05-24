@@ -5,7 +5,7 @@
   let scrollTop  = $state(0)
 
   // ── Scroll constants ──────────────────────────────────────────────
-  const TEXT_REVEAL_PX = 600   // px of overlay-internal scroll to clear all text
+  const TEXT_REVEAL_PX = 2500  // px of overlay-internal scroll to clear all text
 
   // ── Helpers ───────────────────────────────────────────────────────
   const clamp      = (x, a, b) => Math.max(a, Math.min(b, x))
@@ -71,47 +71,46 @@
   // velocità 1.4 → a 600px scroll la gallery si sposta di ~840px
   let galleryX = $derived(athleteIndex === 0 ? -scrollTop * 1.4 : 0)
 
-  // ── Lock body scroll while overlay is open ────────────────────────
+  // ── Lock body scroll + cattura wheel per reveal testo ───────────────
   $effect(() => {
-    if (athlete) {
-      document.body.style.overflow = 'hidden'
-      return () => { document.body.style.overflow = '' }
+    if (!athlete) return
+    document.body.style.overflow = 'hidden'
+
+    const onWheel = (e) => {
+      e.preventDefault()
+      scrollTop = clamp(scrollTop + e.deltaY, 0, TEXT_REVEAL_PX)
+    }
+    window.addEventListener('wheel', onWheel, { passive: false })
+
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('wheel', onWheel)
+      scrollTop = 0
     }
   })
-
-  // ── Scroll handler ────────────────────────────────────────────────
-  function handleScroll() {
-    scrollTop = overlayEl?.scrollTop ?? 0
-  }
 
   function handleKeydown(e) {
     if (e.key === 'Escape') onClose()
   }
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if athlete}
-  <!-- Scrollable overlay -->
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+  <!-- Overlay -->
   <div
     class="overlay"
     role="dialog"
     aria-modal="true"
-    bind:this={overlayEl}
-    on:scroll={handleScroll}
   >
-    <!-- Scroll track: provides the extra scrollable height -->
-    <div class="scroll-track" style="height: calc(100vh + {TEXT_REVEAL_PX}px)">
-
-      <!-- Sticky visual panel -->
+      <!-- Visual panel -->
       <div class="sticky-panel">
 
         <!-- Subtle spotlight behind the text -->
         <div class="glow" aria-hidden="true"></div>
 
         <!-- Close button -->
-        <button class="close-btn" on:click={onClose} aria-label="Close">
+        <button class="close-btn" onclick={onClose} aria-label="Close">
           <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
             <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
             <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
@@ -166,7 +165,6 @@
         </div>
 
       </div>
-    </div>
   </div>
 {/if}
 
@@ -177,12 +175,9 @@
     inset: 0;
     z-index: 500;
     background: var(--color-bg, #030404);
-    overflow-y: scroll;
-    overflow-x: hidden;
-    scrollbar-width: none;
+    overflow: hidden;
     animation: overlay-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
-  .overlay::-webkit-scrollbar { display: none; }
 
   @keyframes overlay-in {
     from { opacity: 0; transform: translateY(10px); }
@@ -190,18 +185,10 @@
   }
 
   /* ── Scroll track ── */
-  .scroll-track {
-    position: relative;
-    width: 100%;
-    /* height set inline */
-  }
-
-  /* ── Sticky panel ── */
+  /* ── Panel ── */
   .sticky-panel {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    width: 100%;
+    position: absolute;
+    inset: 0;
     overflow: hidden;
     display: flex;
     flex-direction: column;
