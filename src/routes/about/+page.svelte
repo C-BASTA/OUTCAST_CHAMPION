@@ -47,7 +47,7 @@
   <header class="about-header">
     <span></span>
     <span class="polimi-label">@Politecnico di Milano</span>
-    <a href="/" class="back-dots" aria-label="Torna alla home">
+    <button class="back-dots" onclick={() => history.back()} aria-label="Chiudi">
       <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
         <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
         <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
@@ -62,7 +62,7 @@
         <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
         <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
       </svg>
-    </a>
+    </button>
   </header>
 
   <div class="layout">
@@ -139,6 +139,10 @@
   .back-dots {
     display: flex;
     align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0 4px;
     color: #030404;
   }
 
