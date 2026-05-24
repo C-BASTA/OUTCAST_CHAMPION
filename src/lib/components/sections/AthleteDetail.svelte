@@ -59,11 +59,18 @@
   })
 
   // ── Gallery: un solo cover che sale, poi le foto si dissolvono ────────
-  const SLIDE_IN_PX  = 500   // scroll per portare il cover a schermo
-  const PHOTO_STEP_PX = 800  // scroll per ogni cambio foto
+  const SLIDE_IN_PX   = 900   // scroll per portare il cover a schermo
+  const PHOTO_STEP_PX = 1400  // scroll per ogni cambio foto
+
+  // Valori iniziali coerenti con il reveal del testo
+  const PHOTO_INIT_BLUR    = 50    // px di blur iniziale su ogni foto
+  const PHOTO_INIT_OPACITY = 0.02  // opacità iniziale su ogni foto
+
+  // Cover inizia a salire già durante il reveal dell'ultimo paragrafo
+  const COVER_START_PX = TEXT_REVEAL_PX * 0.5   // 70% del reveal testo
 
   // coverT: 0 → 1 mentre il cover sale
-  let coverT = $derived(easeInOut(clamp((scrollTop - TEXT_REVEAL_PX) / SLIDE_IN_PX, 0, 1)))
+  let coverT = $derived(easeInOut(clamp((scrollTop - COVER_START_PX) / SLIDE_IN_PX, 0, 1)))
 
   // translateY del cover: 100vh → 0vh
   let coverY = $derived(lerp(100, 0, coverT))
@@ -72,20 +79,20 @@
   // foto 1+ guidate dallo scroll dopo che il cover è arrivato
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
-    const photoScroll = Math.max(0, scrollTop - (TEXT_REVEAL_PX + SLIDE_IN_PX))
-    const FADE        = PHOTO_STEP_PX * 0.4
+    const photoScroll = Math.max(0, scrollTop - (COVER_START_PX + SLIDE_IN_PX))
+    const FADE        = PHOTO_STEP_PX * 0.1  // finestra più lunga = reveal più graduale
 
     return athlete.photos.map((_, i) => {
       let t
       if (i === 0) {
-        // Prima foto: compare man mano che il cover sale (20%→100% del cover)
-        t = easeInOut(clamp((coverT - 0.2) / 0.8, 0, 1))
+        // Prima foto: si rivela insieme al cover (coverT 0→1), stessa curva del testo
+        t = easeInOut(clamp(coverT / 0.9, 0, 1))
       } else {
         // Foto successive: scroll-driven dopo che il cover è arrivato
-        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX
+        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.3
         t = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
       }
-      return { opacity: t, blur: lerp(12, 0, t) }
+      return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t), blur: lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t) }
     })
   })
 
@@ -326,6 +333,7 @@
     overflow: hidden;
     border-radius: 2px;
     z-index: 5;
+    transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .photo-img {
