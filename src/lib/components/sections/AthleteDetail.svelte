@@ -262,7 +262,7 @@
     display: flex;
     flex-direction: column;
     gap: 28px;
-    overflow: hidden;
+    overflow: visible;
     justify-content: flex-start;
     z-index: 1;
   }
@@ -294,8 +294,9 @@
   /* ── Photo cover ── */
   .photo-cover {
     position: absolute;
-    left: 50%;
     right: 45px;
+    width: 40%;
+    max-width: 35vw;
     top: 16.67vh;
     bottom: 40px;
     will-change: transform;
