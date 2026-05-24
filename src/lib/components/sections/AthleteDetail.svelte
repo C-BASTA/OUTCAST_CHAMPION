@@ -80,7 +80,7 @@
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
     const photoScroll = Math.max(0, scrollTop - (COVER_START_PX + SLIDE_IN_PX))
-    const FADE        = PHOTO_STEP_PX * 0.1  // finestra più lunga = reveal più graduale
+    const FADE        = PHOTO_STEP_PX * 1  // finestra più lunga = reveal più graduale
 
     return athlete.photos.map((_, i) => {
       let t
@@ -89,7 +89,7 @@
         t = easeInOut(clamp(coverT / 0.9, 0, 1))
       } else {
         // Foto successive: scroll-driven dopo che il cover è arrivato
-        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.3
+        const start = (i - 1) * PHOTO_STEP_PX + PHOTO_STEP_PX * 0.01
         t = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
       }
       return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t), blur: lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t) }
@@ -99,6 +99,7 @@
   // ── Lock body scroll + cattura wheel per reveal testo e foto ─────────
   $effect(() => {
     if (!athlete) return
+    const savedScrollY = window.scrollY   // salva posizione prima di bloccare
     document.body.style.overflow = 'hidden'
 
     const onWheel = (e) => {
@@ -112,6 +113,11 @@
       document.body.style.overflow = ''
       window.removeEventListener('wheel', onWheel)
       scrollTop = 0
+      // Ripristina posizione e blocca il momentum residuo del trackpad
+      window.scrollTo(0, savedScrollY)
+      const blockMomentum = (e) => e.preventDefault()
+      window.addEventListener('wheel', blockMomentum, { passive: false })
+      setTimeout(() => window.removeEventListener('wheel', blockMomentum), 400)
     }
   })
 
