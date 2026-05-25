@@ -59,4 +59,8 @@
 
 <style>
   main { width: 100%; }
+
+  #athletes-section {
+    background: #030404;
+  }
 </style>

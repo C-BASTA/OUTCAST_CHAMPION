@@ -1,59 +1,66 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
+  gsap.registerPlugin(ScrollTrigger);
+
   const SCROLL_HEIGHT = 1400
 
-  let wrapper = $state(null)
-  let quoteOpacity = $state(0)
-
-  const clamp = (value, min, max) => Math.max(min, Math.min(max, value))
-  const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2
+  let wrapper
+  let ctx
 
   onMount(() => {
-    const proxy = { v: 0 }
-    const scrollTween = gsap.to(proxy, {
-      v: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: wrapper,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 1,
-        invalidateOnRefresh: true,
-      }
-    })
+    // Usiamo gsap.context per isolare le animazioni in Svelte
+    ctx = gsap.context(() => {
+      const lines = wrapper.querySelectorAll('.line');
 
-    const tickerFn = () => {
-      const progress = proxy.v
-      if (progress < 0.34) {
-        quoteOpacity = ease(clamp(progress / 0.34, 0, 1))
-      } else if (progress < 0.56) {
-        quoteOpacity = 1
-      } else {
-        quoteOpacity = 1 - ease(clamp((progress - 0.56) / 0.36, 0, 1))
-      }
-    }
-    gsap.ticker.add(tickerFn)
+      // Creiamo una Timeline legata allo scroll della sezione sticky
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: wrapper,
+          start: 'top top',      // Parte quando il wrapper tocca la cima dello schermo
+          end: 'bottom bottom',  // Finisce quando abbiamo consumato i 1400px di scroll
+          scrub: 1,              // Lega l'animazione millimetricamente alla rotellina
+          invalidateOnRefresh: true
+        }
+      });
+
+      // 1. FASE DI ENTRATA: Le righe compaiono a cascata dal basso verso l'alto
+      tl.fromTo(lines, 
+        { opacity: 0, y: 60 },
+        { opacity: 1, y: 0, ease: "power2.out", stagger: 0.15, duration: 1 }
+      );
+
+      // 2. FASE DI STASI: Un piccolo spazio vuoto nella timeline mantiene il testo visibile mentre si scrolla
+      tl.to({}, { duration: 1.5 }); 
+
+      // 3. FASE DI USCITA: Le righe svaniscono e continuano a salire verso l'alto
+      tl.to(lines, 
+        { opacity: 0, y: -60, ease: "power2.in", stagger: 0.1, duration: 1 }
+      );
+
+    }, wrapper);
 
     return () => {
-      scrollTween.scrollTrigger?.kill()
-      scrollTween.kill()
-      gsap.ticker.remove(tickerFn)
+      if (ctx) ctx.revert();
     }
   })
+
+  onDestroy(() => {
+    if (ctx) ctx.revert();
+  });
 </script>
 
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
-    <div
-      class="quote-overlay"
-      style:opacity={quoteOpacity}
-      aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
-    >
+    <div class="quote-overlay">
       <p class="quote">
-        I believe they deserve to be here today with me, and also they deserve to be with me on competition day.
+        <span class="line">I believe they deserve</span>
+        <span class="line">to be here today with me</span>
+        <span class="line">and also they deserve</span>
+        <span class="line">to be with me</span>
+        <span class="line">on competition day.</span>
       </p>
     </div>
   </div>
@@ -82,24 +89,44 @@
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
-    will-change: opacity;
   }
 
   .quote {
     font-family: var(--font-primary);
     font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--color-canvas)
     line-height: 1.4;
     letter-spacing: -0.02em;
     max-width: 50%;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em; /* Spazio verticale tra le righe animate */
+  }
+
+  .line {
+    display: block;
+    will-change: transform, opacity;
+    /* Evita il flash iniziale nascondendo le righe nel CSS prima dell'avvio di GSAP */
+    opacity: 0; 
   }
 
   @media (max-width: 768px) {
     .quote {
       max-width: 90%;
       font-size: clamp(1.2rem, 5vw, 1.8rem);
+    }
+    
+    .quote-overlay {
+      padding-left: 20px; /* Ottimizzazione padding per mobile */
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .line {
+      transform: none !important;
+      opacity: 1 !important;
     }
   }
 </style>

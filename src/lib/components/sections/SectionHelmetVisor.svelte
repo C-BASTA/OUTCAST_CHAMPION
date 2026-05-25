@@ -323,10 +323,10 @@
     max-width: 900px;
     margin: 0;
     text-align: center;
-    font-family:'GeistPixel';
+    font-family: var(--font-primary, 'GeistPixel');
     font-size: 48px;
     
-    color: --hex-neutral-100;
+    color: var(--color-ink-inverted);
     
     will-change: opacity, transform;
   }
