@@ -179,13 +179,15 @@
               <span>{nameParts[0]}</span>
               <span>{nameParts[1]}</span>
             </h1>
-            {#each paragraphs as para, i}
-              <p
-                class="para"
-                style:filter={paraStyles[i]?.blur > 0 ? `blur(${paraStyles[i].blur}px)` : 'none'}
-                style:opacity={paraStyles[i]?.opacity ?? 1}
-              >{para}</p>
-            {/each}
+            <div class="para-group">
+              {#each paragraphs as para, i}
+                <p
+                  class="para"
+                  style:filter={paraStyles[i]?.blur > 0 ? `blur(${paraStyles[i].blur}px)` : 'none'}
+                  style:opacity={paraStyles[i]?.opacity ?? 1}
+                >{para}</p>
+              {/each}
+            </div>
           </div>
 
         </div>
@@ -268,13 +270,21 @@
 
   /* ── Left panel ── */
   .left-panel {
-    padding: 120px 0 48px 45px;
+    padding: 120px 0 40px 45px;
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 0;
     overflow: visible;
     justify-content: flex-start;
     z-index: 1;
+  }
+
+  .para-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
   }
 
   .athlete-name {
