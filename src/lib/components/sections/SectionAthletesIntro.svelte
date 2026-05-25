@@ -53,7 +53,7 @@
       aria-hidden={quoteOpacity < 0.05 ? 'true' : 'false'}
     >
       <p class="quote">
-        I believe they deserve to be here today with me, and also they deserve to be with me on competition day.
+        I believe they deserve <br>to be here today with me <br>and also they deserve <br>to be with me <br>on competition day.
       </p>
     </div>
   </div>
@@ -89,7 +89,7 @@
     font-family: var(--font-primary);
     font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
-    color: var(--color-canvas);
+    color: var(--color-primary);
     line-height: 1.4;
     letter-spacing: -0.02em;
     max-width: 50%;
