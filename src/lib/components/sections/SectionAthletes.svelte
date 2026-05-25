@@ -473,6 +473,7 @@
   .gallery-wrapper {
     position: relative;
     width: 100%;
+    background: var(--color-canvas-dark);
   }
 
   .gallery-sticky {
