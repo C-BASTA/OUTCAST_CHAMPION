@@ -191,7 +191,9 @@
     position: fixed;
     inset: 0;
     z-index: 500;
-    background: var(--color-bg, #030404);
+    background: transparent;
+    backdrop-filter: blur(28px) saturate(0.75);
+    -webkit-backdrop-filter: blur(28px) saturate(0.75);
     overflow: hidden;
     animation: overlay-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
@@ -267,7 +269,7 @@
   }
 
   .athlete-name {
-    font-family: var(--font-primary, 'GeistPixel'), monospace;
+    font-family: var(--font-primary, 'GeistPixel');
     font-size: clamp(56px, 9vw, 140px);
     font-weight: 500;
     color: var(--color-ink, #fafafa);
@@ -279,7 +281,7 @@
   }
 
   .para {
-    font-family: var(--font-secondary, 'Geist'), sans-serif;
+    font-family: var(--font-primary, 'GeistPixel');
     font-size: 20px;
     font-weight: 400;
     color: var(--color-ink, #fafafa);
