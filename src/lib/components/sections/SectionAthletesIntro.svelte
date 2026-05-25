@@ -89,7 +89,7 @@
     font-family: var(--font-primary);
     font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
-    color: var(--color-canvas)
+    color: var(--color-canvas);
     line-height: 1.4;
     letter-spacing: -0.02em;
     max-width: 50%;
