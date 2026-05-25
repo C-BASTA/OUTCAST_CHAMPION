@@ -86,8 +86,13 @@
   // ── Lock body scroll + cattura wheel per reveal testo e foto ─────────
   $effect(() => {
     if (!athlete) return
-    const savedScrollY = window.scrollY   // salva posizione prima di bloccare
-    document.body.style.overflow = 'hidden'
+    const savedScrollY = window.scrollY
+    document.body.style.position   = 'fixed'
+    document.body.style.top        = `-${savedScrollY}px`
+    document.body.style.left       = '0'
+    document.body.style.right      = '0'
+    document.body.style.overflow   = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
 
     const onWheel = (e) => {
       e.preventDefault()
@@ -97,10 +102,14 @@
     window.addEventListener('wheel', onWheel, { passive: false })
 
     return () => {
-      document.body.style.overflow = ''
+      document.body.style.position  = ''
+      document.body.style.top       = ''
+      document.body.style.left      = ''
+      document.body.style.right     = ''
+      document.body.style.overflow  = ''
+      document.documentElement.style.overflow = ''
       window.removeEventListener('wheel', onWheel)
       scrollTop = 0
-      // Ripristina posizione e blocca il momentum residuo del trackpad
       window.scrollTo(0, savedScrollY)
       const blockMomentum = (e) => e.preventDefault()
       window.addEventListener('wheel', blockMomentum, { passive: false })
