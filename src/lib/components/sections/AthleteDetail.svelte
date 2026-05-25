@@ -293,7 +293,7 @@
     font-weight: 500;
     color: var(--color-ink, #fafafa);
     line-height: 0.96;
-    margin: 0 0 52px 0;
+    margin: 0 0 72px 0;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
