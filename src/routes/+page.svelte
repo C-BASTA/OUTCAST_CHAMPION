@@ -10,7 +10,9 @@
   import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
+  import LoadingScreen from '$lib/components/LoadingScreen.svelte'
 
+  let loaded      = $state(false)
   let scrollY     = $state(0)
   let navDark     = $state(false)
   let navShowLogo = $state(false)
@@ -37,6 +39,8 @@
     return () => window.removeEventListener('scroll', handler)
   })
 </script>
+
+<LoadingScreen ondone={() => { loaded = true }} />
 
 <!-- Pixel twinkling background (fisso, sempre visibile) -->
 <BackgroundGrid hideColored={inBio} />
@@ -67,4 +71,3 @@
     background: #030404;
   }
 </style>
-gvyv
