@@ -258,7 +258,7 @@
   const PX_PER_STEP  = 300
   const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
   const INTRO_PX     = 1200  // scroll per la transizione intro
-  const ROTATION_DELAY = 250
+  const ROTATION_DELAY = 40
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp    = (a, b, t) => a + (b - a) * t
