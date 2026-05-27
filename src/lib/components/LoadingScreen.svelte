@@ -1,35 +1,28 @@
 <script>
   import { onMount } from 'svelte'
+  import { getLenis } from '$lib/lenis.js'
 
-  let { ondone } = $props()
+  let { ondone = undefined } = $props()
 
   let canvas
   let visible = $state(true)
 
-  const YELLOW = '#FFD700'
-  const BLUE   = '#0057B7'
-  const TILE   = 18
-
-  const T_STATIC = 1000
-  const T_GLITCH = 800
-  const T_IN     = 900
-  const T_HOLD   = 400
-  const T_OUT    = 700
+  const T_TOTAL = 3000
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
-
     document.body.style.overflow = 'hidden'
+    getLenis()?.stop()
 
-    const ctx = canvas.getContext('2d')
-    const off = document.createElement('canvas')
-    let offCtx
+    const ctx    = canvas.getContext('2d')
+    const loader = canvas.parentElement
     let w, h, dpr
-    let tiles = []
-    let glitchSlices = []
-    let lastGlitch = 0
     let animId
-    const t0 = performance.now()
+    let clicked   = false
+    let clickTime = 0
+
+    const ease    = t => 1 - Math.pow(1 - t, 3)
+    const easeIO  = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -37,179 +30,83 @@
       h = window.innerHeight
       canvas.width  = Math.round(w * dpr)
       canvas.height = Math.round(h * dpr)
-      off.width  = canvas.width
-      off.height = canvas.height
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      offCtx = off.getContext('2d')
-      offCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      buildTiles()
+      drawBase()
     }
 
-    function buildTiles() {
-      const cols = Math.ceil(w / TILE) + 1
-      const rows = Math.ceil(h / TILE) + 1
-      tiles = []
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          tiles.push({
-            x: c * TILE,
-            y: r * TILE,
-            color: Math.random() < 0.5 ? YELLOW : BLUE,
-            active: Math.random() < 0.78,
-            delay: Math.random() * 0.25,
-            seed: Math.random() * Math.PI * 2
-          })
-        }
-      }
-    }
-
-    function drawBase(c) {
-      c.fillStyle = YELLOW
-      c.fillRect(0, 0, w, h / 2)
-      c.fillStyle = BLUE
-      c.fillRect(0, h / 2, w, h / 2)
+    function drawBase() {
+      ctx.clearRect(0, 0, w, h)  // canvas rimane trasparente: lo sfondo è nel div
 
       const sz = Math.min(h * 0.2, w * 0.12)
-      c.font = `${sz}px 'GeistPixel', monospace`
-      c.textAlign = 'center'
-      c.textBaseline = 'middle'
-      c.fillStyle = '#ffffff'
-      c.fillText('Outcast',  w / 2, h * 0.27)
-      c.fillText('Champion', w / 2, h * 0.73)
-    }
+      ctx.font         = `${sz}px 'GeistPixel', monospace`
+      ctx.textAlign    = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle    = '#030404'
+      ctx.fillText('Outcast',  w / 2, h * 0.38)
+      ctx.fillText('Champion', w / 2, h * 0.58)
 
-    function rebuildGlitch() {
-      glitchSlices = []
-      let y = 0
-      while (y < h) {
-        const sh = 3 + Math.random() * 38
-        glitchSlices.push({
-          y,
-          h: Math.min(sh, h - y),
-          ox: Math.random() < 0.28 ? (Math.random() - 0.5) * 70 : 0
-        })
-        y += sh
-      }
-    }
-
-    function renderStatic() {
-      drawBase(ctx)
-    }
-
-    function renderGlitch(gp, now) {
-      offCtx.clearRect(0, 0, w, h)
-      drawBase(offCtx)
-
-      ctx.clearRect(0, 0, w, h)
-      for (const s of glitchSlices) {
-        const sy = Math.round(s.y * dpr)
-        const sh = Math.round(s.h * dpr)
-        if (sh <= 0) continue
-        ctx.drawImage(off, 0, sy, off.width, sh, s.ox * gp, s.y, w, s.h)
-      }
-
-      ctx.save()
-      ctx.globalAlpha = 0.22 * gp
-      for (let i = 0; i < 6; i++) {
-        if (Math.random() > 0.4) continue
-        ctx.fillStyle = Math.random() < 0.5 ? YELLOW : BLUE
-        ctx.fillRect(0, Math.random() * h, w, 1 + Math.random() * 5)
-      }
-      ctx.restore()
-    }
-
-    function renderTilesIn(p, now) {
-      // Dark background
-      ctx.globalAlpha = 1
-      ctx.fillStyle = '#030404'
-      ctx.fillRect(0, 0, w, h)
-
-      // Yellow/blue base fades out fast
-      const baseA = Math.max(0, 1 - p * 3.5)
-      if (baseA > 0.01) {
-        ctx.globalAlpha = baseA
-        drawBase(ctx)
-      }
-
-      // Tiles snap in almost simultaneously (tight delay 0-0.25)
-      for (const t of tiles) {
-        if (!t.active) continue
-        const tp = Math.min(1, Math.max(0, (p - t.delay) / 0.18))
-        if (tp <= 0) continue
-        const flk = (Math.sin(now * 0.013 + t.seed) + 1) / 2
-        ctx.globalAlpha = tp * (0.88 + flk * 0.12)
-        ctx.fillStyle = t.color
-        ctx.fillRect(t.x, t.y, TILE, TILE)
-      }
-      ctx.globalAlpha = 1
-    }
-
-    function renderTilesHold(p, now) {
-      ctx.globalAlpha = 1
-      ctx.fillStyle = '#030404'
-      ctx.fillRect(0, 0, w, h)
-
-      for (const t of tiles) {
-        if (!t.active) continue
-        const flk = (Math.sin(now * 0.016 + t.seed) + 1) / 2
-        ctx.globalAlpha = 0.82 + flk * 0.18
-        ctx.fillStyle = t.color
-        ctx.fillRect(t.x, t.y, TILE, TILE)
-      }
-      ctx.globalAlpha = 1
-    }
-
-    function renderTilesOut(p, now) {
-      ctx.globalAlpha = 1
-      ctx.fillStyle = '#030404'
-      ctx.fillRect(0, 0, w, h)
-
-      for (const t of tiles) {
-        if (!t.active) continue
-        const flk = (Math.sin(now * 0.02 + t.seed + p * 8) + 1) / 2
-        const alpha = Math.max(0, (1 - p) * (0.4 + flk * 0.6))
-        if (alpha < 0.01) continue
-        ctx.globalAlpha = alpha
-        ctx.fillStyle = t.color
-        ctx.fillRect(t.x, t.y, TILE, TILE)
-      }
-      ctx.globalAlpha = 1
+      const smallSz = Math.max(11, Math.min(h * 0.022, w * 0.014))
+      ctx.font      = `${smallSz}px 'GeistPixel', monospace`
+      ctx.fillText('scroll', w / 2, h * 0.58 + sz * 1.1)
     }
 
     function frame(now) {
-      const el = now - t0
-      ctx.clearRect(0, 0, w, h)
-
-      if (el < T_STATIC) {
-        renderStatic()
-      } else if (el < T_STATIC + T_GLITCH) {
-        const gp = (el - T_STATIC) / T_GLITCH
-        if (now - lastGlitch > 55) { rebuildGlitch(); lastGlitch = now }
-        renderGlitch(gp, now)
-      } else if (el < T_STATIC + T_GLITCH + T_IN) {
-        renderTilesIn((el - T_STATIC - T_GLITCH) / T_IN, now)
-      } else if (el < T_STATIC + T_GLITCH + T_IN + T_HOLD) {
-        renderTilesHold((el - T_STATIC - T_GLITCH - T_IN) / T_HOLD, now)
-      } else if (el < T_STATIC + T_GLITCH + T_IN + T_HOLD + T_OUT) {
-        renderTilesOut((el - T_STATIC - T_GLITCH - T_IN - T_HOLD) / T_OUT, now)
-      } else {
-        document.body.style.overflow = ''
-        visible = false
-        ondone?.()
+      if (!clicked) {
+        animId = requestAnimationFrame(frame)
         return
       }
 
-      animId = requestAnimationFrame(frame)
+      const p = Math.min(1, (now - clickTime) / T_TOTAL)
+
+      if (p < 1) {
+        // blur cresce fino a 120px nel primo 60%
+        const blurPx = easeIO(Math.min(1, p / 0.60)) * 120
+        // fade parte al 50%
+        const fadeP  = easeIO(Math.max(0, (p - 0.50) / 0.50))
+        // background: neutro-50 (#FAFAFA) → neutro-900 (#030404) durante il fade
+        // così quando il loader sparisce, il colore già coincide con il sito
+        const r = Math.round(250 - fadeP * (250 - 3))
+        const g = Math.round(250 - fadeP * (250 - 4))
+        const b = Math.round(250 - fadeP * (250 - 4))
+
+        loader.style.background = `rgb(${r},${g},${b})`
+        loader.style.filter     = `blur(${blurPx}px)`
+        loader.style.opacity    = String(1 - fadeP)
+
+        animId = requestAnimationFrame(frame)
+      } else {
+        loader.style.background = ''
+        loader.style.filter     = ''
+        loader.style.opacity    = ''
+        document.body.style.overflow = ''
+        const lenis = getLenis()
+        lenis?.scrollTo(0, { immediate: true })
+        lenis?.start()
+        visible = false
+        ondone?.()
+      }
     }
 
     resize()
-    rebuildGlitch()
-    window.addEventListener('resize', () => { resize(); rebuildGlitch() })
+    window.addEventListener('resize', resize)
+
+    const trigger = () => {
+      if (!clicked) { clicked = true; clickTime = performance.now() }
+    }
+    let touchStartY = 0
+    window.addEventListener('wheel',      trigger, { passive: true })
+    window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY }, { passive: true })
+    window.addEventListener('touchmove',  e => {
+      if (e.touches[0].clientY < touchStartY - 10) trigger()
+    }, { passive: true })
+
     animId = requestAnimationFrame(frame)
 
     return () => {
       document.body.style.overflow = ''
       cancelAnimationFrame(animId)
+      loader.style.filter  = ''
+      loader.style.opacity = ''
       window.removeEventListener('resize', resize)
     }
   })
@@ -226,7 +123,8 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #030404;
+    background: #FAFAFA; /* --hex-neutral-50 */
+    cursor: default;
   }
 
   canvas {

@@ -12,7 +12,6 @@
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import LoadingScreen from '$lib/components/LoadingScreen.svelte'
 
-  let loaded      = $state(false)
   let scrollY     = $state(0)
   let navDark     = $state(false)
   let navShowLogo = $state(false)
@@ -40,7 +39,7 @@
   })
 </script>
 
-<LoadingScreen ondone={() => { loaded = true }} />
+<LoadingScreen />
 
 <!-- Pixel twinkling background (fisso, sempre visibile) -->
 <BackgroundGrid hideColored={inBio} />

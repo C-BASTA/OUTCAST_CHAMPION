@@ -22,6 +22,7 @@
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import Lenis from '@studio-freight/lenis'
   import BackgroundGrid from '$lib/components/BackgroundGrid.svelte'
+  import { setLenis } from '$lib/lenis.js'
 
   gsap.registerPlugin(ScrollTrigger)
 
@@ -36,11 +37,13 @@
       wheelMultiplier: 1,
     })
 
+    setLenis(lenis)
+
     lenis.on('scroll', () => ScrollTrigger.update())
     gsap.ticker.add((time) => lenis.raf(time * 1000))
     gsap.ticker.lagSmoothing(0)
 
-    return () => lenis.destroy()
+    return () => { setLenis(null); lenis.destroy() }
   })
 </script>
 

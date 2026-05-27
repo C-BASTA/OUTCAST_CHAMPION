@@ -1,8 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { fly } from 'svelte/transition'
-  import { flip } from 'svelte/animate'
-  import { cubicOut } from 'svelte/easing'
 
   const TEAM = [
     'Alice Augusti',
@@ -20,28 +17,26 @@
     "Through a clean, user-centric experience, we challenge you to look past the scoreboard and think critically about the role of the athlete in a world that often demands their silence.",
   ]
 
-  // 4 step: 0=nomi, 1=who text, 2=+what, 3=+how, 4=+why
   const STEP_PX   = 700
-  const QUESTIONS = ['Who?', 'Who?', 'What?', 'How?', 'Why?']
+  const QUESTIONS = ['Who?', 'What?', 'How?', 'Why?', 'The team']
+  const MAX_STEP  = QUESTIONS.length - 1
 
-  let step = $state(0)
-  let question  = $derived(QUESTIONS[step] ?? 'Why?')
-  // Para 1 visibile da subito (step 0), poi uno per uno
-  let visibleParas = $derived(PARAS.slice(0, Math.max(1, step)))
+  let step      = $state(0)
+  let question  = $derived(QUESTIONS[step] ?? 'The team')
+  let showTeam  = $derived(step === MAX_STEP)
+  let activeIdx = $derived(Math.min(PARAS.length - 1, step))
 
   onMount(() => {
     const onScroll = () => {
-      step = Math.min(4, Math.floor(window.scrollY / STEP_PX))
+      step = Math.min(MAX_STEP, Math.floor(window.scrollY / STEP_PX))
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   })
 </script>
 
-<!-- Spacer: rende la pagina scrollabile senza spostare il contenuto -->
 <div class="scroll-spacer"></div>
 
-<!-- Contenuto fisso a tutto schermo -->
 <div class="page-root">
 
   <header class="about-header">
@@ -58,34 +53,32 @@
 
   <div class="layout">
 
-    <!-- Sinistra: About Us + domanda corrente -->
     <aside class="left-col">
       <h1 class="about-title">About<br/>us</h1>
       <p class="question-label">{question}</p>
     </aside>
 
-    <!-- Destra: contenuto che si accumula -->
     <main class="right-col">
 
-      <!-- Nomi: visibili solo allo step 0, poi scompaiono -->
-      <div class="names-block" class:gone={step > 0}>
-        <ul class="names-list">
+      <!-- Paragrafi: si nascondono quando appare il team -->
+      <div class="text-stack" class:hidden={showTeam}>
+        {#each PARAS as para, i}
+          {@const dist = i - activeIdx}
+          {@const blurPx  = dist > 0 ? dist * 6 : 0}
+          {@const opacity  = dist === 0 ? 1 : dist > 0 ? Math.max(0.15, 1 - dist * 0.32) : 0.38}
+          <p class="body-text" style="filter: blur({blurPx}px); opacity: {opacity};">
+            {para}
+          </p>
+        {/each}
+      </div>
+
+      <!-- Team: appare all'ultimo step -->
+      <div class="team-block" class:visible={showTeam}>
+        <ul class="team-list">
           {#each TEAM as name}
             <li>{name}</li>
           {/each}
         </ul>
-      </div>
-
-      <!-- Testi che si accumulano: flip anima lo spostamento dei paragrafi esistenti -->
-      <div class="text-stack">
-        {#each visibleParas as para, i (i)}
-          <p class="body-text"
-             animate:flip={{ duration: 700, easing: cubicOut }}
-             in:fly={{ y: 50, duration: 850, easing: cubicOut }}
-             out:fly={{ y: 50, duration: 500, easing: cubicOut }}>
-            {para}
-          </p>
-        {/each}
       </div>
 
     </main>
@@ -94,13 +87,11 @@
 </div>
 
 <style>
-  /* Spacer che abilita lo scroll: 4 step × 700px + 100vh per raggiungere l'ultimo step */
   .scroll-spacer {
     height: calc(4 * 700px + 100vh);
     pointer-events: none;
   }
 
-  /* Contenuto fisso che non si sposta mai */
   .page-root {
     position: fixed;
     inset: 0;
@@ -135,13 +126,12 @@
   }
   .back-dots:hover { opacity: 0.3; }
 
-  /* ── Layout due colonne ──────────────────────── */
+  /* ── Layout ──────────────────────────────────── */
   .layout {
     display: flex;
     flex: 1;
     overflow: hidden;
     padding: 0 44px;
-    gap: 0;
   }
 
   /* ── Sinistra ────────────────────────────────── */
@@ -170,8 +160,8 @@
     color: #030404;
     opacity: 0.65;
     letter-spacing: 0.02em;
-    transition: opacity 0.2s ease;
     padding-bottom: 8px;
+    transition: opacity 0.3s ease;
   }
 
   /* ── Destra ──────────────────────────────────── */
@@ -179,56 +169,55 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding-top: 32px;
+    justify-content: flex-start;
+    padding-top: 72px;
     padding-right: calc(10% - 44px);
-    padding-bottom: 160px;
+    padding-bottom: 60px;
     overflow: hidden;
     position: relative;
   }
 
-  /* Nomi: assoluti in alto, escono verso l'alto */
-  .names-block {
-    position: absolute;
-    top: 68px;
-    left: 0;
-    right: calc(10% - 44px);
-    opacity: 1;
-    transform: translateY(0);
-    transition: transform 0.55s ease, opacity 0.45s ease;
-  }
-
-  .names-block.gone {
-    transform: translateY(-40px);
+  /* Stack testi */
+  .text-stack.hidden {
     opacity: 0;
     pointer-events: none;
+    transition: opacity 0.6s ease;
   }
 
-  .names-list {
+  .team-block {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding-top: 72px;
+    padding-right: calc(10% - 44px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .team-block.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .team-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-
-  .names-list li {
+  .team-list li {
     font-family: var(--font-primary, monospace);
     font-size: clamp(15px, 1.5vw, 20px);
     color: #030404;
     line-height: 1.75;
   }
 
-  /* Stack di testi: ancorato al fondo, cresce verso l'alto */
   .text-stack {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    overflow-y: hidden;
-    padding-bottom: 8px;
+    gap: 28px;
+    overflow: hidden;
   }
-
-  /* Scrollbar invisibile */
-  .text-stack::-webkit-scrollbar { display: none; }
-  .text-stack { scrollbar-width: none; }
 
   .body-text {
     font-family: var(--font-primary, monospace);
@@ -237,6 +226,7 @@
     line-height: 1.8;
     max-width: 500px;
     margin: 0;
+    transition: filter 0.75s ease, opacity 0.75s ease;
   }
 
   /* ── Mobile ──────────────────────────────────── */
@@ -245,7 +235,6 @@
     .layout { flex-direction: column; padding: 0 24px 40px; }
     .left-col { width: 100%; padding-left: 0; padding-bottom: 24px; flex: 0 0 auto; }
     .about-title { font-size: clamp(64px, 18vw, 110px); }
-    .right-col { padding-right: 0; padding-bottom: 40px; }
-    .names-block { position: relative; top: 0; margin-bottom: 24px; }
+    .right-col { padding-right: 0; padding-top: 32px; }
   }
 </style>
