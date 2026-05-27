@@ -10,6 +10,7 @@
   import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
+  import LoadingScreen from '$lib/components/LoadingScreen.svelte'
 
   let scrollY     = $state(0)
   let navDark     = $state(false)  // inizia scuro (landing ha sfondo chiaro)
@@ -34,6 +35,8 @@
     return () => window.removeEventListener('scroll', handler)
   })
 </script>
+
+<LoadingScreen />
 
 <!-- Pixel twinkling background (fisso, sempre visibile) -->
 <BackgroundGrid hideColored={inBio} />
