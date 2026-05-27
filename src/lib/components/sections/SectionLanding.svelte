@@ -223,21 +223,26 @@
       _tCy = y
       _tR = RADIUS
 
-      // --- NUOVA LOGICA HOVER 3D ---
+      // --- LOGICA HOVER 3D (INVERTITA) ---
       if (vladImg) {
-        // Calcola la posizione del mouse relativa al centro dell'immagine (da -0.5 a 0.5)
+        // Calcola la posizione del mouse relativa al centro del contenitore (da -0.5 a 0.5)
         const mouseX = (e.clientX - hr.left) / hr.width - 0.5
         const mouseY = (e.clientY - hr.top) / hr.height - 0.5
         
         // Intensità dell'inclinazione (massimo 12 gradi)
         const maxRotation = 12 
-        const rotateX = -mouseY * maxRotation
-        const rotateY = mouseX * maxRotation
+        
+        // Calcola le rotazioni con i segni modificati per invertire l'effetto
+        // Ora l'immagine ruota verso il cursore:
+        // - Muovendo il mouse verso l'alto (mouseY negativo), l'immagine ruota in avanti (rotateX positivo)
+        // - Muovendo il mouse verso destra (mouseX positivo), l'immagine ruota verso destra (rotateY positivo)
+        const rotateX = mouseY * maxRotation; // Nota: il segno '-' qui inverte la rotazione verticale originale
+        const rotateY = -mouseX * maxRotation;  // Nota: qui il segno '+' (implicitamente) inverte la rotazione orizzontale originale
 
         // Applica l'effetto concatenando i transform CSS nativi senza disturbare GSAP
         vladImg.style.transform = `translateX(3%) translateY(13%) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
       }
-      // -----------------------------
+      // ------------------------------------
 
       const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
       const dx = lastPointerTime ? x - lastPointerX : 0
