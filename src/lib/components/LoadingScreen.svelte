@@ -76,14 +76,21 @@
 
         animId = requestAnimationFrame(frame)
       } else {
-        // Reset nativo prima di togliere il blocco, così la pagina parte da 0
+        // 1. Reset nativo mentre il blocco è ancora attivo
         window.scrollTo(0, 0)
-        document.documentElement.style.overflow = ''
-        document.body.style.overflow = ''
-        const lenis = getLenis()
-        lenis?.start()
+        // 2. Rimuovi il loader (Svelte aggiorna il DOM come microtask)
         visible = false
-        ondone?.()
+        // 3. Aspetta che il DOM sia aggiornato + un frame di rendering,
+        //    poi sblocca lo scroll: a quel punto la pagina è già a 0
+        //    e l'utente vede subito la SectionLanding
+        requestAnimationFrame(() => {
+          window.scrollTo(0, 0)
+          document.documentElement.style.overflow = ''
+          document.body.style.overflow = ''
+          const lenis = getLenis()
+          lenis?.start()
+          ondone?.()
+        })
       }
     }
 

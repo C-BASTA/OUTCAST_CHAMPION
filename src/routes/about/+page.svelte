@@ -27,11 +27,17 @@
   let activeIdx = $derived(Math.min(PARAS.length - 1, step))
 
   onMount(() => {
+    document.documentElement.classList.add('about-no-scrollbar')
+
     const onScroll = () => {
       step = Math.min(MAX_STEP, Math.floor(window.scrollY / STEP_PX))
     }
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+
+    return () => {
+      document.documentElement.classList.remove('about-no-scrollbar')
+      window.removeEventListener('scroll', onScroll)
+    }
   })
 </script>
 
@@ -72,9 +78,9 @@
       <!-- Paragrafi: si nascondono quando appare il team -->
       <div class="text-stack" class:hidden={showTeam}>
         {#each PARAS as para, i}
-          {@const dist = i - activeIdx}
-          {@const blurPx  = dist > 0 ? dist * 6 : 0}
-          {@const opacity  = dist === 0 ? 1 : dist > 0 ? Math.max(0.15, 1 - dist * 0.32) : 0.38}
+          {@const dist    = i - activeIdx}
+          {@const blurPx  = showTeam ? 48 : (dist > 0 ? dist * 6 : 0)}
+          {@const opacity = showTeam ? 0  : (dist === 0 ? 1 : dist > 0 ? Math.max(0.15, 1 - dist * 0.32) : 1)}
           <p class="body-text" style="filter: blur({blurPx}px); opacity: {opacity};">
             {para}
           </p>
@@ -189,10 +195,15 @@
   }
 
   /* Stack testi */
+  .text-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    overflow: hidden;
+  }
+
   .text-stack.hidden {
-    opacity: 0;
     pointer-events: none;
-    transition: opacity 0.6s ease;
   }
 
   .team-block {
@@ -204,11 +215,12 @@
     padding-right: calc(10% - 44px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.6s ease;
+    transition: opacity 0.5s ease 0s;
   }
   .team-block.visible {
     opacity: 1;
     pointer-events: auto;
+    transition: opacity 0.5s ease 0.3s;
   }
 
   .team-list {
@@ -223,13 +235,6 @@
     line-height: 1.75;
   }
 
-  .text-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 28px;
-    overflow: hidden;
-  }
-
   .body-text {
     font-family: var(--font-primary, monospace);
     font-size: clamp(13px, 1.25vw, 17px);
@@ -237,7 +242,7 @@
     line-height: 1.8;
     max-width: 500px;
     margin: 0;
-    transition: filter 0.75s ease, opacity 0.75s ease;
+    transition: filter 1.6s ease, opacity 0.35s ease;
   }
 
   /* ── Mobile ──────────────────────────────────── */
@@ -247,5 +252,14 @@
     .left-col { width: 100%; padding-left: 0; padding-bottom: 24px; flex: 0 0 auto; }
     .about-title { font-size: clamp(64px, 18vw, 110px); }
     .right-col { padding-right: 0; padding-top: 32px; }
+  }
+
+  /* Nasconde la scrollbar del browser solo su questa pagina */
+  :global(html.about-no-scrollbar) {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+  }
+  :global(html.about-no-scrollbar::-webkit-scrollbar) {
+    display: none; /* Chrome/Safari */
   }
 </style>

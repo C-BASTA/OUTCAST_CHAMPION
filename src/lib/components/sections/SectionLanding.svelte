@@ -461,6 +461,7 @@
     height: 100%;
     object-fit: contain;
     object-position: bottom center;
+    transform: translateX(3%) translateY(12%) scale(1.1);
     display: block;
     user-select: none;
     -webkit-user-drag: none;
