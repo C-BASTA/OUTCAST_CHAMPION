@@ -2,12 +2,13 @@
   import { onMount, onDestroy } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  import Lenis from '@studio-freight/lenis'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
   import AthleteDetail from '$lib/components/sections/AthleteDetail.svelte'
 
   gsap.registerPlugin(ScrollTrigger)
 
-  // Athlete detail data
+  // ─── Athlete detail data ──────────────────────────────────────────────────
   const athleteDetails = {
     'Maksym Halinichev': {
       name: 'Maksym Halinichev',
@@ -229,6 +230,7 @@
     },
   }
 
+  // ─── State ─────────────────────────────────────────────────────────────────
   let activeAthlete      = $state(null)
   let activeAthleteIndex = $state(-1)
 
@@ -257,15 +259,15 @@
     { name: 'Ivan Kononenko',        rotation: { x: 0, y: 10.5,  z: 0 } },
   ]
 
-  const PX_PER_STEP  = 400
+  const PX_PER_STEP   = 400
   const SCROLL_HEIGHT = PX_PER_STEP * faces.length
-  const INTRO_PX     = 1200
-  const EXIT_PX      = 700   // scroll per la transizione di uscita verso insight
+  const INTRO_PX      = 1200
+  const EXIT_PX       = 700
   const ROTATION_DELAY = 40
 
-  const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
-  const lerp    = (a, b, t) => a + (b - a) * t
-  const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
+  const lerp  = (a, b, t) => a + (b - a) * t
+  const ease  = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
   const ATH_CAM_Y  = -0.01
   const ATH_CAM_Z  =  6.0
@@ -279,28 +281,36 @@
   let exitT    = $state(0)
   let rotationDelayId = null
 
-  let namesEntryVh = $derived(lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))))
-  let namesTranslateY = $derived(`${namesEntryVh + (-ease(exitT) * 100)}vh`)
-  let namesOpacity = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)) * (1 - ease(exitT)))
+  // ─── Nastro continuo ────────────────────────────────────────────────────────
+  // Altezza di ogni riga in vh — deve matchare gap + font-size effettivi.
+  // Usiamo una costante che il CSS specchia con --name-row-vh.
+  const ROW_VH = 17
 
-  let displaySlots = $derived.by(() => {
-    const slots = []
-    const currentActive = Math.round(smoothSelected)
-    
-    for (let i = 2; i >= 1; i--) {
-      const index = currentActive - i
-      slots.push(index >= 0
-        ? { name: faces[index].name, index, isEmpty: false }
-        : { name: '', index: -1, isEmpty: true })
+  // Offset entry/exit del contenitore (in vh), indipendente dalla traslazione del nastro
+  let entryOffsetVh = $derived(lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))))
+  let exitOffsetVh  = $derived(-ease(exitT) * 100)
+  let namesOpacity  = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)) * (1 - ease(exitT)))
+
+  /**
+   * Il nastro scorre: ogni nome i è posizionato a Y = (i - smoothSelected) * ROW_VH vh
+   * dal centro dello schermo. smoothSelected è un float continuo → movimento fisico reale.
+   * Calcoliamo solo i nomi visibili (±3 righe dal centro) per performance.
+   */
+  let visibleNames = $derived.by(() => {
+    const center = smoothSelected
+    const items = []
+    // Renderizza tutti i nomi: la clip del contenitore li nasconde comunque
+    for (let i = 0; i < faces.length; i++) {
+      const offsetFromCenter = i - center          // in "steps" rispetto al centro
+      const yVh = offsetFromCenter * ROW_VH        // posizione Y in vh dal centro
+      const distAbs = Math.abs(offsetFromCenter)
+      // Opacità: 1 al centro, decade verso i laterali
+      const opacity = Math.max(0, 1 - distAbs * 0.35)
+      // Scale: leggermente più grande al centro (calcolato in CSS via variabile)
+      const isCurrent = Math.round(center) === i
+      items.push({ face: faces[i], index: i, yVh, opacity, isCurrent })
     }
-    slots.push({ name: faces[currentActive]?.name ? faces[currentActive].name : faces[0].name, index: currentActive, isEmpty: false })
-    for (let i = 1; i <= 2; i++) {
-      const index = currentActive + i
-      slots.push(index < faces.length
-        ? { name: faces[index].name, index, isEmpty: false }
-        : { name: '', index: -1, isEmpty: true })
-    }
-    return slots
+    return items
   })
 
   function updateRotation(index) {
@@ -312,13 +322,10 @@
 
   function scheduleRotation(index) {
     clearTimeout(rotationDelayId)
-    rotationDelayId = setTimeout(() => {
-      updateRotation(index)
-    }, ROTATION_DELAY)
+    rotationDelayId = setTimeout(() => updateRotation(index), ROTATION_DELAY)
   }
 
   function syncHelmetLayout(scrolledInside) {
-    // ── Zona EXIT: la sezione scivola in alto e lascia spazio a insight ──
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
@@ -333,7 +340,6 @@
       return
     }
 
-    // ── Zona normale ─────────────────────────────────────────────────────
     exitT = 0
     helmetStore.exitY   = 0
     helmetStore.visible = true
@@ -364,36 +370,105 @@
     if (index === -1) return
     const name = faces[index].name
     if (index !== Math.round(smoothSelected)) return
-
     if (athleteDetails[name]) {
       activeAthlete      = athleteDetails[name]
       activeAthleteIndex = index
     }
   }
 
-  let masterTimeline
+  // ─── Lenis + ScrollTrigger ─────────────────────────────────────────────────
+  let lenis          = null
+  let masterTimeline = null
+  let rafId          = null
+
+  /**
+   * Calcola il moltiplicatore di velocità Lenis in base alla posizione di scroll
+   * relativa alla sezione.
+   *
+   * Logica:
+   *  - PRIMA della sezione (wrapper non ancora in vista): velocità normale (1.0)
+   *  - Zona INTRO (0 → INTRO_PX): rallenta gradualmente fino a 0.55 per dare peso
+   *    all'animazione del casco che entra
+   *  - Zona GALLERY (INTRO_PX → INTRO_PX + SCROLL_HEIGHT): micro-pause tra ogni atleta
+   *    (velocità scende a ~0.4 nei 60px centrali di ogni step, poi risale a 0.85)
+   *    così ogni nome ha un momento di "respiro" al centro
+   *  - Zona EXIT (fine gallery → fine wrapper): accelera progressivamente fino a 1.2
+   *    per dare senso di sgancio e passaggio alla sezione successiva
+   */
+  function computeLenisMultiplier(wrapperTop, currentScroll) {
+    const scrolledInside = currentScroll - wrapperTop
+    const totalSection   = INTRO_PX + SCROLL_HEIGHT + EXIT_PX
+
+    // Fuori dalla sezione: velocità piena
+    if (scrolledInside < 0 || scrolledInside > totalSection) return 1.0
+
+    // ── Zona EXIT: accelera ──────────────────────────────────────────────
+    if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
+      const t = (scrolledInside - INTRO_PX - SCROLL_HEIGHT) / EXIT_PX
+      return lerp(0.65, 1.25, ease(t))
+    }
+
+    // ── Zona GALLERY: micro-pausa per ogni atleta ────────────────────────
+    if (scrolledInside > INTRO_PX) {
+      const galleryScrolled = scrolledInside - INTRO_PX
+      // Posizione normalizzata dentro lo step corrente [0, 1]
+      const stepFrac = (galleryScrolled % PX_PER_STEP) / PX_PER_STEP
+      // La "zona di pausa" è attorno a 0.5 (centro dello step = atleta centrato)
+      // Usiamo una gaussiana approssimata: scende a 0.35 nel centro, torna a 0.85 ai bordi
+      const distFromCenter = Math.abs(stepFrac - 0.5) * 2 // 0 = centro, 1 = bordo
+      const pauseFactor = lerp(0.10, 0.85, ease(distFromCenter))
+      return pauseFactor
+    }
+
+    // ── Zona INTRO: rallenta gradualmente ───────────────────────────────
+    const introFrac = scrolledInside / INTRO_PX
+    return lerp(1.0, 0.55, ease(introFrac))
+  }
 
   onMount(() => {
-    // Stato iniziale istantaneo al boot per rendere subito visibile il casco
     syncHelmetLayout(0)
 
-    const scrollProxy = { introProgress: 0, nameProgress: 0 }
+    // ── 1. Inizializza Lenis ──────────────────────────────────────────────
+    lenis = new Lenis({
+      duration: 1.4,           // durata base dell'inerzia (secondi)
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expo-out: start rapido, fine morbida
+      smooth: true,
+      smoothTouch: false,      // su touch la fisica nativa è meglio
+      touchMultiplier: 1.8,
+    })
 
-    // UNICA TIMELINE MASTER: Gestisce l'intera macro-struttura dello scroll in modo atomico
+    // ── 2. Collega Lenis a ScrollTrigger ──────────────────────────────────
+    // ScrollTrigger deve leggere la posizione virtuale di Lenis, non quella nativa
+    lenis.on('scroll', ScrollTrigger.update)
+
+    gsap.ticker.add((time) => {
+      lenis.raf(time * 1000)
+    })
+    gsap.ticker.lagSmoothing(0)
+
+    // ── 3. Modulazione dinamica della velocità ─────────────────────────────
+    // Ad ogni tick Lenis aggiorniamo il multiplier in base alla posizione
+    lenis.on('scroll', ({ scroll }) => {
+      if (!wrapper) return
+      const wrapperTop = wrapper.getBoundingClientRect().top + scroll
+      const mult = computeLenisMultiplier(wrapperTop, scroll)
+      // Lenis espone il setter diretto per il multiplier (v1.x)
+      lenis.options.multiplier = mult
+    })
+
+    // ── 4. ScrollTrigger master timeline ─────────────────────────────────
     masterTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: wrapper,
         start: 'top top',
         end: `+=${INTRO_PX + SCROLL_HEIGHT + EXIT_PX}`,
-        scrub: 0.5, // Perfetto per eliminare gli scatti del touchpad e mantenere la fluidità cinetica
+        scrub: 0.8,  // piccolo lag di scrub per smoothness aggiuntiva
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const scrolled = self.scroll() - self.start
-          
-          // 1. Calcolo esatto dell'intro progressiva
+
           introP = clamp(scrolled / INTRO_PX, 0, 1)
-          
-          // 2. Calcolo dei nomi (attivo solo dopo che l'intro ha finito)
+
           if (scrolled >= INTRO_PX) {
             const galleryScrolled = scrolled - INTRO_PX
             smoothSelected = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
@@ -401,10 +476,9 @@
             scheduleRotation(selected)
           } else {
             smoothSelected = 0
-            selected = 0
+            selected       = 0
           }
 
-          // 3. Sincronizzazione istantanea delle coordinate 3D del casco
           syncHelmetLayout(scrolled)
         }
       }
@@ -416,6 +490,11 @@
       masterTimeline.scrollTrigger?.kill()
       masterTimeline.kill()
     }
+    if (lenis) {
+      lenis.destroy()
+    }
+    // Rimuove il ticker GSAP di Lenis
+    gsap.ticker.remove((time) => lenis?.raf(time * 1000))
     clearTimeout(rotationDelayId)
     helmetStore.exitY = 0
   })
@@ -427,25 +506,35 @@
   id="helmet"
   style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT + EXIT_PX}px)"
 >
-  <div id="helmet-list" style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;" aria-hidden="true"></div>
+  <div
+    id="helmet-list"
+    style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;"
+    aria-hidden="true"
+  ></div>
+
   <div class="gallery-sticky">
+    <!--
+      .names-viewport: finestra fissa centrata verticalmente, overflow hidden.
+      .names-tape: ogni nome è posizionato in assoluto con translateY continuo
+      calcolato da smoothSelected → nessun salto, solo moto fisico reale.
+    -->
     <div
-      class="names"
-      style:transform="translateY({namesTranslateY})"
+      class="names-viewport"
       style:opacity={namesOpacity}
+      style:transform="translateY({entryOffsetVh + exitOffsetVh}vh)"
     >
-      {#each displaySlots as slot}
-        {#if slot.isEmpty}
-          <div class="name empty"></div>
-        {:else}
+      <div class="names-tape">
+        {#each visibleNames as item (item.index)}
           <div
             class="name"
-            class:selected={slot.index === Math.round(smoothSelected)}
-            class:has-detail={!!athleteDetails[faces[slot.index]?.name]}
+            class:selected={item.isCurrent}
+            class:has-detail={!!athleteDetails[item.face.name]}
+            style:transform="translateY(calc({item.yVh}vh - 50%))"
+            style:opacity={item.opacity}
             role="button"
             tabindex="0"
-            onclick={() => selectFace(slot.index)}
-            onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
+            onclick={() => selectFace(item.index)}
+            onkeydown={(e) => e.key === 'Enter' && selectFace(item.index)}
           >
             <svg class="pixel-arrow" width="18" height="28" viewBox="0 0 10 18" fill="none" aria-hidden="true">
               <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
@@ -458,10 +547,10 @@
               <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
               <rect x="0" y="16" width="2" height="2" fill="currentColor"/>
             </svg>
-            <span>{slot.name}</span>
+            <span>{item.face.name}</span>
           </div>
-        {/if}
-      {/each}
+        {/each}
+      </div>
     </div>
   </div>
 </div>
@@ -482,92 +571,110 @@
   .gallery-sticky {
     position: sticky;
     top: 0;
-    width: 100%;
+    width: 93%;
     height: 100vh;
     z-index: 10;
     background: transparent;
     overflow: hidden;
   }
 
-  .names {
+  /* Finestra che maschera i nomi fuori campo */
+  .names-viewport {
     position: absolute;
     inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: var(--gap-header-links, 3rem);
-    padding: 0 var(--padding-lateral, 5rem);
-    user-select: none;
-    z-index: 10;
+    overflow: hidden;
     pointer-events: none;
+    /* Le transizioni di entry/exit sono gestite da JS via style:transform */
+  }
+
+  /* Il nastro: contiene TUTTI i nomi, ognuno posizionato in assoluto */
+  .names-tape {
+    position: absolute;
+    /* Ancorato al centro verticale del viewport */
+    top: 50%;
+    left: 0;
     width: 83%;
+    padding-left: var(--padding-lateral, 5rem);
+    /* Non ha altezza propria: i figli escono fuori e vengono clippati dal viewport */
   }
 
   .name {
+    position: absolute;
+    top: 0;
+    left: var(--padding-lateral, 5rem);
+    /* translateY è gestito inline da JS: (i - smoothSelected) * ROW_VH vh */
+    will-change: transform, opacity;
+
     font-family: var(--font-primary, 'GeistPixel'), monospace;
     font-size: var(--font-size-h1);
     font-weight: 500;
     color: var(--color-ink, #fff);
-    opacity: 0.32;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    /* opacity gestita da JS per il fade laterale */
     letter-spacing: -0.03em;
     line-height: 1;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 20px;
-    pointer-events: none; 
+    white-space: nowrap;
+    pointer-events: none;
     cursor: default;
+    /* Nessuna transition su transform/opacity: il movimento deve essere istantaneo
+       e fedele a smoothSelected. CSS transition qui causerebbe il lag che vogliamo eliminare. */
+    transition: scale 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: left center;
   }
 
   .pixel-arrow {
     opacity: 0;
-    transform: translateX(-6px);
-    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    translate: -6px 0;
+    transition:
+      opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      translate 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
   }
 
   .name.selected {
-    opacity: 1;
-    transform: scale(1.30);
-    transform-origin: left center;
-    pointer-events: auto; 
-    cursor: pointer;      
+    scale: 1.30;
+    pointer-events: auto;
+    cursor: pointer;
+    margin-left: 0;
+    transition:
+      scale 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .name.selected .pixel-arrow {
     opacity: 1;
-    transform: translateX(0);
+    translate: 0 0;
   }
 
-  .name.empty { pointer-events: none; }
-
-  .name.selected:hover { 
-    transform: scale(1.30); 
+  .name.selected:hover {
     margin-left: var(--gap-filter-options, 1rem);
   }
 
   @media (max-width: 768px) {
-    .names {
-      align-items: center;
-      padding: 0 var(--padding-lateral, 2rem);
-      gap: var(--gap-filter-options, 2.5rem);
+    .names-tape {
+      width: 100%;
+      padding-left: 0;
+      display: flex;
+      justify-content: center;
     }
+
     .name {
-      font-size: var(--font-size-h2, 2rem);
+      left: 50%;
+      translate: -50% 0;
+      transform-origin: center center;
       text-align: center;
       letter-spacing: 0.01em;
-      cursor: default;
+      font-size: var(--font-size-h2, 2rem);
     }
+
     .name.selected {
-      transform: scale(1.50);
-      transform-origin: center center;
-      margin-left: 0;
-      cursor: pointer;
+      scale: 1.50;
     }
-    .name.selected:hover { 
-      transform: scale(1.50); 
+
+    .name.selected:hover {
       margin-left: 0;
     }
   }
