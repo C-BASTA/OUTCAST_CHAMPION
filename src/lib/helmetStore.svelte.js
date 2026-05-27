@@ -5,6 +5,7 @@ export const helmetStore = $state({
   // Parametri camera
   cameraY:  0.25,
   cameraZ:  8.5,
+  lookAtX:  0,
   lookAtY:  0.20,
   // Rotazione modello (applicata frame-by-frame in useTask)
   rotX: 0.25,

@@ -343,7 +343,8 @@
       // ── Fase intro: scroll-driven, applica diretto (no lerp extra) ──
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
-      helmetStore.viewerPaddingLeft = lerp(0, 45, ei) + '%'
+      helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.lookAtX = lerp(0, -0.8, ei)
       helmetStore.cameraY = lerp(BIO_CAM_Y,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(BIO_CAM_Z,  ATH_CAM_Z,  ei)
       helmetStore.lookAtY = lerp(BIO_LOOK_Y, ATH_LOOK_Y, ei)
@@ -353,6 +354,7 @@
       // ── Fase gallery: lerp fluido verso il volto selezionato ──
       helmetStore.smoothRotation = true
       helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.lookAtX = -0.8
       helmetStore.cameraY = ATH_CAM_Y
       helmetStore.cameraZ = ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y

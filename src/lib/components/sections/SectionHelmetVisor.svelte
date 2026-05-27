@@ -139,6 +139,7 @@
       if (sectionEnded !== helmetStore.visible) {
         helmetStore.visible = sectionEnded
         if (sectionEnded) {
+          helmetStore.lookAtX = 0
           helmetStore.cameraY = 0.25
           helmetStore.cameraZ = 8.5
           helmetStore.lookAtY = 0.20
