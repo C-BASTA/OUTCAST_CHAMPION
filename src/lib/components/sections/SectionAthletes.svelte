@@ -487,6 +487,7 @@
     user-select: none;
     z-index: 10;
     pointer-events: none;
+    width: 83%;
   }
 
   .name {

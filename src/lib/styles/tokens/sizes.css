@@ -14,6 +14,6 @@
 	--size-9:  calc(var(--base-size) * 4.5);  /* 72px  */
 	--size-10: calc(var(--base-size) * 5);    /* 80px  */
 	--size-11: calc(var(--base-size) * 5.75); /* 92px  */
-	--size-12: calc(var(--base-size) * 6.85);   /* 160px */
+	--size-12: calc(var(--base-size) * 6.70);   /* 160px */
 	--size-999: 999px;   					  /* 999px */
 }
