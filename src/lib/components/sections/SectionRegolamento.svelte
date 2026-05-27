@@ -1,4 +1,7 @@
 <script>
+  import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { slide } from 'svelte/transition'
 
   const ITEMS = [
@@ -39,16 +42,41 @@
     },
   ]
 
+  let section = $state(null)
   let active  = $state(null)
   let hovered = $state(null)
 
   function toggle(key) {
     active = active === key ? null : key
   }
+
+  onMount(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.folder',
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: 'power2.out',
+          stagger: 0.2,
+          scrollTrigger: {
+            trigger: section,
+            start: 'top 80%',
+            end: 'top 30%',
+            scrub: 1,
+            invalidateOnRefresh: true,
+          }
+        }
+      )
+    }, section)
+
+    return () => ctx.revert()
+  })
 </script>
 
 <!-- La section padre ha solo lo sfondo, niente padding -->
-<section class="regolamento-section" id="verdict">
+<section class="regolamento-section" id="verdict" bind:this={section}>
   <!-- Questo contenitore è sticky e contiene tutto l'interfaccia delle cartelle -->
   <div class="sticky-wrapper">
     <div class="folders" class:has-active={active !== null}>
