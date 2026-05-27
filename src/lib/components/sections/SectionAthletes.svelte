@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
@@ -257,21 +257,13 @@
 
   const PX_PER_STEP  = 400
   const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
-  const INTRO_PX     = 1200  // scroll per la transizione intro
+  const INTRO_PX     = 1200  
   const ROTATION_DELAY = 40
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp    = (a, b, t) => a + (b - a) * t
   const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
-  // Valori iniziali (bio end state)
-  const BIO_CAM_Y   = 0.25
-  const BIO_CAM_Z   = 8.5
-  const BIO_LOOK_Y  = 0.20
-  const BIO_ROT_X   = 0.25
-  const BIO_ROT_Y   = Math.PI - 0.35  // allineato alla posizione post-zoom
-
-  // Valori target gallery
   const ATH_CAM_Y  = -0.01
   const ATH_CAM_Z  =  6.0
   const ATH_LOOK_Y =  0.0
@@ -282,7 +274,6 @@
   let introP   = $state(0)
   let rotationDelayId = null
 
-  // Nomi: salgono dal basso durante intro
   let namesTranslateY = $derived(
     lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))) + 'vh'
   )
@@ -307,7 +298,6 @@
   })
 
   function updateRotation(index) {
-    // Aggiorna il target direttamente: il lerp in HelmetGlobalScene smootha la transizione
     helmetStore.rotX = 0
     helmetStore.rotY = faces[index].rotation.y
     helmetStore.rotZ = 0
@@ -324,34 +314,29 @@
     if (!wrapper) return
     const scrolledInside = -wrapper.getBoundingClientRect().top
 
-    // Uscita dalla sezione: disattiva canvas globale
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       helmetStore.visible = false
       clearTimeout(rotationDelayId)
       return
     }
 
-    // Prima dell'ingresso nella sezione
     if (scrolledInside < 0) return
 
-    // Attiva sempre il canvas globale quando siamo dentro questa sezione
     helmetStore.visible = true
 
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {
-      // ── Fase intro: scroll-driven, applica diretto (no lerp extra) ──
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
       helmetStore.viewerPaddingLeft = '45%'
       helmetStore.lookAtX = lerp(0, -0.8, ei)
-      helmetStore.cameraY = lerp(BIO_CAM_Y,  ATH_CAM_Y,  ei)
-      helmetStore.cameraZ = lerp(BIO_CAM_Z,  ATH_CAM_Z,  ei)
-      helmetStore.lookAtY = lerp(BIO_LOOK_Y, ATH_LOOK_Y, ei)
-      helmetStore.rotX    = lerp(BIO_ROT_X,  ATH_ROT_X,  ei)
-      helmetStore.rotY    = lerp(BIO_ROT_Y,  faces[0].rotation.y, ei)
+      helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
+      helmetStore.cameraZ = lerp(8.5,  ATH_CAM_Z,  ei)
+      helmetStore.lookAtY = lerp(0.20, ATH_LOOK_Y, ei)
+      helmetStore.rotX    = lerp(0.25,  ATH_ROT_X,  ei)
+      helmetStore.rotY    = lerp(Math.PI - 0.35,  faces[0].rotation.y, ei)
     } else {
-      // ── Fase gallery: lerp fluido verso il volto selezionato ──
       helmetStore.smoothRotation = true
       helmetStore.viewerPaddingLeft = '45%'
       helmetStore.lookAtX = -0.8
@@ -374,25 +359,17 @@
 
     const name = faces[index].name
 
-    if (index === selected) {
-      if (athleteDetails[name]) {
-        activeAthlete      = athleteDetails[name]
-        activeAthleteIndex = index
-      }
-      return
+    // MODIFICA LOGICA CLICK: Se l'indice cliccato NON corrisponde a quello selezionato dallo scroll, blocca l'azione
+    if (index !== selected) return
+
+    // Se l'indice è quello selezionato, esegui il comportamento standard (apertura scheda di dettaglio)
+    if (athleteDetails[name]) {
+      activeAthlete      = athleteDetails[name]
+      activeAthleteIndex = index
     }
-
-    activeAthlete = null
-    clearTimeout(rotationDelayId)
-    selected = index
-    updateRotation(selected)
-
-    const target = wrapper.offsetTop + INTRO_PX + index * PX_PER_STEP
-    window.scrollTo({ top: target, behavior: 'smooth' })
   }
 
   onMount(() => {
-    // GSAP smooths introP for the names slide-up animation
     const proxy = { v: 0 }
     const introTween = gsap.to(proxy, {
       v: 1,
@@ -408,7 +385,6 @@
     const introTickerFn = () => { introP = proxy.v }
     gsap.ticker.add(introTickerFn)
 
-    // Raw scroll for helmetStore + athlete selection (needs immediate response)
     let rafId
     const handler = () => {
       cancelAnimationFrame(rafId)
@@ -433,10 +409,8 @@
   id="helmet"
   style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT}px)"
 >
-  <!-- Anchor che punta all'inizio effettivo dell'elenco nomi (dopo l'intro) -->
   <div id="helmet-list" style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;" aria-hidden="true"></div>
   <div class="gallery-sticky">
-    <!-- I nomi salgono dal basso durante la fase intro -->
     <div
       class="names"
       style:transform="translateY({namesTranslateY})"
@@ -471,11 +445,9 @@
         {/if}
       {/each}
     </div>
-    <!-- Il casco 3D è renderizzato dal canvas globale fisso (HelmetGlobal) -->
   </div>
 </div>
 
-<!-- Athlete detail overlay -->
 <AthleteDetail
   athlete={activeAthlete}
   athleteIndex={activeAthleteIndex}
@@ -494,9 +466,7 @@
     top: 0;
     width: 100%;
     height: 100vh;
-    /* z-index > canvas globale (z:3): crea stacking context sopra il canvas */
     z-index: 10;
-    /* Trasparente: il canvas globale fisso fornisce lo sfondo scuro */
     background: transparent;
     overflow: hidden;
   }
@@ -522,14 +492,17 @@
     color: var(--color-ink, #fff);
     opacity: 0.32;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
     letter-spacing: -0.03em;
     line-height: 1;
-    pointer-events: auto;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 20px;
+    
+    /* MODIFICA INTERAZIONE DI BASE: 
+       I nomi non attivi non devono rispondere al mouse (niente manina, niente eventi click) */
+    pointer-events: none; 
+    cursor: default;
   }
 
   .pixel-arrow {
@@ -539,6 +512,16 @@
     flex-shrink: 0;
   }
 
+  /* REGOLE DI ECCEZIONE PER L'ELEMENTO SELEZIONATO:
+     Ripristiniamo il cursore e abilitiamo le interazioni del mouse solo sul nome con classe .selected */
+  .name.selected {
+    opacity: 1;
+    transform: scale(1.30);
+    transform-origin: left center;
+    pointer-events: auto; /* Riattiva click ed hover */
+    cursor: pointer;      /* Ripristina la manina */
+  }
+
   .name.selected .pixel-arrow {
     opacity: 1;
     transform: translateX(0);
@@ -546,18 +529,11 @@
 
   .name.empty { pointer-events: none; }
 
-  .name.selected {
-    opacity: 1;
-    transform: scale(1.30);
-    transform-origin: left center;
+  /* L'effetto di spostamento a sinistra al passaggio del mouse viene eseguito SOLO se il nome è selezionato */
+  .name.selected:hover { 
+    transform: scale(1.30); 
+    margin-left: var(--gap-filter-options, 1rem);
   }
-
-  .name:hover:not(.empty) { margin-left: var(--gap-filter-options, 1rem); }
-
-  .name.selected:hover { transform: scale(1.30); }
-
-  /* Names with detail panel get a subtle cursor cue */
-  .name.has-detail { cursor: pointer; }
 
   @media (max-width: 768px) {
     .names {
@@ -569,13 +545,17 @@
       font-size: var(--font-size-h2, 2rem);
       text-align: center;
       letter-spacing: 0.01em;
+      cursor: default;
     }
     .name.selected {
       transform: scale(1.50);
       transform-origin: center center;
       margin-left: 0;
+      cursor: pointer;
     }
-    .name.selected:hover { transform: scale(1.50); }
-    .name:hover:not(.empty) { margin-left: 0; }
+    .name.selected:hover { 
+      transform: scale(1.50); 
+      margin-left: 0;
+    }
   }
 </style>
