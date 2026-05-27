@@ -75,6 +75,7 @@
 <div
   class="helmet-global"
   style:padding-left={helmetStore.viewerPaddingLeft}
+  style:transform="translateY({helmetStore.exitY}vh)"
   style:visibility={helmetStore.visible ? 'visible' : 'hidden'}
 >
   <!-- Pixel grigi: z-index 0, sotto il canvas Three.js (z-index 1) -->

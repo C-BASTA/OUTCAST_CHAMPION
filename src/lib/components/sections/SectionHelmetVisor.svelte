@@ -147,6 +147,7 @@
           helmetStore.rotY   = Math.PI - 0.35
           helmetStore.rotZ   = 0
           helmetStore.viewerPaddingLeft = '0%'
+          helmetStore.exitY  = 0
         }
       }
     }

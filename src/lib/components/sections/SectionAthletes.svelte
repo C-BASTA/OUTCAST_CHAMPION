@@ -1,9 +1,11 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, onDestroy } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
   import AthleteDetail from '$lib/components/sections/AthleteDetail.svelte'
+
+  gsap.registerPlugin(ScrollTrigger)
 
   // Athlete detail data
   const athleteDetails = {
@@ -256,22 +258,15 @@
   ]
 
   const PX_PER_STEP  = 400
-  const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
-  const INTRO_PX     = 1200  // scroll per la transizione intro
+  const SCROLL_HEIGHT = PX_PER_STEP * faces.length
+  const INTRO_PX     = 1200
+  const EXIT_PX      = 700   // scroll per la transizione di uscita verso insight
   const ROTATION_DELAY = 40
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp    = (a, b, t) => a + (b - a) * t
   const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
-  // Valori iniziali (bio end state)
-  const BIO_CAM_Y   = 0.25
-  const BIO_CAM_Z   = 8.5
-  const BIO_LOOK_Y  = 0.20
-  const BIO_ROT_X   = 0.25
-  const BIO_ROT_Y   = Math.PI - 0.35  // allineato alla posizione post-zoom
-
-  // Valori target gallery
   const ATH_CAM_Y  = -0.01
   const ATH_CAM_Z  =  6.0
   const ATH_LOOK_Y =  0.0
@@ -279,26 +274,28 @@
 
   let wrapper  = null
   let selected = $state(0)
+  let smoothSelected = $state(0)
   let introP   = $state(0)
+  let exitT    = $state(0)
   let rotationDelayId = null
 
-  // Nomi: salgono dal basso durante intro
-  let namesTranslateY = $derived(
-    lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))) + 'vh'
-  )
-  let namesOpacity = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)))
+  let namesEntryVh = $derived(lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))))
+  let namesTranslateY = $derived(`${namesEntryVh + (-ease(exitT) * 100)}vh`)
+  let namesOpacity = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)) * (1 - ease(exitT)))
 
   let displaySlots = $derived.by(() => {
     const slots = []
+    const currentActive = Math.round(smoothSelected)
+    
     for (let i = 2; i >= 1; i--) {
-      const index = selected - i
+      const index = currentActive - i
       slots.push(index >= 0
         ? { name: faces[index].name, index, isEmpty: false }
         : { name: '', index: -1, isEmpty: true })
     }
-    slots.push({ name: faces[selected].name, index: selected, isEmpty: false })
+    slots.push({ name: faces[currentActive]?.name ? faces[currentActive].name : faces[0].name, index: currentActive, isEmpty: false })
     for (let i = 1; i <= 2; i++) {
-      const index = selected + i
+      const index = currentActive + i
       slots.push(index < faces.length
         ? { name: faces[index].name, index, isEmpty: false }
         : { name: '', index: -1, isEmpty: true })
@@ -307,7 +304,7 @@
   })
 
   function updateRotation(index) {
-    // Aggiorna il target direttamente: il lerp in HelmetGlobalScene smootha la transizione
+    if (!faces[index]) return
     helmetStore.rotX = 0
     helmetStore.rotY = faces[index].rotation.y
     helmetStore.rotZ = 0
@@ -320,38 +317,39 @@
     }, ROTATION_DELAY)
   }
 
-  function onScroll() {
-    if (!wrapper) return
-    const scrolledInside = -wrapper.getBoundingClientRect().top
-
-    // Uscita dalla sezione: disattiva canvas globale
+  function syncHelmetLayout(scrolledInside) {
+    // ── Zona EXIT: la sezione scivola in alto e lascia spazio a insight ──
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
-      helmetStore.visible = false
+      const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
+      exitT = clamp(rawExitT, 0, 1)
+      helmetStore.exitY = lerp(0, -105, ease(exitT))
+      if (exitT >= 1) {
+        helmetStore.visible = false
+        helmetStore.exitY   = 0
+      } else {
+        helmetStore.visible = true
+      }
       clearTimeout(rotationDelayId)
       return
     }
 
-    // Prima dell'ingresso nella sezione
-    if (scrolledInside < 0) return
-
-    // Attiva sempre il canvas globale quando siamo dentro questa sezione
+    // ── Zona normale ─────────────────────────────────────────────────────
+    exitT = 0
+    helmetStore.exitY   = 0
     helmetStore.visible = true
-
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {
-      // ── Fase intro: scroll-driven, applica diretto (no lerp extra) ──
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
       helmetStore.viewerPaddingLeft = '45%'
       helmetStore.lookAtX = lerp(0, -0.8, ei)
-      helmetStore.cameraY = lerp(BIO_CAM_Y,  ATH_CAM_Y,  ei)
-      helmetStore.cameraZ = lerp(BIO_CAM_Z,  ATH_CAM_Z,  ei)
-      helmetStore.lookAtY = lerp(BIO_LOOK_Y, ATH_LOOK_Y, ei)
-      helmetStore.rotX    = lerp(BIO_ROT_X,  ATH_ROT_X,  ei)
-      helmetStore.rotY    = lerp(BIO_ROT_Y,  faces[0].rotation.y, ei)
+      helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
+      helmetStore.cameraZ = lerp(8.5,  ATH_CAM_Z,  ei)
+      helmetStore.lookAtY = lerp(0.20, ATH_LOOK_Y, ei)
+      helmetStore.rotX    = lerp(0.25,  ATH_ROT_X,  ei)
+      helmetStore.rotY    = lerp(Math.PI - 0.35,  faces[0].rotation.y, ei)
     } else {
-      // ── Fase gallery: lerp fluido verso il volto selezionato ──
       helmetStore.smoothRotation = true
       helmetStore.viewerPaddingLeft = '45%'
       helmetStore.lookAtX = -0.8
@@ -359,71 +357,67 @@
       helmetStore.cameraZ = ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y
       helmetStore.rotX    = ATH_ROT_X
-
-      const galleryScrolled = Math.max(0, scrolledInside - INTRO_PX)
-      const newSelected = Math.min(faces.length - 1, Math.floor(galleryScrolled / PX_PER_STEP))
-      if (newSelected !== selected) {
-        selected = newSelected
-      }
-      scheduleRotation(newSelected)
     }
   }
 
   function selectFace(index) {
     if (index === -1) return
-
     const name = faces[index].name
+    if (index !== Math.round(smoothSelected)) return
 
-    if (index === selected) {
-      if (athleteDetails[name]) {
-        activeAthlete      = athleteDetails[name]
-        activeAthleteIndex = index
-      }
-      return
+    if (athleteDetails[name]) {
+      activeAthlete      = athleteDetails[name]
+      activeAthleteIndex = index
     }
-
-    activeAthlete = null
-    clearTimeout(rotationDelayId)
-    selected = index
-    updateRotation(selected)
-
-    const target = wrapper.offsetTop + INTRO_PX + index * PX_PER_STEP
-    window.scrollTo({ top: target, behavior: 'smooth' })
   }
 
+  let masterTimeline
+
   onMount(() => {
-    // GSAP smooths introP for the names slide-up animation
-    const proxy = { v: 0 }
-    const introTween = gsap.to(proxy, {
-      v: 1,
-      ease: 'none',
+    // Stato iniziale istantaneo al boot per rendere subito visibile il casco
+    syncHelmetLayout(0)
+
+    const scrollProxy = { introProgress: 0, nameProgress: 0 }
+
+    // UNICA TIMELINE MASTER: Gestisce l'intera macro-struttura dello scroll in modo atomico
+    masterTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: wrapper,
         start: 'top top',
-        end: `+=${INTRO_PX}`,
-        scrub: 1,
+        end: `+=${INTRO_PX + SCROLL_HEIGHT + EXIT_PX}`,
+        scrub: 0.5, // Perfetto per eliminare gli scatti del touchpad e mantenere la fluidità cinetica
         invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const scrolled = self.scroll() - self.start
+          
+          // 1. Calcolo esatto dell'intro progressiva
+          introP = clamp(scrolled / INTRO_PX, 0, 1)
+          
+          // 2. Calcolo dei nomi (attivo solo dopo che l'intro ha finito)
+          if (scrolled >= INTRO_PX) {
+            const galleryScrolled = scrolled - INTRO_PX
+            smoothSelected = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
+            selected = Math.round(smoothSelected)
+            scheduleRotation(selected)
+          } else {
+            smoothSelected = 0
+            selected = 0
+          }
+
+          // 3. Sincronizzazione istantanea delle coordinate 3D del casco
+          syncHelmetLayout(scrolled)
+        }
       }
     })
-    const introTickerFn = () => { introP = proxy.v }
-    gsap.ticker.add(introTickerFn)
+  })
 
-    // Raw scroll for helmetStore + athlete selection (needs immediate response)
-    let rafId
-    const handler = () => {
-      cancelAnimationFrame(rafId)
-      rafId = requestAnimationFrame(onScroll)
+  onDestroy(() => {
+    if (masterTimeline) {
+      masterTimeline.scrollTrigger?.kill()
+      masterTimeline.kill()
     }
-    window.addEventListener('scroll', handler, { passive: true })
-
-    return () => {
-      introTween.scrollTrigger?.kill()
-      introTween.kill()
-      gsap.ticker.remove(introTickerFn)
-      window.removeEventListener('scroll', handler)
-      cancelAnimationFrame(rafId)
-      clearTimeout(rotationDelayId)
-    }
+    clearTimeout(rotationDelayId)
+    helmetStore.exitY = 0
   })
 </script>
 
@@ -431,12 +425,10 @@
   class="gallery-wrapper"
   bind:this={wrapper}
   id="helmet"
-  style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT}px)"
+  style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT + EXIT_PX}px)"
 >
-  <!-- Anchor che punta all'inizio effettivo dell'elenco nomi (dopo l'intro) -->
   <div id="helmet-list" style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;" aria-hidden="true"></div>
   <div class="gallery-sticky">
-    <!-- I nomi salgono dal basso durante la fase intro -->
     <div
       class="names"
       style:transform="translateY({namesTranslateY})"
@@ -448,14 +440,14 @@
         {:else}
           <div
             class="name"
-            class:selected={slot.index === selected}
+            class:selected={slot.index === Math.round(smoothSelected)}
             class:has-detail={!!athleteDetails[faces[slot.index]?.name]}
             role="button"
             tabindex="0"
             onclick={() => selectFace(slot.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
           >
-            <svg class="pixel-arrow" width="12" height="20" viewBox="0 0 10 18" fill="none" aria-hidden="true">
+            <svg class="pixel-arrow" width="18" height="28" viewBox="0 0 10 18" fill="none" aria-hidden="true">
               <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
               <rect x="0" y="4"  width="2" height="2" fill="currentColor"/>
               <rect x="4" y="4"  width="2" height="2" fill="currentColor"/>
@@ -471,11 +463,9 @@
         {/if}
       {/each}
     </div>
-    <!-- Il casco 3D è renderizzato dal canvas globale fisso (HelmetGlobal) -->
   </div>
 </div>
 
-<!-- Athlete detail overlay -->
 <AthleteDetail
   athlete={activeAthlete}
   athleteIndex={activeAthleteIndex}
@@ -494,9 +484,7 @@
     top: 0;
     width: 100%;
     height: 100vh;
-    /* z-index > canvas globale (z:3): crea stacking context sopra il canvas */
     z-index: 10;
-    /* Trasparente: il canvas globale fisso fornisce lo sfondo scuro */
     background: transparent;
     overflow: hidden;
   }
@@ -513,6 +501,7 @@
     user-select: none;
     z-index: 10;
     pointer-events: none;
+    width: 83%;
   }
 
   .name {
@@ -522,14 +511,14 @@
     color: var(--color-ink, #fff);
     opacity: 0.32;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
     letter-spacing: -0.03em;
     line-height: 1;
-    pointer-events: auto;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     gap: 20px;
+    pointer-events: none; 
+    cursor: default;
   }
 
   .pixel-arrow {
@@ -539,6 +528,14 @@
     flex-shrink: 0;
   }
 
+  .name.selected {
+    opacity: 1;
+    transform: scale(1.30);
+    transform-origin: left center;
+    pointer-events: auto; 
+    cursor: pointer;      
+  }
+
   .name.selected .pixel-arrow {
     opacity: 1;
     transform: translateX(0);
@@ -546,18 +543,10 @@
 
   .name.empty { pointer-events: none; }
 
-  .name.selected {
-    opacity: 1;
-    transform: scale(1.30);
-    transform-origin: left center;
+  .name.selected:hover { 
+    transform: scale(1.30); 
+    margin-left: var(--gap-filter-options, 1rem);
   }
-
-  .name:hover:not(.empty) { margin-left: var(--gap-filter-options, 1rem); }
-
-  .name.selected:hover { transform: scale(1.30); }
-
-  /* Names with detail panel get a subtle cursor cue */
-  .name.has-detail { cursor: pointer; }
 
   @media (max-width: 768px) {
     .names {
@@ -569,13 +558,17 @@
       font-size: var(--font-size-h2, 2rem);
       text-align: center;
       letter-spacing: 0.01em;
+      cursor: default;
     }
     .name.selected {
       transform: scale(1.50);
       transform-origin: center center;
       margin-left: 0;
+      cursor: pointer;
     }
-    .name.selected:hover { transform: scale(1.50); }
-    .name:hover:not(.empty) { margin-left: 0; }
+    .name.selected:hover { 
+      transform: scale(1.50); 
+      margin-left: 0;
+    }
   }
 </style>
