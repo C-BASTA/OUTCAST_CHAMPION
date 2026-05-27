@@ -258,8 +258,9 @@
   ]
 
   const PX_PER_STEP  = 400
-  const SCROLL_HEIGHT = PX_PER_STEP * faces.length 
-  const INTRO_PX     = 1200  
+  const SCROLL_HEIGHT = PX_PER_STEP * faces.length
+  const INTRO_PX     = 1200
+  const EXIT_PX      = 700   // scroll per la transizione di uscita verso insight
   const ROTATION_DELAY = 40
 
   const clamp   = (x, a, b) => Math.max(a, Math.min(b, x))
@@ -273,14 +274,14 @@
 
   let wrapper  = null
   let selected = $state(0)
-  let smoothSelected = $state(0) 
+  let smoothSelected = $state(0)
   let introP   = $state(0)
+  let exitT    = $state(0)
   let rotationDelayId = null
 
-  let namesTranslateY = $derived(
-    lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))) + 'vh'
-  )
-  let namesOpacity = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)))
+  let namesEntryVh = $derived(lerp(100, 0, ease(clamp((introP - 0.25) / 0.65, 0, 1))))
+  let namesTranslateY = $derived(`${namesEntryVh + (-ease(exitT) * 100)}vh`)
+  let namesOpacity = $derived(ease(clamp((introP - 0.20) / 0.40, 0, 1)) * (1 - ease(exitT)))
 
   let displaySlots = $derived.by(() => {
     const slots = []
@@ -317,12 +318,24 @@
   }
 
   function syncHelmetLayout(scrolledInside) {
+    // ── Zona EXIT: la sezione scivola in alto e lascia spazio a insight ──
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
-      helmetStore.visible = false
+      const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
+      exitT = clamp(rawExitT, 0, 1)
+      helmetStore.exitY = lerp(0, -105, ease(exitT))
+      if (exitT >= 1) {
+        helmetStore.visible = false
+        helmetStore.exitY   = 0
+      } else {
+        helmetStore.visible = true
+      }
       clearTimeout(rotationDelayId)
       return
     }
 
+    // ── Zona normale ─────────────────────────────────────────────────────
+    exitT = 0
+    helmetStore.exitY   = 0
     helmetStore.visible = true
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
@@ -371,7 +384,7 @@
       scrollTrigger: {
         trigger: wrapper,
         start: 'top top',
-        end: `+=${INTRO_PX + SCROLL_HEIGHT}`,
+        end: `+=${INTRO_PX + SCROLL_HEIGHT + EXIT_PX}`,
         scrub: 0.5, // Perfetto per eliminare gli scatti del touchpad e mantenere la fluidità cinetica
         invalidateOnRefresh: true,
         onUpdate: (self) => {
@@ -404,6 +417,7 @@
       masterTimeline.kill()
     }
     clearTimeout(rotationDelayId)
+    helmetStore.exitY = 0
   })
 </script>
 
@@ -411,7 +425,7 @@
   class="gallery-wrapper"
   bind:this={wrapper}
   id="helmet"
-  style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT}px)"
+  style="height: calc(100vh + {INTRO_PX + SCROLL_HEIGHT + EXIT_PX}px)"
 >
   <div id="helmet-list" style="position:absolute;top:{INTRO_PX}px;height:0;pointer-events:none;" aria-hidden="true"></div>
   <div class="gallery-sticky">

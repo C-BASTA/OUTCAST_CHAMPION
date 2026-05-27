@@ -97,6 +97,8 @@
     position: relative;
     z-index: 10;
     height: 200vh;
+    /* Emerge da sotto durante la zona EXIT di SectionAthletes */
+    margin-top: -700px;
   }
 
   /* Il wrapper sticky rimane attaccato al top finché la section è visibile */

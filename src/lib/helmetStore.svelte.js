@@ -15,4 +15,6 @@ export const helmetStore = $state({
   viewerPaddingLeft: '0%',
   // true = lerp fluido verso target (gallery), false = applica diretto (intro scroll-driven)
   smoothRotation: false,
+  // Transizione di uscita: 0 = in posizione, -100 = completamente fuori sopra
+  exitY: 0,
 })
