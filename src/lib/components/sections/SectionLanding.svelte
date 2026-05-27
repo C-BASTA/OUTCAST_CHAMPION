@@ -402,7 +402,8 @@
       style:transform="translateX(-50%)"
       style:opacity={photoOpacity}
     >
-<canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
+      <img class="vlad" src="/images/vlad-espanso-hd-nobg.png" alt="Vlad" draggable="false" />
+      <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
     </div>
 
     <div class="name-wrap" style:opacity={textOpacity}>
@@ -467,6 +468,7 @@
     height: 100%;
     object-fit: contain;
     object-position: bottom center;
+    transform: translateX(3%) translateY(13%) scale(1.1);
     display: block;
     user-select: none;
     -webkit-user-drag: none;
