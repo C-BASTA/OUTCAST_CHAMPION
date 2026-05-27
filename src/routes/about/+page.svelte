@@ -166,9 +166,8 @@
     font-family: var(--font-primary, monospace);
     font-size: clamp(80px, 11vw, 150px);
     font-weight: 400;
-    line-height: 1.0;
+    line-height: 0.78;
     color: #030404;
-    flex: 1;
   }
 
   .question-label {
@@ -178,6 +177,7 @@
     opacity: 0.65;
     letter-spacing: 0.02em;
     padding-bottom: 8px;
+    margin-top: 80px;
     transition: opacity 0.3s ease;
   }
 
