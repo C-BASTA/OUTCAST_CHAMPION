@@ -433,7 +433,7 @@
             onclick={() => selectFace(slot.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
           >
-            <svg class="pixel-arrow" width="12" height="20" viewBox="0 0 10 18" fill="none" aria-hidden="true">
+            <svg class="pixel-arrow" width="18" height="28" viewBox="0 0 10 18" fill="none" aria-hidden="true">
               <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
               <rect x="0" y="4"  width="2" height="2" fill="currentColor"/>
               <rect x="4" y="4"  width="2" height="2" fill="currentColor"/>
