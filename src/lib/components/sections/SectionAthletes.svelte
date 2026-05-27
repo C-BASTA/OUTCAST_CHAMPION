@@ -5,6 +5,8 @@
   import { helmetStore } from '$lib/helmetStore.svelte.js'
   import AthleteDetail from '$lib/components/sections/AthleteDetail.svelte'
 
+  gsap.registerPlugin(ScrollTrigger)
+
   // Athlete detail data
   const athleteDetails = {
     'Maksym Halinichev': {
@@ -256,7 +258,7 @@
   ]
 
   const PX_PER_STEP  = 400
-  const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
+  const SCROLL_HEIGHT = PX_PER_STEP * faces.length 
   const INTRO_PX     = 1200  
   const ROTATION_DELAY = 40
 
@@ -271,6 +273,7 @@
 
   let wrapper  = null
   let selected = $state(0)
+  let smoothSelected = $state(0) 
   let introP   = $state(0)
   let rotationDelayId = null
 
@@ -281,15 +284,17 @@
 
   let displaySlots = $derived.by(() => {
     const slots = []
+    const currentActive = Math.round(smoothSelected)
+    
     for (let i = 2; i >= 1; i--) {
-      const index = selected - i
+      const index = currentActive - i
       slots.push(index >= 0
         ? { name: faces[index].name, index, isEmpty: false }
         : { name: '', index: -1, isEmpty: true })
     }
-    slots.push({ name: faces[selected].name, index: selected, isEmpty: false })
+    slots.push({ name: faces[currentActive]?.name ? faces[currentActive].name : faces[0].name, index: currentActive, isEmpty: false })
     for (let i = 1; i <= 2; i++) {
-      const index = selected + i
+      const index = currentActive + i
       slots.push(index < faces.length
         ? { name: faces[index].name, index, isEmpty: false }
         : { name: '', index: -1, isEmpty: true })
@@ -298,6 +303,7 @@
   })
 
   function updateRotation(index) {
+    if (!faces[index]) return
     helmetStore.rotX = 0
     helmetStore.rotY = faces[index].rotation.y
     helmetStore.rotZ = 0
@@ -310,20 +316,14 @@
     }, ROTATION_DELAY)
   }
 
-  function onScroll() {
-    if (!wrapper) return
-    const scrolledInside = -wrapper.getBoundingClientRect().top
-
+  function syncHelmetLayout(scrolledInside) {
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       helmetStore.visible = false
       clearTimeout(rotationDelayId)
       return
     }
 
-    if (scrolledInside < 0) return
-
     helmetStore.visible = true
-
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {
@@ -344,62 +344,66 @@
       helmetStore.cameraZ = ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y
       helmetStore.rotX    = ATH_ROT_X
-
-      const galleryScrolled = Math.max(0, scrolledInside - INTRO_PX)
-      const newSelected = Math.min(faces.length - 1, Math.floor(galleryScrolled / PX_PER_STEP))
-      if (newSelected !== selected) {
-        selected = newSelected
-      }
-      scheduleRotation(newSelected)
     }
   }
 
   function selectFace(index) {
     if (index === -1) return
-
     const name = faces[index].name
+    if (index !== Math.round(smoothSelected)) return
 
-    // MODIFICA LOGICA CLICK: Se l'indice cliccato NON corrisponde a quello selezionato dallo scroll, blocca l'azione
-    if (index !== selected) return
-
-    // Se l'indice è quello selezionato, esegui il comportamento standard (apertura scheda di dettaglio)
     if (athleteDetails[name]) {
       activeAthlete      = athleteDetails[name]
       activeAthleteIndex = index
     }
   }
 
+  let masterTimeline
+
   onMount(() => {
-    const proxy = { v: 0 }
-    const introTween = gsap.to(proxy, {
-      v: 1,
-      ease: 'none',
+    // Stato iniziale istantaneo al boot per rendere subito visibile il casco
+    syncHelmetLayout(0)
+
+    const scrollProxy = { introProgress: 0, nameProgress: 0 }
+
+    // UNICA TIMELINE MASTER: Gestisce l'intera macro-struttura dello scroll in modo atomico
+    masterTimeline = gsap.timeline({
       scrollTrigger: {
         trigger: wrapper,
         start: 'top top',
-        end: `+=${INTRO_PX}`,
-        scrub: 1,
+        end: `+=${INTRO_PX + SCROLL_HEIGHT}`,
+        scrub: 0.5, // Perfetto per eliminare gli scatti del touchpad e mantenere la fluidità cinetica
         invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          const scrolled = self.scroll() - self.start
+          
+          // 1. Calcolo esatto dell'intro progressiva
+          introP = clamp(scrolled / INTRO_PX, 0, 1)
+          
+          // 2. Calcolo dei nomi (attivo solo dopo che l'intro ha finito)
+          if (scrolled >= INTRO_PX) {
+            const galleryScrolled = scrolled - INTRO_PX
+            smoothSelected = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
+            selected = Math.round(smoothSelected)
+            scheduleRotation(selected)
+          } else {
+            smoothSelected = 0
+            selected = 0
+          }
+
+          // 3. Sincronizzazione istantanea delle coordinate 3D del casco
+          syncHelmetLayout(scrolled)
+        }
       }
     })
-    const introTickerFn = () => { introP = proxy.v }
-    gsap.ticker.add(introTickerFn)
+  })
 
-    let rafId
-    const handler = () => {
-      cancelAnimationFrame(rafId)
-      rafId = requestAnimationFrame(onScroll)
+  onDestroy(() => {
+    if (masterTimeline) {
+      masterTimeline.scrollTrigger?.kill()
+      masterTimeline.kill()
     }
-    window.addEventListener('scroll', handler, { passive: true })
-
-    return () => {
-      introTween.scrollTrigger?.kill()
-      introTween.kill()
-      gsap.ticker.remove(introTickerFn)
-      window.removeEventListener('scroll', handler)
-      cancelAnimationFrame(rafId)
-      clearTimeout(rotationDelayId)
-    }
+    clearTimeout(rotationDelayId)
   })
 </script>
 
@@ -422,7 +426,7 @@
         {:else}
           <div
             class="name"
-            class:selected={slot.index === selected}
+            class:selected={slot.index === Math.round(smoothSelected)}
             class:has-detail={!!athleteDetails[faces[slot.index]?.name]}
             role="button"
             tabindex="0"
@@ -498,9 +502,6 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    
-    /* MODIFICA INTERAZIONE DI BASE: 
-       I nomi non attivi non devono rispondere al mouse (niente manina, niente eventi click) */
     pointer-events: none; 
     cursor: default;
   }
@@ -512,14 +513,12 @@
     flex-shrink: 0;
   }
 
-  /* REGOLE DI ECCEZIONE PER L'ELEMENTO SELEZIONATO:
-     Ripristiniamo il cursore e abilitiamo le interazioni del mouse solo sul nome con classe .selected */
   .name.selected {
     opacity: 1;
     transform: scale(1.30);
     transform-origin: left center;
-    pointer-events: auto; /* Riattiva click ed hover */
-    cursor: pointer;      /* Ripristina la manina */
+    pointer-events: auto; 
+    cursor: pointer;      
   }
 
   .name.selected .pixel-arrow {
@@ -529,7 +528,6 @@
 
   .name.empty { pointer-events: none; }
 
-  /* L'effetto di spostamento a sinistra al passaggio del mouse viene eseguito SOLO se il nome è selezionato */
   .name.selected:hover { 
     transform: scale(1.30); 
     margin-left: var(--gap-filter-options, 1rem);
