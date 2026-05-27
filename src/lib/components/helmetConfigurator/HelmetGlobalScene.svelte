@@ -30,7 +30,7 @@
   useTask((delta) => {
     if (camera) {
       camera.position.set(0, helmetStore.cameraY, helmetStore.cameraZ)
-      camera.lookAt(0, helmetStore.lookAtY, 0)
+      camera.lookAt(helmetStore.lookAtX, helmetStore.lookAtY, 0)
     }
     if (modelRef) {
       if (helmetStore.smoothRotation) {

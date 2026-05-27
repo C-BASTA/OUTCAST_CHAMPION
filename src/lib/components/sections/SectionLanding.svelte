@@ -184,6 +184,12 @@
     const resizeObserver = new ResizeObserver(resizeCanvas)
     if (wrap) resizeObserver.observe(wrap)
 
+    // Assicura che l'autoplay possa partire anche all'apertura della pagina
+    const INITIAL_AUTOPLAY_DELAY = 500
+    const initialAutoPlayTimeout = setTimeout(() => {
+      lastMoveTime = Date.now() - IDLE_WAIT - 1
+    }, INITIAL_AUTOPLAY_DELAY)
+
     // --- MASK LOGIC ---
     let raf
     let listenersActive = false
@@ -193,9 +199,9 @@
     let idleStep = 0
     let isPausing = false
     let pauseStartTime = 0
-    const IDLE_WAIT = 2500
-    const PAUSE_BETWEEN = 2000
-    const TARGET_TOLERANCE = 100
+    const IDLE_WAIT = 500
+    const PAUSE_BETWEEN = 2500
+    const TARGET_TOLERANCE = 75
     const idlePoints = [
       { x: 0.24, y: 0.18 },
       { x: 0.78, y: 0.78 },
@@ -319,7 +325,7 @@
       }
 
       // Fisica Fluida
-      const currentStiffness = isAutoPlaying ? 0.015 : STIFFNESS
+      const currentStiffness = isAutoPlaying ? 0.025 : STIFFNESS
       const currentDamping = isAutoPlaying ? 0.8 : DAMPING
 
       _vx += (_tCx - _cx) * currentStiffness; _vx *= currentDamping; _cx += _vx
@@ -377,6 +383,7 @@
     return () => {
       cancelAnimationFrame(raf)
       resizeObserver.disconnect()
+      clearTimeout(initialAutoPlayTimeout)
       scrollTween.scrollTrigger?.kill()
       scrollTween.kill()
       gsap.ticker.remove(progressTickerFn)
@@ -395,8 +402,7 @@
       style:transform="translateX(-50%)"
       style:opacity={photoOpacity}
     >
-      <img class="vlad" src="/images/vlad-espanso-hd-nobg.png" alt="Vlad" draggable="false" />
-      <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
+<canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
     </div>
 
     <div class="name-wrap" style:opacity={textOpacity}>

@@ -62,7 +62,7 @@
     --gap-filter-options-top: var(--size-7); /* 40px */
     --gap-card-grid: var(--size-5); /* 24px */
 
-    --font-size-h1: var(--size-10); /* 128px */
+    --font-size-h1: var(--size-12); /* 128px */
     --font-size-h2: var(--size-5); /* 24px */
     --font-size-links: var(--size-5); /* 24px */
   }

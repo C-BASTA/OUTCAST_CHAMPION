@@ -179,6 +179,7 @@
               <span>{nameParts[0]}</span>
               <span>{nameParts[1]}</span>
             </h1>
+            <p class="role">{athlete.role}</p>
             <div class="para-group">
               {#each paragraphs as para, i}
                 <p
@@ -270,7 +271,7 @@
 
   /* ── Left panel ── */
   .left-panel {
-    padding: 120px 0 40px 45px;
+    padding: 64px 0 40px 45px;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -283,7 +284,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end;
+    gap: 40px;
     min-height: 0;
   }
 
@@ -293,9 +295,21 @@
     font-weight: 500;
     color: var(--color-ink, #fafafa);
     line-height: 0.96;
-    margin: 0 0 72px 0;
+    margin: 0 0 32px 0;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .role {
+    font-family: var(--font-secondary, 'Geist'), sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--color-ink, #fafafa);
+    opacity: 0.6;
+    letter-spacing: -0.01em;
+    line-height: 1.4;
+    margin: 0 0 40px 0;
     flex-shrink: 0;
   }
 
@@ -315,9 +329,9 @@
   .photo-cover {
     position: absolute;
     right: 45px;
-    width: 40%;
-    max-width: 35vw;
-    top: 16.67vh;
+    width: 43%;
+    max-width: 38vw;
+    top: calc(64px + 2.5vw);
     bottom: 40px;
     will-change: transform;
     overflow: hidden;

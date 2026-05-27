@@ -139,6 +139,7 @@
       if (sectionEnded !== helmetStore.visible) {
         helmetStore.visible = sectionEnded
         if (sectionEnded) {
+          helmetStore.lookAtX = 0
           helmetStore.cameraY = 0.25
           helmetStore.cameraZ = 8.5
           helmetStore.lookAtY = 0.20
@@ -171,15 +172,6 @@
   >
     <div class="sticky-wrap">
 
-      <!-- Full-bleed background photo: visible during entry, fades as zoom begins -->
-      <div class="bg-photo" style:opacity={bgOpacity}>
-        <img
-          src="/images/VladAfterBio.jpeg"
-          alt="Vladyslav Heraskevych"
-          style:transform="translate3d(0, {bgParallaxY}px, 0)"
-        />
-      </div>
-
       <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
       <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
@@ -189,7 +181,7 @@
         <!-- Spostiamo la transform CSS su questo div interno dedicato all'animazione di entrata -->
         <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
           <div class="canvas-container">
-            <Canvas renderMode="always">
+            <Canvas renderMode="always" rendererParameters={{ alpha: true }}>
               <HelmetZoomScene {zoomP} {cameraZ} />
             </Canvas>
           </div>
@@ -241,7 +233,7 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: var(--color-surface)
+    background: transparent
   }
 
   /* Full-bleed bg photo with vertical parallax room */
@@ -333,7 +325,7 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .visor-section--mobile {
-    background: var(--color-surface);
+    background: var(--color-canvas);
     padding: 80px 24px 80px;
     min-height: 100vh;
     display: flex;

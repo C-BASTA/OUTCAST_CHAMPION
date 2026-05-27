@@ -255,7 +255,7 @@
     { name: 'Ivan Kononenko',        rotation: { x: 0, y: 10.5,  z: 0 } },
   ]
 
-  const PX_PER_STEP  = 300
+  const PX_PER_STEP  = 400
   const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
   const INTRO_PX     = 1200  // scroll per la transizione intro
   const ROTATION_DELAY = 40
@@ -343,7 +343,8 @@
       // ── Fase intro: scroll-driven, applica diretto (no lerp extra) ──
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
-      helmetStore.viewerPaddingLeft = lerp(0, 45, ei) + '%'
+      helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.lookAtX = lerp(0, -0.8, ei)
       helmetStore.cameraY = lerp(BIO_CAM_Y,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(BIO_CAM_Z,  ATH_CAM_Z,  ei)
       helmetStore.lookAtY = lerp(BIO_LOOK_Y, ATH_LOOK_Y, ei)
@@ -353,6 +354,7 @@
       // ── Fase gallery: lerp fluido verso il volto selezionato ──
       helmetStore.smoothRotation = true
       helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.lookAtX = -0.8
       helmetStore.cameraY = ATH_CAM_Y
       helmetStore.cameraZ = ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y
@@ -453,7 +455,18 @@
             onclick={() => selectFace(slot.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
           >
-            {slot.name}
+            <svg class="pixel-arrow" width="12" height="20" viewBox="0 0 10 18" fill="none" aria-hidden="true">
+              <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="4"  width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="4"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="8" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="12" width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="16" width="2" height="2" fill="currentColor"/>
+            </svg>
+            <span>{slot.name}</span>
           </div>
         {/if}
       {/each}
@@ -514,6 +527,21 @@
     line-height: 1;
     pointer-events: auto;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .pixel-arrow {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+  }
+
+  .name.selected .pixel-arrow {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .name.empty { pointer-events: none; }
