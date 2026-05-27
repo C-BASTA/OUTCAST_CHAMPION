@@ -455,7 +455,18 @@
             onclick={() => selectFace(slot.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(slot.index)}
           >
-            {slot.name}
+            <svg class="pixel-arrow" width="12" height="20" viewBox="0 0 10 18" fill="none" aria-hidden="true">
+              <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="4"  width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="4"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="8" y="8"  width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="12" width="2" height="2" fill="currentColor"/>
+              <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
+              <rect x="0" y="16" width="2" height="2" fill="currentColor"/>
+            </svg>
+            <span>{slot.name}</span>
           </div>
         {/if}
       {/each}
@@ -516,6 +527,21 @@
     line-height: 1;
     pointer-events: auto;
     text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .pixel-arrow {
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+  }
+
+  .name.selected .pixel-arrow {
+    opacity: 1;
+    transform: translateX(0);
   }
 
   .name.empty { pointer-events: none; }
