@@ -23,7 +23,7 @@
       const visorEl   = document.getElementById('helmet-visor')
 
       // navDark = true (testo bianco) dall'inizio di helmet-visor in poi
-      navDark = scrollY >= (visorEl?.offsetTop ?? Infinity)
+      navDark = scrollY >= (visorEl?.offsetTop ?? Infinity) + 1550
       inBio   = !!(bioEl && scrollY >= bioEl.offsetTop)
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
