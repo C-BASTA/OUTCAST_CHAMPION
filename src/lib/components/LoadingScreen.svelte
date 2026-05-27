@@ -11,6 +11,7 @@
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
+    document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
     getLenis()?.stop()
 
@@ -75,12 +76,11 @@
 
         animId = requestAnimationFrame(frame)
       } else {
-        loader.style.background = ''
-        loader.style.filter     = ''
-        loader.style.opacity    = ''
+        // Reset nativo prima di togliere il blocco, così la pagina parte da 0
+        window.scrollTo(0, 0)
+        document.documentElement.style.overflow = ''
         document.body.style.overflow = ''
         const lenis = getLenis()
-        lenis?.scrollTo(0, { immediate: true })
         lenis?.start()
         visible = false
         ondone?.()
@@ -103,6 +103,7 @@
     animId = requestAnimationFrame(frame)
 
     return () => {
+      document.documentElement.style.overflow = ''
       document.body.style.overflow = ''
       cancelAnimationFrame(animId)
       loader.style.filter  = ''
