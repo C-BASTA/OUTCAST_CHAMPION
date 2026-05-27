@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { getLenis } from '$lib/lenis.js'
 
   let { ondone = undefined } = $props()
@@ -11,11 +13,12 @@
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
-    
-    // Blocca lo scroll nativo fin da subito
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
     getLenis()?.stop()
+
+    await document.fonts.load("48px 'GeistPixel'").catch(() => {})
 
     const ctx    = canvas.getContext('2d')
     const loader = canvas.parentElement
@@ -24,8 +27,7 @@
     let clicked   = false
     let clickTime = 0
 
-    const ease    = t => 1 - Math.pow(1 - t, 3)
-    const easeIO  = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -55,6 +57,7 @@
 
     function frame(now) {
       if (!clicked) {
+        window.scrollTo(0, 0)
         animId = requestAnimationFrame(frame)
         return
       }
@@ -62,9 +65,12 @@
       const p = Math.min(1, (now - clickTime) / T_TOTAL)
 
       if (p < 1) {
+        // blur cresce fino a 120px nel primo 60%
         const blurPx = easeIO(Math.min(1, p / 0.60)) * 120
+        // fade parte al 50%
         const fadeP  = easeIO(Math.max(0, (p - 0.50) / 0.50))
-        
+        // background: neutro-50 (#FAFAFA) → neutro-900 (#030404) durante il fade
+        // così quando il loader sparisce, il colore già coincide con il sito
         const r = Math.round(250 - fadeP * (250 - 3))
         const g = Math.round(250 - fadeP * (250 - 4))
         const b = Math.round(250 - fadeP * (250 - 4))
@@ -75,12 +81,13 @@
 
         animId = requestAnimationFrame(frame)
       } else {
-        // Il loader ha finito l'animazione
-        visible = false
-        
-        // Forza il posizionamento all'inizio esatto del sito prima di sbloccare
+        // 1. Reset nativo mentre il blocco è ancora attivo
         window.scrollTo(0, 0)
-        
+        // 2. Rimuovi il loader (Svelte aggiorna il DOM come microtask)
+        visible = false
+        // 3. Aspetta che il DOM sia aggiornato + un frame di rendering,
+        //    poi sblocca lo scroll: a quel punto la pagina è già a 0
+        //    e l'utente vede subito la SectionLanding
         requestAnimationFrame(() => {
           window.scrollTo(0, 0)
           
@@ -90,6 +97,8 @@
           
           const lenis = getLenis()
           lenis?.start()
+          lenis?.scrollTo(0, { immediate: true })
+          ScrollTrigger.refresh()
           ondone?.()
         })
       }
@@ -135,7 +144,11 @@
     animId = requestAnimationFrame(frame)
 
     return () => {
-      // Il cleanup ripristina lo stato originale solo se la transizione non è andata a buon fine
+      document.documentElement.style.overflow = ''
+      document.body.style.overflow = ''
+      cancelAnimationFrame(animId)
+      loader.style.filter  = ''
+      loader.style.opacity = ''
       window.removeEventListener('resize', resize)
       cancelAnimationFrame(animId)
     }
