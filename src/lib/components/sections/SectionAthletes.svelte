@@ -255,7 +255,7 @@
     { name: 'Ivan Kononenko',        rotation: { x: 0, y: 10.5,  z: 0 } },
   ]
 
-  const PX_PER_STEP  = 300
+  const PX_PER_STEP  = 400
   const SCROLL_HEIGHT = PX_PER_STEP * (faces.length) 
   const INTRO_PX     = 1200  // scroll per la transizione intro
   const ROTATION_DELAY = 40
