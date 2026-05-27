@@ -7,10 +7,12 @@
   let canvas
   let visible = $state(true)
 
-  const T_TOTAL = 3000
+  const T_TOTAL = 1000
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
+    
+    // Blocca lo scroll nativo fin da subito
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
     getLenis()?.stop()
@@ -36,7 +38,7 @@
     }
 
     function drawBase() {
-      ctx.clearRect(0, 0, w, h)  // canvas rimane trasparente: lo sfondo è nel div
+      ctx.clearRect(0, 0, w, h)
 
       const sz = Math.min(h * 0.2, w * 0.12)
       ctx.font         = `${sz}px 'GeistPixel', monospace`
@@ -60,12 +62,9 @@
       const p = Math.min(1, (now - clickTime) / T_TOTAL)
 
       if (p < 1) {
-        // blur cresce fino a 120px nel primo 60%
         const blurPx = easeIO(Math.min(1, p / 0.60)) * 120
-        // fade parte al 50%
         const fadeP  = easeIO(Math.max(0, (p - 0.50) / 0.50))
-        // background: neutro-50 (#FAFAFA) → neutro-900 (#030404) durante il fade
-        // così quando il loader sparisce, il colore già coincide con il sito
+        
         const r = Math.round(250 - fadeP * (250 - 3))
         const g = Math.round(250 - fadeP * (250 - 4))
         const b = Math.round(250 - fadeP * (250 - 4))
@@ -76,17 +75,19 @@
 
         animId = requestAnimationFrame(frame)
       } else {
-        // 1. Reset nativo mentre il blocco è ancora attivo
-        window.scrollTo(0, 0)
-        // 2. Rimuovi il loader (Svelte aggiorna il DOM come microtask)
+        // Il loader ha finito l'animazione
         visible = false
-        // 3. Aspetta che il DOM sia aggiornato + un frame di rendering,
-        //    poi sblocca lo scroll: a quel punto la pagina è già a 0
-        //    e l'utente vede subito la SectionLanding
+        
+        // Forza il posizionamento all'inizio esatto del sito prima di sbloccare
+        window.scrollTo(0, 0)
+        
         requestAnimationFrame(() => {
           window.scrollTo(0, 0)
+          
+          // Rimuove i blocchi sull'overflow solo ORA che siamo pronti a partire
           document.documentElement.style.overflow = ''
           document.body.style.overflow = ''
+          
           const lenis = getLenis()
           lenis?.start()
           ondone?.()
@@ -98,24 +99,45 @@
     window.addEventListener('resize', resize)
 
     const trigger = () => {
-      if (!clicked) { clicked = true; clickTime = performance.now() }
+      if (!clicked) { 
+        clicked = true
+        clickTime = performance.now() 
+      }
     }
+
+    // Funzione per neutralizzare l'evento ed evitare che il touchpad muova la pagina sotto
+    const preventDefaultScroll = (e) => {
+      if (visible) {
+        if (e.cancelable) e.preventDefault()
+      }
+    }
+
     let touchStartY = 0
-    window.addEventListener('wheel',      trigger, { passive: true })
-    window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY }, { passive: true })
-    window.addEventListener('touchmove',  e => {
-      if (e.touches[0].clientY < touchStartY - 10) trigger()
+
+    // IMPORTANTE: passiamo { passive: false } per permettere al preventDefault di funzionare
+    window.addEventListener('wheel', (e) => {
+      preventDefaultScroll(e)
+      trigger()
+    }, { passive: false })
+
+    window.addEventListener('touchstart', e => { 
+      touchStartY = e.touches[0].clientY 
     }, { passive: true })
+
+    window.addEventListener('touchmove',  e => {
+      // Se l'utente sta scrollando verso l'alto (es. swipe giù col dito), blocca il rimbalzo mobile
+      preventDefaultScroll(e)
+      if (e.touches[0].clientY < touchStartY - 10) {
+        trigger()
+      }
+    }, { passive: false })
 
     animId = requestAnimationFrame(frame)
 
     return () => {
-      document.documentElement.style.overflow = ''
-      document.body.style.overflow = ''
-      cancelAnimationFrame(animId)
-      loader.style.filter  = ''
-      loader.style.opacity = ''
+      // Il cleanup ripristina lo stato originale solo se la transizione non è andata a buon fine
       window.removeEventListener('resize', resize)
+      cancelAnimationFrame(animId)
     }
   })
 </script>
@@ -131,8 +153,10 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #FAFAFA; /* --hex-neutral-50 */
+    background: #FAFAFA;
     cursor: default;
+    /* Impedisce interazioni di touch native o rimbalzi elastici su mobile */
+    touch-action: none; 
   }
 
   canvas {
