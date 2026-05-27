@@ -306,7 +306,7 @@
     font-size: 18px;
     font-weight: 400;
     color: var(--color-ink, #fafafa);
-    opacity: 0.6;
+    opacity: 0.45;
     letter-spacing: -0.01em;
     line-height: 1.4;
     margin: 0 0 40px 0;
