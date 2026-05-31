@@ -405,7 +405,7 @@
     // ── Zona EXIT: accelera ──────────────────────────────────────────────
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const t = (scrolledInside - INTRO_PX - SCROLL_HEIGHT) / EXIT_PX
-      return lerp(0.65, 1.25, ease(t))
+      return lerp(0.60, 1.25, ease(t))
     }
 
     // ── Zona GALLERY: micro-pausa per ogni atleta ────────────────────────
@@ -416,7 +416,7 @@
       // La "zona di pausa" è attorno a 0.5 (centro dello step = atleta centrato)
       // Usiamo una gaussiana approssimata: scende a 0.35 nel centro, torna a 0.85 ai bordi
       const distFromCenter = Math.abs(stepFrac - 0.5) * 2 // 0 = centro, 1 = bordo
-      const pauseFactor = lerp(0.10, 0.85, ease(distFromCenter))
+      const pauseFactor = lerp(0.8, 0.85, ease(distFromCenter))
       return pauseFactor
     }
 

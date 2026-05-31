@@ -24,6 +24,9 @@
   let lastTilePulse = 0
   let tiles = []
 
+  // Riferimento all'immagine per l'effetto 3D
+  let vladImg
+
   const RADIUS = 190
   const STIFFNESS = 0.15
   const DAMPING = 0.85
@@ -38,7 +41,7 @@
   const UNIT = 'Vladyslav Heraskevyč  '
   const TEXT = UNIT.repeat(6)
   const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
-  const TRAVEL =420
+  const TRAVEL = 420
 
   let progress = $state(0)
   let photoOpacity = $derived(Math.max(0, 1 - progress * 1.2))
@@ -184,7 +187,6 @@
     const resizeObserver = new ResizeObserver(resizeCanvas)
     if (wrap) resizeObserver.observe(wrap)
 
-    // Assicura che l'autoplay possa partire anche all'apertura della pagina
     const INITIAL_AUTOPLAY_DELAY = 500
     const initialAutoPlayTimeout = setTimeout(() => {
       lastMoveTime = Date.now() - IDLE_WAIT - 1
@@ -195,7 +197,6 @@
     let listenersActive = false
     let stopped = false
 
-    // --- CONFIGURAZIONE AUTO-PLAY (IL TUO ZIG-ZAG) ---
     let idleStep = 0
     let isPausing = false
     let pauseStartTime = 0
@@ -221,6 +222,27 @@
       _tCx = x
       _tCy = y
       _tR = RADIUS
+
+      // --- LOGICA HOVER 3D (INVERTITA) ---
+      if (vladImg) {
+        // Calcola la posizione del mouse relativa al centro del contenitore (da -0.5 a 0.5)
+        const mouseX = (e.clientX - hr.left) / hr.width - 0.5
+        const mouseY = (e.clientY - hr.top) / hr.height - 0.5
+        
+        // Intensità dell'inclinazione (massimo 12 gradi)
+        const maxRotation = 12 
+        
+        // Calcola le rotazioni con i segni modificati per invertire l'effetto
+        // Ora l'immagine ruota verso il cursore:
+        // - Muovendo il mouse verso l'alto (mouseY negativo), l'immagine ruota in avanti (rotateX positivo)
+        // - Muovendo il mouse verso destra (mouseX positivo), l'immagine ruota verso destra (rotateY positivo)
+        const rotateX = mouseY * maxRotation; // Nota: il segno '-' qui inverte la rotazione verticale originale
+        const rotateY = -mouseX * maxRotation;  // Nota: qui il segno '+' (implicitamente) inverte la rotazione orizzontale originale
+
+        // Applica l'effetto concatenando i transform CSS nativi senza disturbare GSAP
+        vladImg.style.transform = `translateX(3%) translateY(13%) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
+      }
+      // ------------------------------------
 
       const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
       const dx = lastPointerTime ? x - lastPointerX : 0
@@ -254,6 +276,11 @@
       _hovering = false
       _tR = 0
       lastPointerTime = 0
+
+      // Reset dell'inclinazione 3D quando il mouse esce
+      if (vladImg) {
+        vladImg.style.transform = 'translateX(3%) translateY(13%) scale(1.1) rotateX(0deg) rotateY(0deg)'
+      }
     }
 
     function addListeners() {
@@ -296,7 +323,6 @@
       const w = photoW || wrap?.offsetWidth || 0
       const h = photoH || wrap?.offsetHeight || 0
 
-      // Gestione Idle Animation (Tua logica originale)
       if (!_hovering && (wallNow - lastMoveTime > IDLE_WAIT)) {
         if (isPausing) {
           _tR = 0
@@ -324,7 +350,6 @@
         isPausing = false
       }
 
-      // Fisica Fluida
       const currentStiffness = isAutoPlaying ? 0.025 : STIFFNESS
       const currentDamping = isAutoPlaying ? 0.8 : DAMPING
 
@@ -363,7 +388,6 @@
       }
     })
 
-    // Legge il valore interpolato ogni frame e aggiorna progress + mask logic
     const progressTickerFn = () => {
       const p = proxy.v
       progress = p
@@ -375,7 +399,6 @@
     }
     gsap.ticker.add(progressTickerFn)
 
-    // Avvio iniziale
     maskActive = true
     tick()
     addListeners()
@@ -402,7 +425,13 @@
       style:transform="translateX(-50%)"
       style:opacity={photoOpacity}
     >
-      <img class="vlad" src="/images/vlad-espanso-hd-nobg.png" alt="Vlad" draggable="false" />
+      <img 
+        bind:this={vladImg} 
+        class="vlad" 
+        src="/images/vlad-espanso-hd-nobg.png" 
+        alt="Vlad" 
+        draggable="false" 
+      />
       <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
     </div>
 
@@ -441,7 +470,7 @@
     font-family: var(--font-primary);
     font-size: clamp(40px, 4.5vw, 72px);
     font-weight: 400;
-    color: var(--hex-neutral-900);;
+    color: var(--hex-neutral-900);
     line-height: 1.05;
     letter-spacing: -0.02em;
     z-index: 10;
@@ -459,6 +488,8 @@
     cursor: crosshair;
     transform-origin: 50% 40%;
     will-change: transform, opacity;
+    /* Abilita la prospettiva 3D per gli elementi interni */
+    perspective: 1000px;
   }
 
   .vlad {
@@ -468,11 +499,16 @@
     height: 100%;
     object-fit: contain;
     object-position: bottom center;
-    transform: translateX(3%) translateY(13%) scale(1.1);
+    /* Valori iniziali combinati con le rotazioni */
+    transform: translateX(3%) translateY(13%) scale(1.1) rotateX(0deg) rotateY(0deg);
+    transform-style: preserve-3d;
     display: block;
     user-select: none;
     -webkit-user-drag: none;
     z-index: 2;
+    /* Transizione fluida per quando il mouse esce dal wrap */
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    will-change: transform;
   }
 
   .helmet-reveal {
@@ -513,12 +549,10 @@
     white-space: nowrap;
   }
 
-  /* RIGA 1 e 3: scorrono verso SINISTRA */
   .marquee-left {
     animation: marquee-l 50s linear infinite;
   }
 
-  /* RIGA 2: scorre verso DESTRA */
   .marquee-right {
     animation: marquee-r 50s linear infinite;
   }

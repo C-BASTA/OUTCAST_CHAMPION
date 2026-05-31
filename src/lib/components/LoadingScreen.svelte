@@ -1,5 +1,7 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { getLenis } from '$lib/lenis.js'
 
   let { ondone = undefined } = $props()
@@ -7,13 +9,16 @@
   let canvas
   let visible = $state(true)
 
-  const T_TOTAL = 3000
+  const T_TOTAL = 1000
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
+    window.scrollTo(0, 0)
     getLenis()?.stop()
+
+    await document.fonts.load("48px 'GeistPixel'").catch(() => {})
 
     const ctx    = canvas.getContext('2d')
     const loader = canvas.parentElement
@@ -22,8 +27,7 @@
     let clicked   = false
     let clickTime = 0
 
-    const ease    = t => 1 - Math.pow(1 - t, 3)
-    const easeIO  = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+    const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
     function resize() {
       dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -36,7 +40,7 @@
     }
 
     function drawBase() {
-      ctx.clearRect(0, 0, w, h)  // canvas rimane trasparente: lo sfondo è nel div
+      ctx.clearRect(0, 0, w, h)
 
       const sz = Math.min(h * 0.2, w * 0.12)
       ctx.font         = `${sz}px 'GeistPixel', monospace`
@@ -53,6 +57,7 @@
 
     function frame(now) {
       if (!clicked) {
+        window.scrollTo(0, 0)
         animId = requestAnimationFrame(frame)
         return
       }
@@ -85,10 +90,15 @@
         //    e l'utente vede subito la SectionLanding
         requestAnimationFrame(() => {
           window.scrollTo(0, 0)
+          
+          // Rimuove i blocchi sull'overflow solo ORA che siamo pronti a partire
           document.documentElement.style.overflow = ''
           document.body.style.overflow = ''
+          
           const lenis = getLenis()
           lenis?.start()
+          lenis?.scrollTo(0, { immediate: true })
+          ScrollTrigger.refresh()
           ondone?.()
         })
       }
@@ -98,14 +108,38 @@
     window.addEventListener('resize', resize)
 
     const trigger = () => {
-      if (!clicked) { clicked = true; clickTime = performance.now() }
+      if (!clicked) { 
+        clicked = true
+        clickTime = performance.now() 
+      }
     }
+
+    // Funzione per neutralizzare l'evento ed evitare che il touchpad muova la pagina sotto
+    const preventDefaultScroll = (e) => {
+      if (visible) {
+        if (e.cancelable) e.preventDefault()
+      }
+    }
+
     let touchStartY = 0
-    window.addEventListener('wheel',      trigger, { passive: true })
-    window.addEventListener('touchstart', e => { touchStartY = e.touches[0].clientY }, { passive: true })
-    window.addEventListener('touchmove',  e => {
-      if (e.touches[0].clientY < touchStartY - 10) trigger()
+
+    // IMPORTANTE: passiamo { passive: false } per permettere al preventDefault di funzionare
+    window.addEventListener('wheel', (e) => {
+      preventDefaultScroll(e)
+      trigger()
+    }, { passive: false })
+
+    window.addEventListener('touchstart', e => { 
+      touchStartY = e.touches[0].clientY 
     }, { passive: true })
+
+    window.addEventListener('touchmove',  e => {
+      // Se l'utente sta scrollando verso l'alto (es. swipe giù col dito), blocca il rimbalzo mobile
+      preventDefaultScroll(e)
+      if (e.touches[0].clientY < touchStartY - 10) {
+        trigger()
+      }
+    }, { passive: false })
 
     animId = requestAnimationFrame(frame)
 
@@ -116,6 +150,7 @@
       loader.style.filter  = ''
       loader.style.opacity = ''
       window.removeEventListener('resize', resize)
+      cancelAnimationFrame(animId)
     }
   })
 </script>
@@ -131,8 +166,10 @@
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: #FAFAFA; /* --hex-neutral-50 */
+    background: #FAFAFA;
     cursor: default;
+    /* Impedisce interazioni di touch native o rimbalzi elastici su mobile */
+    touch-action: none; 
   }
 
   canvas {
