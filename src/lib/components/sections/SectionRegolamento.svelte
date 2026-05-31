@@ -95,10 +95,9 @@
   .regolamento-section {
     background: var(--color-canvas-dark);
     position: relative;
-    z-index: 10;
-    height: 200vh;
-    /* Emerge da sotto durante la zona EXIT di SectionAthletes */
-    margin-top: -700px;
+    /* Altezza: la viewport + spazio extra per far sì che lo sticky abbia senso */
+    /* Se vuoi che la sezione "passi" dopo un po', aumenta questo valore */
+    height: 200vh; /* 100vh di sticky + 50vh di scroll extra per uscire */
   }
 
   /* Il wrapper sticky rimane attaccato al top finché la section è visibile */
@@ -141,7 +140,7 @@
   .folder.is-open .folder-header {
     padding-bottom: 20px;
     overflow: visible;
-    height: 20vh;
+    height: auto;
   }
 
   .folder-title {
