@@ -67,18 +67,32 @@
   // Foto 1+: partono esattamente quando foto 0 ha completato (stesso trigger)
   let photoStyles = $derived.by(() => {
     if (!athlete?.photos) return []
-    const n       = paragraphs.length
-    const textEnd = n > 1 ? ((n - 1) / n) * TEXT_REVEAL_PX : TEXT_REVEAL_PX
-    const photoScroll = Math.max(0, scrollTop - textEnd)
-    const FADE        = PHOTO_STEP_PX
+    const n = paragraphs.length
 
     return athlete.photos.map((_, i) => {
-      if (i === 0) {
-        return { opacity: 1, blur: 0 }
+      // Foto 0: sempre visibile all'apertura
+      if (i === 0) return { opacity: 1, blur: 0 }
+
+      // Foto i: stessa finestra di reveal del paragrafo i
+      if (i < n) {
+        const clearStart = (i / n) * TEXT_REVEAL_PX * 0.4
+        const clearEnd   = (i / n) * TEXT_REVEAL_PX
+        const t = easeInOut(clamp((scrollTop - clearStart) / Math.max(clearEnd - clearStart, 1), 0, 1))
+        return {
+          opacity: lerp(PHOTO_INIT_OPACITY, 1, t),
+          blur:    lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t)
+        }
       }
-      const start = (i - 1) * PHOTO_STEP_PX
-      const t     = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
-      return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t), blur: lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t) }
+
+      // Foto extra oltre i paragrafi: appaiono dopo il testo
+      const textEnd    = n > 1 ? ((n - 1) / n) * TEXT_REVEAL_PX : TEXT_REVEAL_PX
+      const photoScroll = Math.max(0, scrollTop - textEnd)
+      const start = (i - n) * PHOTO_STEP_PX
+      const t     = easeInOut(clamp((photoScroll - start) / PHOTO_STEP_PX, 0, 1))
+      return {
+        opacity: lerp(PHOTO_INIT_OPACITY, 1, t),
+        blur:    lerp(PHOTO_INIT_BLUR, 0, t * t * t * t * t * t)
+      }
     })
   })
 
