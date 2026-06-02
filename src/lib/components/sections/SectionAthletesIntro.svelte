@@ -13,7 +13,7 @@
   onMount(() => {
     // Usiamo gsap.context per isolare le animazioni in Svelte
     ctx = gsap.context(() => {
-      const lines = wrapper.querySelectorAll('.line');
+      const lines = wrapper.querySelectorAll('.quotes, .line');
 
       // Creiamo una Timeline legata allo scroll della sezione sticky
       const tl = gsap.timeline({
@@ -54,6 +54,7 @@
 
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
+    <span class="quotes">&ldquo;</span>
     <div class="quote-overlay">
       <p class="quote">
         <span class="line">I believe they deserve</span>
@@ -79,7 +80,9 @@
     width: 100%;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     z-index: 10;
     background: transparent;
     overflow: hidden;
@@ -109,7 +112,18 @@
     display: block;
     will-change: transform, opacity;
     /* Evita il flash iniziale nascondendo le righe nel CSS prima dell'avvio di GSAP */
-    opacity: 0; 
+    opacity: 0;
+  }
+
+  .quotes {
+    display: block;
+    font-family: 'GeistPixel-Square', monospace;
+    font-size: clamp(60px, 11vw, 200px);
+    color: var(--color-canvas);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    margin-bottom: clamp(-48px, -3.5vw, -24px);
   }
 
   @media (max-width: 768px) {
