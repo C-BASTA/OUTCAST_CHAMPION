@@ -88,7 +88,7 @@
   let lastCardX     = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
   let trackWidth    = $derived(isMobile ? 0 : lastCardX + paddingLateral)
   let maxOffsetX    = $derived(Math.max(0, trackWidth - vpW))
-  const PAUSE_PX    = 600
+  const PAUSE_PX    = 60
   let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX + PAUSE_PX}px)`)
 
   onMount(() => {

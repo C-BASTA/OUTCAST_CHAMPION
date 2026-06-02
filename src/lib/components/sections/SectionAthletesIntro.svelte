@@ -51,12 +51,11 @@
     if (ctx) ctx.revert();
   });
 </script>
-
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
-    <span class="quotes">&ldquo;</span>
     <div class="quote-overlay">
       <p class="quote">
+        <span class="quotes">&ldquo;</span>
         <span class="line">I believe they deserve</span>
         <span class="line">to be here today with me</span>
         <span class="line">and also they deserve</span>
@@ -114,17 +113,15 @@
   }
 
   .quotes {
-    position: absolute;
-    left: calc(var(--padding-lateral, 80px) + 14vw);
-    transform: translateX(-50%);
-    bottom: 61%;
+    display: block;
+    text-align: center;
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
-    color: var(--color-canvas);
     line-height: 1;
     letter-spacing: 0.05em;
+    will-change: transform, opacity;
     opacity: 0;
-    white-space: nowrap;
+    margin-bottom: clamp(-48px, -3.5vw, -24px);
   }
 
   @media (max-width: 768px) {

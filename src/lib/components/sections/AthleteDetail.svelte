@@ -96,6 +96,14 @@
     })
   })
 
+  let currentPhotoIndex = $derived.by(() => {
+    let current = 0
+    photoStyles.forEach((style, i) => {
+      if (style.opacity > 0.5) current = i
+    })
+    return current
+  })
+
   // ── Lock body scroll + cattura wheel per reveal testo e foto ─────────
   $effect(() => {
     if (!athlete) return
@@ -182,6 +190,7 @@
               />
             {/each}
           </div>
+          <span class="photo-counter">{currentPhotoIndex + 1}/{athlete.photos.length}</span>
         {/if}
 
         <!-- Upper: name + descrizione a sx, foto a dx -->
@@ -356,6 +365,21 @@
   @keyframes photo-cover-in {
     from { transform: translateY(100vh); }
     to   { transform: translateY(0); }
+  }
+
+  .photo-counter {
+    position: absolute;
+    bottom: 40px;
+    right: calc(min(43%, 38vw) + 55px + 12px);
+    z-index: 20;
+    font-family: var(--font-primary, 'GeistPixel');
+    font-size: 28px;
+    line-height: 1;
+    color: var(--color-ink, #fafafa);
+    opacity: 0.6;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+
   }
 
   .photo-img {
