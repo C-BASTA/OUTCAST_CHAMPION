@@ -115,9 +115,9 @@
 
   .quotes {
     position: absolute;
-    left: 20%;
+    left: calc(var(--padding-lateral, 80px) + 14vw);
     transform: translateX(-50%);
-    bottom: 52%;
+    bottom: 61%;
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
     color: var(--color-canvas);
