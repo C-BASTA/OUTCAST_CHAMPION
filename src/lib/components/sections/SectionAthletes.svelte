@@ -242,7 +242,7 @@
     { name: 'Taras Shpuk',           rotation: { x: 0, y: 2.0,   z: 0 } },
     { name: 'Pavlo Ishchenko',       rotation: { x: 0, y: 2.5,   z: 0 } },
     { name: 'Oleksiy Loginov',       rotation: { x: 0, y: 10.5,  z: 0 } },
-    { name: 'Volodymyr Androshchuk', rotation: { x: 0, y: 3.5,   z: 0 } },
+    { name: 'Volodymyr Androshchuk', label: 'V. Androshchuk', rotation: { x: 0, y: 3.5, z: 0 } },
     { name: 'Oleksiy Khabarov',      rotation: { x: 0, y: 1.0,   z: 0 } },
     { name: 'Mykyta Kozubenko',      rotation: { x: 0, y: 4.5,   z: 0 } },
     { name: 'Andriy Yaremenko',      rotation: { x: 0, y: 5.0,   z: 0 } },
@@ -251,7 +251,7 @@
     { name: 'Nazar Zuy',             rotation: { x: 0, y: 6.5,   z: 0 } },
     { name: 'Mariia Lebid',          rotation: { x: 0, y: 7.0,   z: 0 } },
     { name: 'Alina Perehudova',      rotation: { x: 0, y: 10.5,  z: 0 } },
-    { name: 'Oleksandr Peleshenko',  rotation: { x: 0, y: 8.0,   z: 0 } },
+    { name: 'Oleksandr Peleshenko',  label: 'O. Peleshenko', rotation: { x: 0, y: 8.0, z: 0 } },
     { name: 'Kateryna Diachenko',    rotation: { x: 0, y: 8.5,   z: 0 } },
     { name: 'Viktoriia Ivashko',     rotation: { x: 0, y: 9.0,   z: 0 } },
     { name: 'Andriy Kutsenko',       rotation: { x: 0, y: 9.5,   z: 0 } },
@@ -269,8 +269,22 @@
   const lerp  = (a, b, t) => a + (b - a) * t
   const ease  = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
-  const ATH_CAM_Y  = -0.01
-  const ATH_CAM_Z  =  6.0
+  // Snap easing: transizione nel 50% centrale dello step, piatto ai bordi
+  function snapEase(t) {
+    const s = clamp((t - 0.15) / 0.70, 0, 1)
+    return s * s * (3 - 2 * s) // smoothstep
+  }
+  function applySnap(raw) {
+    const n = faces.length - 1
+    if (raw <= 0) return 0
+    if (raw >= n) return n
+    const step = Math.floor(raw)
+    const frac = raw - step
+    return Math.min(n, step + snapEase(frac))
+  }
+
+  const ATH_CAM_Y  = 0.35
+  const ATH_CAM_Z  =  3.8
   const ATH_LOOK_Y =  0.0
   const ATH_ROT_X  =  0.0
 
@@ -408,15 +422,14 @@
       return lerp(0.60, 1.25, ease(t))
     }
 
-    // ── Zona GALLERY: micro-pausa per ogni atleta ────────────────────────
+    // ── Zona GALLERY: pausa pronunciata al centro di ogni step ──────────
     if (scrolledInside > INTRO_PX) {
       const galleryScrolled = scrolledInside - INTRO_PX
-      // Posizione normalizzata dentro lo step corrente [0, 1]
       const stepFrac = (galleryScrolled % PX_PER_STEP) / PX_PER_STEP
-      // La "zona di pausa" è attorno a 0.5 (centro dello step = atleta centrato)
-      // Usiamo una gaussiana approssimata: scende a 0.35 nel centro, torna a 0.85 ai bordi
-      const distFromCenter = Math.abs(stepFrac - 0.5) * 2 // 0 = centro, 1 = bordo
-      const pauseFactor = lerp(0.8, 0.85, ease(distFromCenter))
+      // distFromCenter: 0 = al centro dello step, 1 = ai bordi
+      const distFromCenter = Math.abs(stepFrac - 0.5) * 2
+      // Rallenta molto al centro (0.22), scatta veloce ai bordi (1.1)
+      const pauseFactor = lerp(0.62, 1.1, ease(distFromCenter))
       return pauseFactor
     }
 
@@ -462,7 +475,7 @@
         trigger: wrapper,
         start: 'top top',
         end: `+=${INTRO_PX + SCROLL_HEIGHT + EXIT_PX}`,
-        scrub: 0.8,  // piccolo lag di scrub per smoothness aggiuntiva
+        scrub: 0.35,
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const scrolled = self.scroll() - self.start
@@ -471,7 +484,8 @@
 
           if (scrolled >= INTRO_PX) {
             const galleryScrolled = scrolled - INTRO_PX
-            smoothSelected = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
+            const rawSmooth = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
+            smoothSelected = applySnap(rawSmooth)
             selected = Math.round(smoothSelected)
             scheduleRotation(selected)
           } else {
@@ -536,18 +550,7 @@
             onclick={() => selectFace(item.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(item.index)}
           >
-            <svg class="pixel-arrow" width="18" height="28" viewBox="0 0 10 18" fill="none" aria-hidden="true">
-              <rect x="0" y="0"  width="2" height="2" fill="currentColor"/>
-              <rect x="0" y="4"  width="2" height="2" fill="currentColor"/>
-              <rect x="4" y="4"  width="2" height="2" fill="currentColor"/>
-              <rect x="0" y="8"  width="2" height="2" fill="currentColor"/>
-              <rect x="4" y="8"  width="2" height="2" fill="currentColor"/>
-              <rect x="8" y="8"  width="2" height="2" fill="currentColor"/>
-              <rect x="0" y="12" width="2" height="2" fill="currentColor"/>
-              <rect x="4" y="12" width="2" height="2" fill="currentColor"/>
-              <rect x="0" y="16" width="2" height="2" fill="currentColor"/>
-            </svg>
-            <span>{item.face.name}</span>
+            <span>{@html item.face.label ?? item.face.name}</span>
           </div>
         {/each}
       </div>
@@ -617,40 +620,20 @@
     align-items: center;
     gap: 20px;
     white-space: nowrap;
-    pointer-events: none;
-    cursor: default;
-    /* Nessuna transition su transform/opacity: il movimento deve essere istantaneo
-       e fedele a smoothSelected. CSS transition qui causerebbe il lag che vogliamo eliminare. */
-    transition: scale 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: left center;
-  }
-
-  .pixel-arrow {
-    opacity: 0;
-    translate: -6px 0;
-    transition:
-      opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-      translate 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    flex-shrink: 0;
-  }
-
-  .name.selected {
-    scale: 1.30;
     pointer-events: auto;
     cursor: pointer;
-    margin-left: 0;
+    transform-origin: left center;
     transition:
       scale 0.35s cubic-bezier(0.4, 0, 0.2, 1),
       margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .name.selected .pixel-arrow {
-    opacity: 1;
-    translate: 0 0;
+  .name:hover {
+    margin-left: var(--gap-filter-options, 1rem);
   }
 
-  .name.selected:hover {
-    margin-left: var(--gap-filter-options, 1rem);
+  .name.selected {
+    scale: 1.30;
   }
 
   @media (max-width: 768px) {
@@ -674,7 +657,7 @@
       scale: 1.50;
     }
 
-    .name.selected:hover {
+    .name:hover {
       margin-left: 0;
     }
   }
