@@ -79,6 +79,7 @@
       const p = Math.min(1, (now - clickTime) / T_TOTAL)
 
       if (p < 1) {
+        window.scrollTo(0, 0)
         // blur cresce fino a 120px nel primo 60%
         const blurPx = easeIO(Math.min(1, p / 0.60)) * 120
         // fade parte al 50%
