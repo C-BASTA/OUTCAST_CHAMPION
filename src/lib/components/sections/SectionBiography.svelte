@@ -271,7 +271,7 @@
     font-size: 1rem;
     color: #030404;
     line-height: 1.45;
-    font-family: var(--font-secondary, sans-serif);
+    font-family: 'GeistPixel-Square', monospace;
   }
   .caption strong { font-weight: 700; }
 
@@ -280,7 +280,7 @@
     max-width: 280px;
   }
   .quote-text {
-    font-family: var(--font-primary, serif);
+    font-family: 'GeistPixel-Grid', monospace;
     font-size: 2.5rem;
     line-height: 1.1;
     color: #1a1a1a;
@@ -311,7 +311,7 @@
     color: #030404;
     line-height: 1.45;
     margin-bottom: 8px;
-    font-family: var(--font-secondary, sans-serif);
+    font-family: 'GeistPixel-Square', monospace;
   }
   .vertical-caption strong { font-weight: 700; font-size: 1.1rem; }
   .vertical-img-frame {
@@ -328,7 +328,7 @@
     border-left: 3px solid #030404;
   }
   .vertical-quote-text {
-    font-family: var(--font-primary, serif);
+    font-family: 'GeistPixel-Square', monospace;
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.3;
