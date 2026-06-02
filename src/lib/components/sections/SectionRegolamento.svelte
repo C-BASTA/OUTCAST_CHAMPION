@@ -93,11 +93,10 @@
 <style>
   /* La section è solo un contenitore che occupa tutto lo spazio disponibile */
   .regolamento-section {
-    background: var(--color-canvas-dark);
+    background: transparent;
     position: relative;
-    /* Altezza: la viewport + spazio extra per far sì che lo sticky abbia senso */
-    /* Se vuoi che la sezione "passi" dopo un po', aumenta questo valore */
-    height: 200vh; /* 100vh di sticky + 50vh di scroll extra per uscire */
+    z-index: 4;
+    height: 200vh;
   }
 
   /* Il wrapper sticky rimane attaccato al top finché la section è visibile */

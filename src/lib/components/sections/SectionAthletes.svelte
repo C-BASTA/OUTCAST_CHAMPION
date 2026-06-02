@@ -344,12 +344,7 @@
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
       helmetStore.exitY = lerp(0, -105, ease(exitT))
-      if (exitT >= 1) {
-        helmetStore.visible = false
-        helmetStore.exitY   = 0
-      } else {
-        helmetStore.visible = true
-      }
+      helmetStore.visible = true
       clearTimeout(rotationDelayId)
       return
     }
@@ -362,7 +357,7 @@
     if (rawIntroP < 1) {
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
-      helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.viewerPaddingLeft = '38%'
       helmetStore.lookAtX = lerp(0, -0.8, ei)
       helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(8.5,  ATH_CAM_Z,  ei)
@@ -371,7 +366,7 @@
       helmetStore.rotY    = lerp(Math.PI - 0.35,  faces[0].rotation.y, ei)
     } else {
       helmetStore.smoothRotation = true
-      helmetStore.viewerPaddingLeft = '45%'
+      helmetStore.viewerPaddingLeft = '38%'
       helmetStore.lookAtX = -0.8
       helmetStore.cameraY = ATH_CAM_Y
       helmetStore.cameraZ = ATH_CAM_Z

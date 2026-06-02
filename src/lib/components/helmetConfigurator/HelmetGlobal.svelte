@@ -75,14 +75,16 @@
 <div
   class="helmet-global"
   style:padding-left={helmetStore.viewerPaddingLeft}
-  style:transform="translateY({helmetStore.exitY}vh)"
   style:visibility={helmetStore.visible ? 'visible' : 'hidden'}
 >
-  <!-- Pixel grigi: z-index 0, sotto il canvas Three.js (z-index 1) -->
+  <!-- Pixel grigi: sempre fissi, non traslati -->
   <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-  <!-- Canvas 3D: z-index 1, sopra i pixel -->
-  <div class="scene-wrap">
+  <!-- Canvas 3D: riceve la traslazione di uscita -->
+  <div
+    class="scene-wrap"
+    style:transform="translateY({helmetStore.exitY}vh)"
+  >
     <Canvas renderMode="always">
       <HelmetGlobalScene />
     </Canvas>
