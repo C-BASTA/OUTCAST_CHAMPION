@@ -11,7 +11,7 @@
 
   onMount(() => {
   ctx = gsap.context(() => {
-    const lines = section.querySelectorAll('.line');
+    const lines = section.querySelectorAll('.line, .quotes');
 
     gsap.fromTo(lines,
       { opacity: 0, y: 60 },
@@ -43,6 +43,7 @@
 
 <section bind:this={section} class="frase-section">
   <blockquote>
+    <span class="quotes">&ldquo;&ldquo;</span>
     <span class="line">
       For me, the <strong class="accent accent-sacrifice">sacrifice</strong> of
     </span>
@@ -93,6 +94,17 @@
     will-change: transform, opacity; /* Ottimizza le performance di rendering */
     opacity: 0;
     
+  }
+
+  .quotes {
+    display: block;
+    font-family: 'GeistPixel-Square', monospace;
+    font-size: clamp(48px, 6vw, 96px);
+    color: var(--color-dark);
+    line-height: 1;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    margin-bottom: clamp(8px, 1.2vw, 20px);
   }
 
   .accent {
