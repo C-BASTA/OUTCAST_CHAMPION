@@ -129,6 +129,10 @@
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
 
+    // Flag one-shot: evita che SectionHelmetVisor continui a sovrascrivere
+    // helmetStore.visible = true nelle sezioni successive (Regolamento)
+    let visorEndedTriggered = false
+
     const onScroll = () => {
       if (!section || isMobile) return
       const rect = section.getBoundingClientRect()
@@ -136,20 +140,27 @@
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
 
       const sectionEnded = rect.bottom <= window.innerHeight + 1
-      if (sectionEnded !== helmetStore.visible) {
-        helmetStore.visible = sectionEnded
-        if (sectionEnded) {
-          helmetStore.lookAtX = 0
-          helmetStore.cameraY = 0.25
-          helmetStore.cameraZ = 8.5
-          helmetStore.lookAtY = 0.20
-          helmetStore.rotX   = 0.25
-          helmetStore.rotY   = Math.PI - 0.35
-          helmetStore.rotZ   = 0
-          helmetStore.viewerPaddingLeft = '0%'
-          helmetStore.exitY  = 0
-        }
+
+      if (!sectionEnded) {
+        // Siamo ancora dentro la sezione visor: nascondi il canvas globale
+        visorEndedTriggered = false
+        if (helmetStore.visible) helmetStore.visible = false
+      } else if (!visorEndedTriggered) {
+        // La sezione è appena terminata: attiva il canvas globale UNA SOLA VOLTA
+        visorEndedTriggered = true
+        helmetStore.visible = true
+        helmetStore.lookAtX = 0
+        helmetStore.cameraY = 0.25
+        helmetStore.cameraZ = 8.5
+        helmetStore.lookAtY = 0.20
+        helmetStore.rotX   = 0.25
+        helmetStore.rotY   = Math.PI - 0.35
+        helmetStore.rotZ   = 0
+        helmetStore.viewerPaddingLeft = '0%'
+        helmetStore.exitY  = 0
       }
+      // Se sectionEnded && visorEndedTriggered: non toccare helmetStore.visible
+      // (lo gestisce SectionAthletes)
     }
 
     checkSize()
