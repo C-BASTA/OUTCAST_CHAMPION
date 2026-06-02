@@ -24,8 +24,9 @@
     const loader = canvas.parentElement
     let w, h, dpr
     let animId
-    let clicked   = false
-    let clickTime = 0
+    let clicked     = false
+    let clickTime   = 0
+    let arrowBounce = 0
 
     const easeIO = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
 
@@ -50,14 +51,29 @@
       ctx.fillText('Outcast',  w / 2, h * 0.38)
       ctx.fillText('Champion', w / 2, h * 0.58)
 
+      // Pixel down-arrow — stessa griglia 2×2 della X
       const smallSz = Math.max(11, Math.min(h * 0.022, w * 0.014))
-      ctx.font      = `${smallSz}px 'GeistPixel', monospace`
-      ctx.fillText('scroll', w / 2, h * 0.58 + sz * 1.1)
+      const dotSz   = Math.max(2, Math.round(smallSz * 0.28))
+      const step    = dotSz + Math.max(2, Math.round(dotSz * 0.55))
+      const arrowY  = h * 0.58 + sz * 1.1 + arrowBounce
+      const rows    = [[-2, -1, 0, 1, 2], [-1, 0, 1], [0]]
+      rows.forEach((row, ri) => {
+        row.forEach(ci => {
+          ctx.fillRect(
+            Math.round(w / 2 + ci * step - dotSz / 2),
+            Math.round(arrowY + ri * step - dotSz / 2),
+            dotSz,
+            dotSz
+          )
+        })
+      })
     }
 
     function frame(now) {
       if (!clicked) {
         window.scrollTo(0, 0)
+        arrowBounce = Math.sin(now * 0.0025) * 5
+        drawBase()
         animId = requestAnimationFrame(frame)
         return
       }
