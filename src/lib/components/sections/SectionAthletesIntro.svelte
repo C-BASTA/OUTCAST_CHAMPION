@@ -121,7 +121,7 @@
     letter-spacing: 0.05em;
     will-change: transform, opacity;
     opacity: 0;
-    margin-bottom: clamp(-48px, -3.5vw, -24px);
+    margin-bottom: clamp(-48px, -3.5vw, -2px);
   }
 
   @media (max-width: 768px) {
