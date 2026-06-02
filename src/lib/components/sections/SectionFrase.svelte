@@ -43,7 +43,7 @@
 
 <section bind:this={section} class="frase-section">
   <blockquote>
-    <span class="quotes">&ldquo;&ldquo;</span>
+    <span class="quotes">&ldquo;</span>
     <span class="line">
       For me, the <strong class="accent accent-sacrifice">sacrifice</strong> of
     </span>
@@ -99,12 +99,12 @@
   .quotes {
     display: block;
     font-family: 'GeistPixel-Square', monospace;
-    font-size: clamp(48px, 6vw, 96px);
+    font-size: clamp(60px, 11vw, 200px);
     color: var(--color-dark);
     line-height: 1;
     letter-spacing: 0.05em;
     opacity: 0;
-    margin-bottom: clamp(8px, 1.2vw, 20px);
+    margin-bottom: clamp(-48px, -3.5vw, -24px);
   }
 
   .accent {
