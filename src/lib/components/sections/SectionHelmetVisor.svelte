@@ -129,6 +129,10 @@
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
 
+    // Flag one-shot: evita che SectionHelmetVisor continui a sovrascrivere
+    // helmetStore.visible = true nelle sezioni successive (Regolamento)
+    let visorEndedTriggered = false
+
     const onScroll = () => {
       if (!section || isMobile) return
       const rect = section.getBoundingClientRect()
@@ -136,16 +140,6 @@
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
 
       const sectionEnded = rect.bottom <= window.innerHeight + 1
-
-      // Non interferire se SectionAthletes ha già preso il controllo (exitY != 0)
-      // oppure se ha già nascosto il casco dopo la propria exit animation
-      const athletesEl = document.getElementById('athletes-section')
-      if (athletesEl) {
-        const athRect = athletesEl.getBoundingClientRect()
-        // Se siamo dentro o oltre la sezione athletes, non toccare il casco
-        if (athRect.top < window.innerHeight * 0.5) return
-      }
-
       if (sectionEnded !== helmetStore.visible) {
         helmetStore.visible = sectionEnded
         if (sectionEnded) {
