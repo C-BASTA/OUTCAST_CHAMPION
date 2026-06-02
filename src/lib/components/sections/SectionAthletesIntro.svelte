@@ -80,9 +80,7 @@
     width: 100%;
     height: 100vh;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
     z-index: 10;
     background: transparent;
     overflow: hidden;
@@ -116,14 +114,17 @@
   }
 
   .quotes {
-    display: block;
+    position: absolute;
+    left: 20%;
+    transform: translateX(-50%);
+    bottom: 52%;
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
     color: var(--color-canvas);
     line-height: 1;
     letter-spacing: 0.05em;
     opacity: 0;
-    margin-bottom: clamp(-48px, -3.5vw, -24px);
+    white-space: nowrap;
   }
 
   @media (max-width: 768px) {
