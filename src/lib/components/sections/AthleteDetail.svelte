@@ -74,8 +74,7 @@
 
     return athlete.photos.map((_, i) => {
       if (i === 0) {
-        const t0 = easeInOut(clamp(scrollTop / textEnd, 0, 1))
-        return { opacity: lerp(PHOTO_INIT_OPACITY, 1, t0), blur: lerp(PHOTO_INIT_BLUR, 0, t0 * t0 * t0 * t0 * t0 * t0) }
+        return { opacity: 1, blur: 0 }
       }
       const start = (i - 1) * PHOTO_STEP_PX
       const t     = easeInOut(clamp((photoScroll - start) / FADE, 0, 1))
