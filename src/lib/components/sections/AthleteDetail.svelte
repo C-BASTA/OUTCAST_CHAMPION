@@ -204,8 +204,8 @@
     inset: 0;
     z-index: 500;
     background: transparent;
-    backdrop-filter: blur(28px) saturate(0.75);
-    -webkit-backdrop-filter: blur(28px) saturate(0.75);
+    backdrop-filter: blur(56px) saturate(0.75);
+    -webkit-backdrop-filter: blur(56px) saturate(0.75);
     overflow: hidden;
     animation: overlay-in 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
   }
