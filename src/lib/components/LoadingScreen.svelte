@@ -9,7 +9,7 @@
   let canvas
   let visible = $state(true)
 
-  const T_TOTAL = 1000
+  const T_TOTAL = 1800
 
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
@@ -72,8 +72,6 @@
     function frame(now) {
       if (!clicked) {
         window.scrollTo(0, 0)
-        arrowBounce = Math.sin(now * 0.0025) * 5
-        drawBase()
         animId = requestAnimationFrame(frame)
         return
       }
