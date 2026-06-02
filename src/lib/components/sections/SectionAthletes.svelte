@@ -628,7 +628,7 @@
   }
 
   .name.selected {
-    scale: 1.30;
+    scale: 1.18;
   }
 
   @media (max-width: 768px) {
