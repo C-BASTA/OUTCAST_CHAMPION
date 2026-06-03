@@ -27,7 +27,15 @@
   let curRotY = helmetStore.rotY
   let curRotZ = helmetStore.rotZ
 
+  const FLOAT_AMP_Y    = 0.04
+  const FLOAT_AMP_ROTX = 0.018
+  const FLOAT_AMP_ROTZ = 0.022
+  let elapsed    = 0
+  let floatGroup = $state(null)
+
   useTask((delta) => {
+    elapsed += delta
+
     if (camera) {
       camera.position.set(0, helmetStore.cameraY, helmetStore.cameraZ)
       camera.lookAt(helmetStore.lookAtX, helmetStore.lookAtY, 0)
@@ -46,6 +54,11 @@
         curRotZ = helmetStore.rotZ
       }
       modelRef.rotation.set(curRotX, curRotY, curRotZ)
+    }
+    if (floatGroup) {
+      floatGroup.position.y = Math.sin(elapsed * 0.7) * FLOAT_AMP_Y
+      floatGroup.rotation.x = Math.sin(elapsed * 0.5 + 0.8) * FLOAT_AMP_ROTX
+      floatGroup.rotation.z = Math.sin(elapsed * 0.6 + 1.5) * FLOAT_AMP_ROTZ
     }
   })
 
@@ -67,6 +80,8 @@
 <T.DirectionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" castShadow />
 <T.AmbientLight intensity={0.5} />
 
-{#if $gltf}
-  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} bind:ref={modelRef} />
-{/if}
+<T.Group bind:ref={floatGroup}>
+  {#if $gltf}
+    <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} bind:ref={modelRef} />
+  {/if}
+</T.Group>

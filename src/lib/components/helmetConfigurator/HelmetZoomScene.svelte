@@ -39,7 +39,13 @@
     return Math.PI - SIDE
   })
 
-  useTask(() => {
+  const easeF = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
+  let floatGroup = $state(null)
+  let elapsed = 0
+
+  useTask((delta) => {
+    elapsed += delta
+
     if (!camera) return
     camera.position.set(0, 0.25, cameraZ)
     camera.lookAt(0, 0.20, 0)
@@ -48,6 +54,13 @@
     if (Math.abs(camera.aspect - a) > 0.0001) {
       camera.aspect = a
       camera.updateProjectionMatrix()
+    }
+
+    if (floatGroup) {
+      const w = easeF(Math.max(0, Math.min(1, 1 - zoomP / 0.18)))
+      floatGroup.position.y = Math.sin(elapsed * 0.7) * 0.04 * w
+      floatGroup.rotation.x = Math.sin(elapsed * 0.5 + 0.8) * 0.018 * w
+      floatGroup.rotation.z = Math.sin(elapsed * 0.6 + 1.5) * 0.022 * w
     }
   })
 
@@ -70,6 +83,8 @@
 <T.DirectionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" castShadow />
 <T.AmbientLight intensity={0.5} />
 
-{#if $gltf}
-  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0.25, rotY, 0]} />
-{/if}
+<T.Group bind:ref={floatGroup}>
+  {#if $gltf}
+    <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0.25, rotY, 0]} />
+  {/if}
+</T.Group>
