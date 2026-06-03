@@ -62,7 +62,7 @@
   let pixelCanvas     = $state(null)
   let pixelThresholds = []   // soglia [0,1] per ogni pixel: quando appare
 
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.92, 0.98, 0, 1), 0, 1))
+  let pixelProgress = $derived(clamp(remap(zoomP, 0.90, 0.99, 0, 1), 0, 1))
 
   $effect(() => {
     if (!pixelCanvas || pixelThresholds.length > 0) return
@@ -77,9 +77,9 @@
     for (let i = 0; i < total; i++) {
       const row      = Math.floor(i / PIXEL_COLS)
       const rowT     = row / PIXEL_ROWS                      // 0 = cima, 1 = fondo
-      const colJitter = (Math.random() - 0.5) * 0.22        // randomness orizzontale
-      const rowJitter = (Math.random() - 0.5) * 0.12        // piccola randomness verticale
-      pixelThresholds[i] = Math.max(0, Math.min(1, rowT * 0.80 + colJitter + rowJitter))
+      const colJitter = (Math.random() - 0.5) * 0.75        // randomness orizzontale
+      const rowJitter = (Math.random() - 0.5) * 0.50        // randomness verticale
+      pixelThresholds[i] = Math.max(0, Math.min(1, rowT * 0.55 + 0.22 + colJitter + rowJitter))
     }
   })
 
@@ -89,7 +89,7 @@
     const w   = pixelCanvas.width
     const h   = pixelCanvas.height
 
-    if (zoomP < 0.92) {
+    if (zoomP < 0.90) {
       ctx.clearRect(0, 0, w, h)
       return
     }

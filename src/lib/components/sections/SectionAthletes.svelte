@@ -357,7 +357,7 @@
     if (rawIntroP < 1) {
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
-      helmetStore.viewerPaddingLeft = '38%'
+      helmetStore.viewerPaddingLeft = `${lerp(0, 38, ei)}%`
       helmetStore.lookAtX = lerp(0, -0.8, ei)
       helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(8.5,  ATH_CAM_Z,  ei)
