@@ -12,7 +12,7 @@
   let colorYellow = '#ffd700';
   let colorBlue   = '#0057b7';
 
-  const MAX_COLORED = 18;
+  const MAX_COLORED = 30;
   const STAR_SIZE   = 18;
 
   let coloredStars = [];
