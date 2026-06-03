@@ -45,7 +45,7 @@
 
     function getArrowY() {
       const sz = Math.min(h * 0.2, w * 0.12)
-      return h * 0.58 + sz * 1.1
+      return h * 0.58 + sz * 1.42
     }
 
     function positionBtn() {
@@ -62,11 +62,38 @@
       btn.style.height = `${arrowH + hitPad * 2}px`
     }
 
+    const ARROW_REST   = 0.55
+    const ARROW_HOVER  = 1.0
+    const ARROW_EASE_MS = 250
+    let arrowOpacity   = ARROW_REST
+    let arrowFrom      = ARROW_REST
+    let arrowTo        = ARROW_REST
+    let arrowAnimStart = null
+    let arrowAnimId    = null
+    const easeArrow    = t => t < 0.5 ? 2*t*t : 1 - (-2*t+2)**2/2
+
+    function tickArrow(now) {
+      const t = Math.min(1, (now - arrowAnimStart) / ARROW_EASE_MS)
+      arrowOpacity = arrowFrom + (arrowTo - arrowFrom) * easeArrow(t)
+      redraw()
+      if (t < 1) arrowAnimId = requestAnimationFrame(tickArrow)
+      else { arrowOpacity = arrowTo; arrowAnimId = null }
+    }
+
+    function startArrowAnim(to) {
+      arrowFrom = arrowOpacity
+      arrowTo   = to
+      arrowAnimStart = performance.now()
+      cancelAnimationFrame(arrowAnimId)
+      arrowAnimId = requestAnimationFrame(tickArrow)
+    }
+
     function drawArrow() {
       const smallSz = Math.max(11, Math.min(h * 0.022, w * 0.014))
       const dotSz   = Math.max(2, Math.round(smallSz * 0.28))
       const step    = dotSz + Math.max(2, Math.round(dotSz * 0.55))
       const arrowY  = getArrowY()
+      ctx.globalAlpha = arrowOpacity
       ctx.fillStyle = '#030404'
       const rows = [[-2, -1, 0, 1, 2], [-1, 0, 1], [0]]
       rows.forEach((row, ri) => {
@@ -78,6 +105,13 @@
           )
         })
       })
+      ctx.globalAlpha = 1
+    }
+
+    function redraw() {
+      ctx.clearRect(0, 0, w, h)
+      drawFullText()
+      drawArrow()
     }
 
     function drawFullText() {
@@ -152,6 +186,11 @@
     window.addEventListener('wheel',     preventScroll, { passive: false })
     window.addEventListener('touchmove', preventScroll, { passive: false })
 
+    const onArrowEnter = () => startArrowAnim(ARROW_HOVER)
+    const onArrowLeave = () => startArrowAnim(ARROW_REST)
+    btn?.addEventListener('mouseenter', onArrowEnter)
+    btn?.addEventListener('mouseleave', onArrowLeave)
+
     resize()
     window.addEventListener('resize', resize)
     animId = requestAnimationFrame(frame)
@@ -165,6 +204,9 @@
       window.removeEventListener('resize', resize)
       window.removeEventListener('wheel',     preventScroll)
       window.removeEventListener('touchmove', preventScroll)
+      btn?.removeEventListener('mouseenter', onArrowEnter)
+      btn?.removeEventListener('mouseleave', onArrowLeave)
+      cancelAnimationFrame(arrowAnimId)
     }
   })
 </script>

@@ -57,27 +57,30 @@
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
 
   // Pixel canvas (exit dissolve)
-  const PIXEL_COLS = 40
-  const PIXEL_ROWS = 25
-  let pixelCanvas    = $state(null)
-  let pixelCellOrder = []
+  const PIXEL_COLS = 280
+  const PIXEL_ROWS = 175
+  let pixelCanvas     = $state(null)
+  let pixelThresholds = []   // soglia [0,1] per ogni pixel: quando appare
 
-  function shuffleArr(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]]
-    }
-    return arr
-  }
-
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.86, 0.98, 0, 1), 0, 1))
+  let pixelProgress = $derived(clamp(remap(zoomP, 0.90, 0.99, 0, 1), 0, 1))
 
   $effect(() => {
-    if (!pixelCanvas || pixelCellOrder.length > 0) return
+    if (!pixelCanvas || pixelThresholds.length > 0) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     pixelCanvas.width  = Math.round(window.innerWidth * dpr)
     pixelCanvas.height = Math.round(window.innerHeight * dpr)
-    pixelCellOrder = shuffleArr([...Array(PIXEL_COLS * PIXEL_ROWS).keys()])
+
+    // Ogni pixel ha una soglia: dipende dalla riga (top→bottom) + jitter per colonna
+    // Risultato: "pioggia" che cade dall'alto verso il basso, sgretolata
+    const total = PIXEL_COLS * PIXEL_ROWS
+    pixelThresholds = new Float32Array(total)
+    for (let i = 0; i < total; i++) {
+      const row      = Math.floor(i / PIXEL_COLS)
+      const rowT     = row / PIXEL_ROWS                      // 0 = cima, 1 = fondo
+      const colJitter = (Math.random() - 0.5) * 0.75        // randomness orizzontale
+      const rowJitter = (Math.random() - 0.5) * 0.50        // randomness verticale
+      pixelThresholds[i] = Math.max(0, Math.min(1, rowT * 0.55 + 0.22 + colJitter + rowJitter))
+    }
   })
 
   $effect(() => {
@@ -86,7 +89,7 @@
     const w   = pixelCanvas.width
     const h   = pixelCanvas.height
 
-    if (zoomP < 0.86) {
+    if (zoomP < 0.90) {
       ctx.clearRect(0, 0, w, h)
       return
     }
@@ -98,13 +101,13 @@
     ctx.fillStyle = '#FAFAFA'
     ctx.fillRect(0, 0, w, h)
 
-    const count = Math.floor(pixelProgress * total)
-    for (let i = 0; i < count; i++) {
-      const idx = pixelCellOrder[i]
-      const col = idx % PIXEL_COLS
-      const row = Math.floor(idx / PIXEL_COLS)
-      ctx.fillStyle = '#030404'
-      ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
+    ctx.fillStyle = '#030404'
+    for (let i = 0; i < total; i++) {
+      if (pixelProgress >= pixelThresholds[i]) {
+        const col = i % PIXEL_COLS
+        const row = Math.floor(i / PIXEL_COLS)
+        ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
+      }
     }
   })
 
