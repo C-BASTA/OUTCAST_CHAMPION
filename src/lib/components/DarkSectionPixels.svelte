@@ -7,7 +7,7 @@
   let dpr = 1;
   let animId;
 
-  const MAX_PIXELS = 25;
+  const MAX_PIXELS = 30;
   const PIXEL_SIZE = 18;
 
   let pixels = [];
