@@ -30,7 +30,7 @@
 
     function getArrowY() {
       const sz = Math.min(h * 0.2, w * 0.12)
-      return h * 0.58 + sz * 1.1
+      return h * 0.58 + sz * 1.42
     }
 
     function positionBtn() {
