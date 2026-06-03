@@ -377,12 +377,21 @@
 
   function selectFace(index) {
     if (index === -1) return
-    const name = faces[index].name
-    if (index !== Math.round(smoothSelected)) return
-    if (athleteDetails[name]) {
-      activeAthlete      = athleteDetails[name]
-      activeAthleteIndex = index
+
+    const currentCenter = Math.round(smoothSelected)
+    if (index === currentCenter) {
+      const name = faces[index]?.name
+      if (name && athleteDetails[name]) {
+        activeAthlete      = athleteDetails[name]
+        activeAthleteIndex = index
+      }
+      return
     }
+
+    if (!wrapper || !lenis) return
+    const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY
+    const targetScroll = wrapperTop + INTRO_PX + index * PX_PER_STEP
+    lenis.scrollTo(targetScroll)
   }
 
   // ─── Lenis + ScrollTrigger ─────────────────────────────────────────────────
