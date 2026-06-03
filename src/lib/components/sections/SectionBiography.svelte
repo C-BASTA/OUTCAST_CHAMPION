@@ -85,10 +85,14 @@
   let verticalCards  = $derived(isMobile ? CARDS_DATA  : [])
   let verticalQuotes = $derived(isMobile ? QUOTES_DATA : [])
 
-  let lastCardX     = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
+    let lastCardX     = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
   let trackWidth    = $derived(isMobile ? 0 : lastCardX + paddingLateral)
   let maxOffsetX    = $derived(Math.max(0, trackWidth - vpW))
-  let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX}px)`)
+  
+  const PAUSE_PX    = 600
+  let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX + PAUSE_PX}px)`)
+
+
 
   onMount(() => {
     const style = getComputedStyle(document.documentElement)
@@ -113,7 +117,7 @@
         scrollTrigger: {
           trigger: section,
           start: 'top top',
-          end: 'bottom bottom',
+            end: () => `+=${maxOffsetX}`,
           scrub: 1.5,
           invalidateOnRefresh: true,
         },

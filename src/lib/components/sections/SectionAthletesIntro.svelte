@@ -51,12 +51,11 @@
     if (ctx) ctx.revert();
   });
 </script>
-
 <div class="wrapper" bind:this={wrapper} style="height: calc(100vh + {SCROLL_HEIGHT}px)">
   <div class="sticky">
-    <span class="quotes">&ldquo;</span>
     <div class="quote-overlay">
       <p class="quote">
+        <span class="quotes">&ldquo;</span>
         <span class="line">I believe they deserve</span>
         <span class="line">to be here today with me</span>
         <span class="line">and also they deserve</span>
@@ -90,6 +89,7 @@
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
+    
   }
 
   .quote {
@@ -99,11 +99,13 @@
     color: var(--color-canvas)
     line-height: 1.4;
     letter-spacing: -0.02em;
+    width: fit-content;
     max-width: 50%;
     margin: 0;
     display: flex;
     flex-direction: column;
     gap: 0.2em; /* Spazio verticale tra le righe animate */
+    
   }
 
   .line {
@@ -114,17 +116,20 @@
   }
 
   .quotes {
-    position: absolute;
-    left: calc(var(--padding-lateral, 80px) + 14vw);
-    transform: translateX(-50%);
-    bottom: 61%;
+    display: block;
+    
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
-    color: var(--color-canvas);
     line-height: 1;
     letter-spacing: 0.05em;
+    will-change: transform, opacity;
     opacity: 0;
-    white-space: nowrap;
+    margin-bottom: clamp(-48px, -34vw, -24px);
+  text-align: center;
+   
+    display: flex;
+    flex-direction: column;
+   
   }
 
   @media (max-width: 768px) {

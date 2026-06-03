@@ -7,6 +7,7 @@
   import SectionFrase from '$lib/components/sections/SectionFrase.svelte'
   import SectionBiography from '$lib/components/sections/SectionBiography.svelte'
   import SectionHelmetVisor from '$lib/components/sections/SectionHelmetVisor.svelte'
+  import SectionFrase2 from '$lib/components/sections/SectionFrase2.svelte'
   import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionFraseChiusura from '$lib/components/sections/SectionFraseChiusura.svelte'
@@ -60,7 +61,7 @@
     <SectionAthletes />
   </div>
 
-  <SectionFraseChiusura />
+  <SectionFrase2 />
   <SectionRegolamento />
 </main>
 
