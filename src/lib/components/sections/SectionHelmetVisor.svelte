@@ -108,19 +108,24 @@
     }
   })
 
+  const CHAR_WINDOW = T_IN * 3
+
   function textAnim(i) {
     const [ws, we] = TEXT_WINDOWS[i]
     const p = zoomP
-    if (p <= ws || p >= we) return { opacity: 0, y: p < ws ? 56 : -56 }
-    if (p < ws + T_IN) {
-      const t = ease(remap(p, ws, ws + T_IN, 0, 1))
-      return { opacity: t, y: lerp(56, 0, t) }
+    if (p <= ws || p >= we) {
+      return { phase: 'hidden', charProgress: 0, y: p < ws ? 56 : -56, exitOpacity: 1 }
     }
     if (p > we - T_OUT) {
       const t = ease(remap(p, we - T_OUT, we, 0, 1))
-      return { opacity: 1 - t, y: lerp(0, -56, t) }
+      return { phase: 'out', charProgress: 1, y: lerp(0, -56, t), exitOpacity: 1 - t }
     }
-    return { opacity: 1, y: 0 }
+    const y = p < ws + T_IN ? lerp(56, 0, ease(remap(p, ws, ws + T_IN, 0, 1))) : 0
+    const charProgress = clamp(remap(p, ws, ws + CHAR_WINDOW, 0, 1), 0, 1)
+    if (charProgress < 1) {
+      return { phase: 'in', charProgress, y, exitOpacity: 1 }
+    }
+    return { phase: 'visible', charProgress: 1, y: 0, exitOpacity: 1 }
   }
 
   onMount(() => {
@@ -197,13 +202,16 @@
       {#if zoomP > 0.16 && zoomP < 0.90}
         <div class="text-stage" aria-live="polite">
           {#each VISOR_TEXTS as txt, i}
-            {@const { opacity, y } = textAnim(i)}
+            {@const anim = textAnim(i)}
+            {@const chars = [...txt]}
             <p
               class="visor-text"
-              style:opacity
-              style:transform="translateY({y}px)"
-              aria-hidden={opacity < 0.05 ? 'true' : 'false'}
-            >{txt}</p>
+              style:opacity={anim.phase === 'hidden' ? 0 : anim.phase === 'out' ? anim.exitOpacity : 1}
+              style:transform="translateY({anim.y}px)"
+              aria-hidden={anim.phase === 'hidden' ? 'true' : 'false'}
+            >{#each chars as char, j}<span
+                style:opacity={anim.phase === 'in' ? (anim.charProgress * chars.length > j ? 1 : 0) : undefined}
+              >{char}</span>{/each}</p>
           {/each}
         </div>
       {/if}
