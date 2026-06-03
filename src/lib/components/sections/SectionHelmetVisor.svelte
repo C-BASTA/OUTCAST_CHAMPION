@@ -57,8 +57,8 @@
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
 
   // Pixel canvas (exit dissolve)
-  const PIXEL_COLS = 40
-  const PIXEL_ROWS = 25
+  const PIXEL_COLS = 280
+  const PIXEL_ROWS = 175
   let pixelCanvas    = $state(null)
   let pixelCellOrder = []
 
@@ -70,7 +70,7 @@
     return arr
   }
 
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.86, 0.98, 0, 1), 0, 1))
+  let pixelProgress = $derived(clamp(remap(zoomP, 0.92, 0.98, 0, 1), 0, 1))
 
   $effect(() => {
     if (!pixelCanvas || pixelCellOrder.length > 0) return
