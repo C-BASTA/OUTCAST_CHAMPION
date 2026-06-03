@@ -27,6 +27,27 @@
   // Riferimento all'immagine per l'effetto 3D
   let vladImg
 
+  // --- SPRING 3D ---
+  // target: valori verso cui tendiamo (impostati da mouse/gyro)
+  // cur:    valore corrente (aggiornato frame per frame con spring)
+  // vel:    velocità corrente
+  const S3_STIFF = 0.055  // rigidità: più basso = più lento e "pesante"
+  const S3_DAMP  = 0.82   // smorzamento: più basso = più rimbalzo
+  const S3_MAX_ROT  = 2   // gradi massimi di rotazione (solo accenno, non stretch)
+  const S3_MAX_DRIFT = 18 // px massimi di traslazione parallax (effetto profondità)
+
+  let s3_tRotX = 0, s3_tRotY = 0   // target rotation
+  let s3_tDX   = 0, s3_tDY   = 0   // target drift (px)
+  let s3_rX = 0, s3_rY = 0         // current rotation
+  let s3_dX = 0, s3_dY = 0         // current drift
+  let s3_vRX = 0, s3_vRY = 0       // velocity rotation
+  let s3_vDX = 0, s3_vDY = 0       // velocity drift
+
+  // oscillazione idle (floating autonomo)
+  const FLOAT_AMP  = 3    // px ampiezza oscillazione Y
+  const FLOAT_TILT = 0.4  // gradi ampiezza tilt idle
+  let s3_mouseInside = false
+
   const RADIUS = 190
   const STIFFNESS = 0.15
   const DAMPING = 0.85
@@ -223,26 +244,14 @@
       _tCy = y
       _tR = RADIUS
 
-      // --- LOGICA HOVER 3D (INVERTITA) ---
-      if (vladImg) {
-        // Calcola la posizione del mouse relativa al centro del contenitore (da -0.5 a 0.5)
-        const mouseX = (e.clientX - hr.left) / hr.width - 0.5
-        const mouseY = (e.clientY - hr.top) / hr.height - 0.5
-        
-        // Intensità dell'inclinazione (massimo 12 gradi)
-        const maxRotation = 12 
-        
-        // Calcola le rotazioni con i segni modificati per invertire l'effetto
-        // Ora l'immagine ruota verso il cursore:
-        // - Muovendo il mouse verso l'alto (mouseY negativo), l'immagine ruota in avanti (rotateX positivo)
-        // - Muovendo il mouse verso destra (mouseX positivo), l'immagine ruota verso destra (rotateY positivo)
-        const rotateX = mouseY * maxRotation; // Nota: il segno '-' qui inverte la rotazione verticale originale
-        const rotateY = -mouseX * maxRotation;  // Nota: qui il segno '+' (implicitamente) inverte la rotazione orizzontale originale
-
-        // Applica l'effetto concatenando i transform CSS nativi senza disturbare GSAP
-        vladImg.style.transform = `translateX(3%) translateY(13%) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`
-      }
-      // ------------------------------------
+      // Aggiorna i target per la spring 3D (applicata nel tick)
+      const mouseX = (e.clientX - hr.left) / hr.width - 0.5
+      const mouseY = (e.clientY - hr.top) / hr.height - 0.5
+      s3_mouseInside = true
+      s3_tRotX =  mouseY * S3_MAX_ROT
+      s3_tRotY = -mouseX * S3_MAX_ROT
+      s3_tDX   =  mouseX * S3_MAX_DRIFT
+      s3_tDY   =  mouseY * S3_MAX_DRIFT * 0.6
 
       const dt = lastPointerTime ? Math.max(12, now - lastPointerTime) : 16
       const dx = lastPointerTime ? x - lastPointerX : 0
@@ -276,11 +285,9 @@
       _hovering = false
       _tR = 0
       lastPointerTime = 0
-
-      // Reset dell'inclinazione 3D quando il mouse esce
-      if (vladImg) {
-        vladImg.style.transform = 'translateX(3%) translateY(13%) scale(1.1) rotateX(0deg) rotateY(0deg)'
-      }
+      s3_mouseInside = false
+      s3_tRotX = 0; s3_tRotY = 0
+      s3_tDX   = 0; s3_tDY   = 0
     }
 
     function addListeners() {
@@ -370,6 +377,29 @@
         lastTilePulse = now
       }
 
+      // --- AGGIORNAMENTO SPRING 3D ---
+      if (vladImg) {
+        // floating idle: oscillazione autonoma quando il mouse è fuori
+        const floatY    = s3_mouseInside ? 0 : Math.sin(now * 0.00052) * FLOAT_AMP
+        const floatTilt = s3_mouseInside ? 0 : Math.sin(now * 0.00037) * FLOAT_TILT
+
+        // spring: vel += (target - cur) * stiff; vel *= damp; cur += vel
+        s3_vRX += (s3_tRotX - s3_rX) * S3_STIFF; s3_vRX *= S3_DAMP; s3_rX += s3_vRX
+        s3_vRY += (s3_tRotY - s3_rY) * S3_STIFF; s3_vRY *= S3_DAMP; s3_rY += s3_vRY
+        s3_vDX += (s3_tDX   - s3_dX) * S3_STIFF; s3_vDX *= S3_DAMP; s3_dX += s3_vDX
+        s3_vDY += (s3_tDY   - s3_dY) * S3_STIFF; s3_vDY *= S3_DAMP; s3_dY += s3_vDY
+
+        const rx = s3_rX + floatTilt
+        const ry = s3_rY
+        // converti drift px in % rispetto alla dimensione del contenitore
+        const dxPct = (s3_dX / (photoW || 1)) * 100
+        const dyPct = (s3_dY / (photoH || 1)) * 100
+        const floatPct = (floatY / (photoH || 1)) * 100
+
+        vladImg.style.transform =
+          `perspective(2000px) translateX(${3 + dxPct}%) translateY(${13 + dyPct + floatPct}%) scale(1.1) rotateX(${rx}deg) rotateY(${ry}deg)`
+      }
+
       drawTiles(dt)
       raf = requestAnimationFrame(tick)
     }
@@ -403,6 +433,45 @@
     tick()
     addListeners()
 
+    // --- GIROSCOPIO (mobile) ---
+    let gyroCalibrated = false
+    let gyroBetaOrigin = 0, gyroGammaOrigin = 0
+
+    function onGyro(e) {
+      if (!maskActive) return
+      const beta  = e.beta  ?? 0   // inclinazione avanti/indietro
+      const gamma = e.gamma ?? 0   // inclinazione sinistra/destra
+
+      if (!gyroCalibrated) {
+        gyroBetaOrigin  = beta
+        gyroGammaOrigin = gamma
+        gyroCalibrated  = true
+      }
+
+      // delta rispetto alla posizione di riposo, clampato a ±30deg → mappato a ±MAX_ROT
+      const clampedBeta  = Math.max(-30, Math.min(30, beta  - gyroBetaOrigin))
+      const clampedGamma = Math.max(-30, Math.min(30, gamma - gyroGammaOrigin))
+
+      s3_mouseInside = true
+      s3_tRotX =  (clampedBeta  / 30) * S3_MAX_ROT
+      s3_tRotY =  (clampedGamma / 30) * S3_MAX_ROT
+      s3_tDX   =  (clampedGamma / 30) * S3_MAX_DRIFT
+      s3_tDY   =  (clampedBeta  / 30) * S3_MAX_DRIFT
+    }
+
+    async function setupGyro() {
+      if (!('DeviceOrientationEvent' in window)) return
+      // iOS 13+ richiede permesso esplicito
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission()
+          if (perm !== 'granted') return
+        } catch { return }
+      }
+      window.addEventListener('deviceorientation', onGyro)
+    }
+    setupGyro()
+
     return () => {
       cancelAnimationFrame(raf)
       resizeObserver.disconnect()
@@ -411,6 +480,7 @@
       scrollTween.kill()
       gsap.ticker.remove(progressTickerFn)
       removeListeners()
+      window.removeEventListener('deviceorientation', onGyro)
     }
   })
 </script>
@@ -488,7 +558,6 @@
     cursor: crosshair;
     transform-origin: 50% 40%;
     will-change: transform, opacity;
-    /* Abilita la prospettiva 3D per gli elementi interni */
     perspective: 1000px;
   }
 
@@ -506,8 +575,6 @@
     user-select: none;
     -webkit-user-drag: none;
     z-index: 2;
-    /* Transizione fluida per quando il mouse esce dal wrap */
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     will-change: transform;
   }
 
