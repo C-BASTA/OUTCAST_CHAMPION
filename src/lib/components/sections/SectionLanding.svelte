@@ -24,8 +24,8 @@
   let lastTilePulse = 0
   let tiles = []
 
-  // Riferimento all'immagine per l'effetto 3D
-  let vladImg
+  // Riferimento al layer comune per l'effetto 3D
+  let photoMotion
 
   // --- SPRING 3D ---
   // target: valori verso cui tendiamo (impostati da mouse/gyro)
@@ -42,7 +42,6 @@
   let s3_dX = 0, s3_dY = 0         // current drift
   let s3_vRX = 0, s3_vRY = 0       // velocity rotation
   let s3_vDX = 0, s3_vDY = 0       // velocity drift
-  let helmetDrawDX = 0, helmetDrawDY = 0
 
   // oscillazione idle (floating autonomo)
   const FLOAT_AMP  = 3    // px ampiezza oscillazione Y
@@ -53,8 +52,7 @@
   const STIFFNESS = 0.15
   const DAMPING = 0.85
   const MAX_TILES = 280
-  const TILE_GLITCH_AMOUNT = 0.32
-  const TILE_GLITCH_THRESHOLD = 1.18
+  const TILE_FADE_START = 0.58
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
   const HELMET_SCALE = 0.45
@@ -105,10 +103,7 @@
       size: s,
       age: -delay,
       ttl,
-      isTrail,
-      flickerSeed: rand(0, Math.PI * 2),
-      glitchX: rand(-6, 6),
-      glitchY: rand(-4, 4)
+      isTrail
     })
 
     if (tiles.length > MAX_TILES) {
@@ -123,7 +118,7 @@
       ? [15, 20, 30, 45, 84, 112, 140]
       : [13, 18, 28, 40, 56]
     const spread = clamp((isAuto ? 96 : 28) + speed * 1.35, 26, 190) * unit
-    const ttlBase = isAuto ? 760 : clamp(300 + speed * 9, 240, 940)
+    const ttlBase = isAuto ? 940 : clamp(300 + speed * 9, 340, 940)
 
     for (let i = 0; i < amount; i++) {
       const size = pick(sizes) * unit * rand(0.82, 1.18)
@@ -170,7 +165,7 @@
     ctx.beginPath()
     ctx.rect(tile.x + padX + offsetX, tile.y + padY + offsetY, tile.size, tile.size)
     ctx.clip()
-    ctx.drawImage(helmetImage, helmetX + helmetDrawDX, helmetY + helmetDrawDY, helmetW, helmetH)
+    ctx.drawImage(helmetImage, helmetX, helmetY, helmetW, helmetH)
     ctx.restore()
   }
 
@@ -190,16 +185,9 @@
         continue
       }
 
-      const dying = clamp((p - 0.58) / 0.42, 0, 1)
-      const flicker = Math.sin(tile.age * 0.13 + tile.flickerSeed) + Math.sin(tile.age * 0.047 + tile.flickerSeed * 2)
-      const isBlinkingOff = dying > 0 && flicker < -0.18 - dying * 0.42
-
-      if (isBlinkingOff) continue
-
-      const shouldGlitch = dying > 0.28 && flicker > TILE_GLITCH_THRESHOLD
-      const offsetX = shouldGlitch ? Math.round(tile.glitchX * dying * TILE_GLITCH_AMOUNT) : 0
-      const offsetY = shouldGlitch ? Math.round(tile.glitchY * dying * TILE_GLITCH_AMOUNT) : 0
-      drawHelmetTile(tile, tile.isTrail ? 0.62 : 1, offsetX, offsetY)
+      const dying = clamp((p - TILE_FADE_START) / (1 - TILE_FADE_START), 0, 1)
+      const fade = 1 - dying * dying * (3 - 2 * dying)
+      drawHelmetTile(tile, (tile.isTrail ? 0.62 : 1) * fade)
     }
   }
 
@@ -241,8 +229,8 @@
       lastMoveTime = Date.now()
       const now = performance.now()
       const hr = wrap.getBoundingClientRect()
-      const x = (e.clientX - hr.left) / _scale
-      const y = (e.clientY - hr.top) / _scale
+      const x = (e.clientX - hr.left - s3_dX) / _scale
+      const y = (e.clientY - hr.top - s3_dY) / _scale
       _tCx = x
       _tCy = y
       _tR = RADIUS
@@ -381,7 +369,7 @@
       }
 
       // --- AGGIORNAMENTO SPRING 3D ---
-      if (vladImg) {
+      if (photoMotion) {
         // floating idle: oscillazione autonoma quando il mouse è fuori
         const floatY    = s3_mouseInside ? 0 : Math.sin(now * 0.00052) * FLOAT_AMP
         const floatTilt = s3_mouseInside ? 0 : Math.sin(now * 0.00037) * FLOAT_TILT
@@ -398,11 +386,9 @@
         const dxPct = (s3_dX / (photoW || 1)) * 100
         const dyPct = (s3_dY / (photoH || 1)) * 100
         const floatPct = (floatY / (photoH || 1)) * 100
-        helmetDrawDX = s3_dX
-        helmetDrawDY = s3_dY + floatY
 
-        vladImg.style.transform =
-          `perspective(2000px) translateX(${3 + dxPct}%) translateY(${13 + dyPct + floatPct}%) scale(1.1) rotateX(${rx}deg) rotateY(${ry}deg)`
+        photoMotion.style.transform =
+          `perspective(2000px) translateX(${dxPct}%) translateY(${dyPct + floatPct}%) rotateX(${rx}deg) rotateY(${ry}deg)`
       }
 
       drawTiles(dt)
@@ -500,14 +486,15 @@
       style:transform="translateX(-50%)"
       style:opacity={photoOpacity}
     >
-      <img 
-        bind:this={vladImg} 
-        class="vlad" 
-        src="/images/vlad-espanso-hd-nobg.png" 
-        alt="Vlad" 
-        draggable="false" 
-      />
-      <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
+      <div class="photo-motion" bind:this={photoMotion}>
+        <img 
+          class="vlad" 
+          src="/images/vlad-espanso-hd-nobg.png" 
+          alt="Vlad" 
+          draggable="false" 
+        />
+        <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
+      </div>
     </div>
 
     <div class="name-wrap" style:opacity={textOpacity}>
@@ -564,6 +551,15 @@
     transform-origin: 50% 40%;
     will-change: transform, opacity;
     perspective: 1000px;
+  }
+
+  .photo-motion {
+    position: absolute;
+    inset: 0;
+    transform: perspective(2000px) translateX(0%) translateY(0%) rotateX(0deg) rotateY(0deg);
+    transform-style: preserve-3d;
+    will-change: transform;
+    pointer-events: none;
   }
 
   .vlad {

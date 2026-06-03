@@ -6,18 +6,33 @@
 
   let { ondone = undefined } = $props()
 
-  let canvas
-  let btn
+  let canvas    = $state()
+  let btn       = $state()
   let visible   = $state(true)
   let triggered = $state(false)
 
   const T_TOTAL = 1800
 
+  function resetPageScroll() {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+
+    const lenis = getLenis()
+    if (lenis) {
+      lenis.resize?.()
+      lenis.scrollTo(0, { immediate: true, force: true })
+    }
+
+    ScrollTrigger.update()
+  }
+
   onMount(async () => {
     await document.fonts.load("48px 'GeistPixel'").catch(() => {})
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
     document.documentElement.style.overflow = 'hidden'
     document.body.style.overflow = 'hidden'
-    window.scrollTo(0, 0)
+    resetPageScroll()
     getLenis()?.stop()
 
     const ctx    = canvas.getContext('2d')
@@ -101,7 +116,7 @@
       const p = Math.min(1, (now - clickTime) / T_TOTAL)
 
       if (p < 1) {
-        window.scrollTo(0, 0)
+        resetPageScroll()
         const blurPx = easeIO(Math.min(1, p / 0.60)) * 120
         const fadeP  = easeIO(Math.max(0, (p - 0.50) / 0.50))
         // Mantieni sfondo bianco durante tutto il fade (non scurire)
@@ -110,22 +125,25 @@
         animId = requestAnimationFrame(frame)
       } else {
         // Prima ripristina scroll e stato, poi rimuovi il loader
-        window.scrollTo(0, 0)
+        resetPageScroll()
         document.documentElement.style.overflow = ''
         document.body.style.overflow = ''
-        window.scrollTo(0, 0)
+        resetPageScroll()
         const lenis = getLenis()
         if (lenis) {
-          lenis.scrollTo(0, { immediate: true })
           lenis.start()
+          lenis.scrollTo(0, { immediate: true, force: true })
         }
         ScrollTrigger.refresh()
-        window.scrollTo(0, 0)
+        resetPageScroll()
         // Solo dopo che tutto è sistemato, rimuovi il loader
         requestAnimationFrame(() => {
-          window.scrollTo(0, 0)
-          visible = false
-          ondone?.()
+          resetPageScroll()
+          requestAnimationFrame(() => {
+            resetPageScroll()
+            visible = false
+            ondone?.()
+          })
         })
       }
     }

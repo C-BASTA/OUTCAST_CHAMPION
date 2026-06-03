@@ -351,7 +351,7 @@
 
     exitT = 0
     helmetStore.exitY   = 0
-    helmetStore.visible = true
+    helmetStore.visible = scrolledInside > 0
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {

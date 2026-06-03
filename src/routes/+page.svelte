@@ -14,6 +14,7 @@
   import LoadingScreen from '$lib/components/LoadingScreen.svelte'
 
   let scrollY     = $state(0)
+  let loaderDone  = $state(false)
   let navDark     = $state(false)  // inizia scuro (landing ha sfondo chiaro)
   let navShowLogo = $state(false)
   let inBio       = $state(false)
@@ -37,33 +38,43 @@
   })
 </script>
 
-<LoadingScreen />
+<LoadingScreen ondone={() => { loaderDone = true }} />
 
-<!-- Pixel twinkling background (fisso, sempre visibile) -->
-<BackgroundGrid hideColored={inBio} />
+<div class="page-shell" class:page-shell--ready={loaderDone}>
+  <!-- Pixel twinkling background (fisso, sempre visibile) -->
+  <BackgroundGrid hideColored={inBio} />
 
-<!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
-<HelmetGlobal />
+  <!-- Canvas 3D globale fisso: persiste dalla fine della bio a fine athletes -->
+  <HelmetGlobal />
 
-<Navbar dark={navDark} overlayDark={navDark} showLogo={navShowLogo} />
+  <Navbar dark={navDark} overlayDark={navDark} showLogo={navShowLogo} />
 
-<main>
-  <SectionLanding />
-  <SectionFrase />
-  <SectionBiography />
-  <SectionHelmetVisor />
+  <main>
+    <SectionLanding />
+    <SectionFrase />
+    <SectionBiography />
+    <SectionHelmetVisor />
 
-  <div id="athletes-section">
-    <SectionAthletesIntro />
-    <SectionAthletes />
-  </div>
+    <div id="athletes-section">
+      <SectionAthletesIntro />
+      <SectionAthletes />
+    </div>
 
-  <SectionFrase2 />
-  <SectionRegolamento />
-</main>
+    <SectionFrase2 />
+    <SectionRegolamento />
+  </main>
+</div>
 
 <style>
   main { width: 100%; }
+
+  .page-shell {
+    visibility: hidden;
+  }
+
+  .page-shell--ready {
+    visibility: visible;
+  }
 
   #athletes-section {
     background: #030404;
