@@ -89,6 +89,7 @@
     width: 100%;
     padding-left: var(--padding-lateral, 80px);
     pointer-events: none;
+    
   }
 
   .quote {
@@ -103,6 +104,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.2em; /* Spazio verticale tra le righe animate */
+    
   }
 
   .line {
@@ -114,14 +116,19 @@
 
   .quotes {
     display: block;
-    text-align: center;
+    
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
     line-height: 1;
     letter-spacing: 0.05em;
     will-change: transform, opacity;
     opacity: 0;
-    margin-bottom: clamp(-48px, -3.5vw, -2px);
+    margin-bottom: clamp(-48px, -34vw, -24px);
+  text-align: center;
+   
+    display: flex;
+    flex-direction: column;
+   
   }
 
   @media (max-width: 768px) {
