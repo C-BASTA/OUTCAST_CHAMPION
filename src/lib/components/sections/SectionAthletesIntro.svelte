@@ -99,6 +99,7 @@
     color: var(--color-canvas)
     line-height: 1.4;
     letter-spacing: -0.02em;
+    width: fit-content;
     max-width: 50%;
     margin: 0;
     display: flex;
