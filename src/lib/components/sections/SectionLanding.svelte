@@ -42,6 +42,7 @@
   let s3_dX = 0, s3_dY = 0         // current drift
   let s3_vRX = 0, s3_vRY = 0       // velocity rotation
   let s3_vDX = 0, s3_vDY = 0       // velocity drift
+  let helmetDrawDX = 0, helmetDrawDY = 0
 
   // oscillazione idle (floating autonomo)
   const FLOAT_AMP  = 3    // px ampiezza oscillazione Y
@@ -57,7 +58,7 @@
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
   const HELMET_SCALE = 0.45
-  const HELMET_CENTER_Y = 0.55
+  const HELMET_CENTER_Y = 0.54
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 300
@@ -169,7 +170,7 @@
     ctx.beginPath()
     ctx.rect(tile.x + padX + offsetX, tile.y + padY + offsetY, tile.size, tile.size)
     ctx.clip()
-    ctx.drawImage(helmetImage, helmetX, helmetY, helmetW, helmetH)
+    ctx.drawImage(helmetImage, helmetX + helmetDrawDX, helmetY + helmetDrawDY, helmetW, helmetH)
     ctx.restore()
   }
 
@@ -397,6 +398,8 @@
         const dxPct = (s3_dX / (photoW || 1)) * 100
         const dyPct = (s3_dY / (photoH || 1)) * 100
         const floatPct = (floatY / (photoH || 1)) * 100
+        helmetDrawDX = s3_dX
+        helmetDrawDY = s3_dY + floatY
 
         vladImg.style.transform =
           `perspective(2000px) translateX(${3 + dxPct}%) translateY(${13 + dyPct + floatPct}%) scale(1.1) rotateX(${rx}deg) rotateY(${ry}deg)`
