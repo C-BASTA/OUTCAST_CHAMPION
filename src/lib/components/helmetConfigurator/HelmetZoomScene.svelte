@@ -39,33 +39,15 @@
     return Math.PI - SIDE
   })
 
-  // Float weight: 1 at entry (zoomP=0), fades to 0 before zoom hold starts
-  const clampF = (x, a, b) => Math.max(a, Math.min(b, x))
-  const easeF  = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
-
-  let modelRef = $state(null)
-  let elapsed  = 0
-
-  useTask((delta) => {
-    elapsed += delta
-
+  useTask(() => {
     if (!camera) return
     camera.position.set(0, 0.25, cameraZ)
     camera.lookAt(0, 0.20, 0)
+    // Aspect ratio from window directly: immune to CSS transforms on the canvas container
     const a = window.innerWidth / window.innerHeight
     if (Math.abs(camera.aspect - a) > 0.0001) {
       camera.aspect = a
       camera.updateProjectionMatrix()
-    }
-
-    if (modelRef) {
-      // Float only during entry (zoomP=0) and fades out as zoom begins
-      const w = easeF(clampF(1 - zoomP / 0.18, 0, 1))
-      const floatY  = Math.sin(elapsed * 0.7) * 0.04 * w
-      const floatRX = Math.sin(elapsed * 0.5 + 0.8) * 0.018 * w
-      const floatRZ = Math.sin(elapsed * 0.6 + 1.5) * 0.022 * w
-      modelRef.position.set(0, 0.1 + floatY, 0)
-      modelRef.rotation.set(0.25 + floatRX, rotY, floatRZ)
     }
   })
 
@@ -89,5 +71,5 @@
 <T.AmbientLight intensity={0.5} />
 
 {#if $gltf}
-  <T is={$gltf.scene} scale={2} bind:ref={modelRef} />
+  <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} rotation={[0.25, rotY, 0]} />
 {/if}

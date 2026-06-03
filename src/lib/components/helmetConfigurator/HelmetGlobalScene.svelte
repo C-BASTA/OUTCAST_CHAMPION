@@ -27,36 +27,25 @@
   let curRotY = helmetStore.rotY
   let curRotZ = helmetStore.rotZ
 
-  const FLOAT_AMP_Y    = 0.04
-  const FLOAT_AMP_ROTX = 0.018
-  const FLOAT_AMP_ROTZ = 0.022
-  let elapsed = 0
-
   useTask((delta) => {
-    elapsed += delta
-
     if (camera) {
       camera.position.set(0, helmetStore.cameraY, helmetStore.cameraZ)
       camera.lookAt(helmetStore.lookAtX, helmetStore.lookAtY, 0)
     }
     if (modelRef) {
       if (helmetStore.smoothRotation) {
+        // Lerp esponenziale frame-rate independent: velocità 7 = ~400ms per transizione
         const f = 1 - Math.exp(-7 * delta)
         curRotX += (helmetStore.rotX - curRotX) * f
         curRotY += (helmetStore.rotY - curRotY) * f
         curRotZ += (helmetStore.rotZ - curRotZ) * f
       } else {
+        // Scroll-driven: applica direttamente senza lag
         curRotX = helmetStore.rotX
         curRotY = helmetStore.rotY
         curRotZ = helmetStore.rotZ
       }
-
-      const floatY  = Math.sin(elapsed * 0.7) * FLOAT_AMP_Y
-      const floatRX = Math.sin(elapsed * 0.5 + 0.8) * FLOAT_AMP_ROTX
-      const floatRZ = Math.sin(elapsed * 0.6 + 1.5) * FLOAT_AMP_ROTZ
-
-      modelRef.position.set(0, 0.1 + floatY, 0)
-      modelRef.rotation.set(curRotX + floatRX, curRotY, curRotZ + floatRZ)
+      modelRef.rotation.set(curRotX, curRotY, curRotZ)
     }
   })
 

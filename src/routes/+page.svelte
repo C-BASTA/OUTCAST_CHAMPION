@@ -10,10 +10,8 @@
   import SectionFrase2 from '$lib/components/sections/SectionFrase2.svelte'
   import SectionAthletesIntro from '$lib/components/sections/SectionAthletesIntro.svelte'
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
-  import SectionFraseChiusura from '$lib/components/sections/SectionFraseChiusura.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import LoadingScreen from '$lib/components/LoadingScreen.svelte'
-  import DarkSectionPixels from '$lib/components/DarkSectionPixels.svelte'
 
   let scrollY     = $state(0)
   let navDark     = $state(false)  // inizia scuro (landing ha sfondo chiaro)
@@ -56,7 +54,6 @@
   <SectionHelmetVisor />
 
   <div id="athletes-section">
-    <DarkSectionPixels />
     <SectionAthletesIntro />
     <SectionAthletes />
   </div>
@@ -69,7 +66,6 @@
   main { width: 100%; }
 
   #athletes-section {
-    position: relative;
     background: #030404;
   }
 </style>
