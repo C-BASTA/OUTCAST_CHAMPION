@@ -52,10 +52,12 @@
   const STIFFNESS = 0.15
   const DAMPING = 0.85
   const MAX_TILES = 280
+  const TILE_GLITCH_AMOUNT = 0.32
+  const TILE_GLITCH_THRESHOLD = 1.18
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
-  const HELMET_SCALE = 0.84
-  const HELMET_OFFSET_Y = 0.14
+  const HELMET_SCALE = 0.45
+  const HELMET_CENTER_Y = 0.55
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 300
@@ -104,8 +106,8 @@
       ttl,
       isTrail,
       flickerSeed: rand(0, Math.PI * 2),
-      glitchX: rand(-10, 10),
-      glitchY: rand(-6, 6)
+      glitchX: rand(-6, 6),
+      glitchY: rand(-4, 4)
     })
 
     if (tiles.length > MAX_TILES) {
@@ -160,7 +162,7 @@
     const helmetW = photoW * HELMET_SCALE
     const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth) 
     const helmetX = padX + photoW * 0.5 - helmetW * 0.5
-    const helmetY = padY + photoH * HELMET_OFFSET_Y
+    const helmetY = padY + photoH * HELMET_CENTER_Y - helmetH * 0.5
 
     ctx.save()
     ctx.globalAlpha = alpha
@@ -193,17 +195,17 @@
 
       if (isBlinkingOff) continue
 
-      const shouldGlitch = dying > 0.18 && flicker > 0.74
-      const offsetX = shouldGlitch ? Math.round(tile.glitchX * dying) : 0
-      const offsetY = shouldGlitch ? Math.round(tile.glitchY * dying) : 0
+      const shouldGlitch = dying > 0.28 && flicker > TILE_GLITCH_THRESHOLD
+      const offsetX = shouldGlitch ? Math.round(tile.glitchX * dying * TILE_GLITCH_AMOUNT) : 0
+      const offsetY = shouldGlitch ? Math.round(tile.glitchY * dying * TILE_GLITCH_AMOUNT) : 0
       drawHelmetTile(tile, tile.isTrail ? 0.62 : 1, offsetX, offsetY)
     }
   }
 
   onMount(() => {
     helmetImage = new Image()
-    helmetImage.src = '/images/vlad-hover-black2.png'
-    resizeCanvas()
+    helmetImage.src = '/images/Casco_Landing.png'
+    resizeCanvas() 
 
     const resizeObserver = new ResizeObserver(resizeCanvas)
     if (wrap) resizeObserver.observe(wrap)
