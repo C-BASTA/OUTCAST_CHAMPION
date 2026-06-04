@@ -26,17 +26,17 @@
   let verticalOffset = $derived(isMobile ? 0 : paddingTopMain - REFERENCE_CONTENT_TOP * verticalScale)
 
   const CARDS_DATA = [
-    { boldPart: '1999', rest: ' - Born in Kyiv',              img: '/images/atleti/bio-kyiv.png',              imgW: 350, imgH: 220 },
-    { noTitle: true,                                           img: '/images/atleti/bio-2016-prep.png',         imgW: 200, imgH: 250 },
-    { boldPart: '2016', rest: ' - Youth Olympics',            img: '/images/atleti/bio-youthOlympics.jpg',     imgW: 350, imgH: 220 },
-    { boldPart: '2017', rest: ' - World Championship',        img: '/images/atleti/bio-2017-wc.jpg',           imgW: 480, imgH: 350 },
-    { boldPart: '2018', rest: ' - PyeongChang Olympics',      img: '/images/atleti/bio-2018-pyeongchang.png',  imgW: 350, imgH: 196 },
-    { boldPart: '2019', rest: ' - World Championships',       img: '/images/atleti/bio-wc2019.jpg',            imgW: 370, imgH: 600 },
-    { noTitle: true,                                           img: '/images/atleti/bio-portrait-helmet.png',  imgW: 250, imgH: 247 },
-    { boldPart: '2022', rest: ' - Beijing Olympics',          img: '/images/atleti/2022olympics.avif',         imgW: 500, imgH: 400 },
-    { boldPart: '2024', rest: ' - World Championships',       img: '/images/atleti/bio-2024-worlds.png',       imgW: 370, imgH: 257 },
-    { noTitle: true,                                           img: '/images/atleti/bio-mic.png',               imgW: 240, imgH: 243 },
-    { boldPart: '2026', rest: ' - Milan Cortina Olympics',    img: '/images/atleti/bio-2026-olympic.png',      imgW: 340, imgH: 240 },
+    { boldPart: '1999', rest: ' - Born in Kyiv',              img: '/images/bio/bio-kyiv.png',              imgW: 350, imgH: 220 },
+    { noTitle: true,                                           img: '/images/bio/bio-2016-prep.png',         imgW: 200, imgH: 250 },
+    { boldPart: '2016', rest: ' - Youth Olympics',            img: '/images/bio/bio-youthOlympics.jpg',     imgW: 350, imgH: 220 },
+    { boldPart: '2017', rest: ' - World Championship',        img: '/images/bio/bio-2017-wc.jpg',           imgW: 480, imgH: 350 },
+    { boldPart: '2018', rest: ' - PyeongChang Olympics',      img: '/images/bio/bio-2018-pyeongchang.png',  imgW: 350, imgH: 196 },
+    { boldPart: '2019', rest: ' - World Championships',       img: '/images/bio/bio-wc2019.jpg',            imgW: 370, imgH: 600 },
+    { noTitle: true,                                           img: '/images/bio/bio-portrait-helmet.png',  imgW: 250, imgH: 247 },
+    { boldPart: '2022', rest: ' - Beijing Olympics',          img: '/images/bio/bio-2022olympics.avif',         imgW: 500, imgH: 400 },
+    { boldPart: '2024', rest: ' - World Championships',       img: '/images/bio/bio-2024-worlds.png',       imgW: 370, imgH: 257 },
+    { noTitle: true,                                           img: '/images/bio/bio-mic.png',               imgW: 240, imgH: 243 },
+    { boldPart: '2026', rest: ' - Milan Cortina Olympics',    img: '/images/bio/bio-2026-olympic.png',      imgW: 340, imgH: 240 },
   ]
 
   const QUOTES_DATA = [
