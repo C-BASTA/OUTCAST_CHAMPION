@@ -8,7 +8,7 @@
   let animId;
 
   const MAX_PIXELS = 30;
-  const PIXEL_SIZE = 18;
+  const PIXEL_SIZE = 6;
 
   let pixels = [];
 

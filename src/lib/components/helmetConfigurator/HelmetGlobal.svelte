@@ -12,7 +12,7 @@
   let stars = []
 
   const MAX_STARS = 15
-  const STAR_SIZE = 18
+  const STAR_SIZE = 6
 
   function spawnStar() {
     const greys = ['245,245,245', '210,210,210', '175,175,175']
