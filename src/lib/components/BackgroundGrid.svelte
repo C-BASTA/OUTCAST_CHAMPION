@@ -28,14 +28,13 @@
 
   function spawnStar() {
     const rgb    = [hexToRgb(colorYellow), hexToRgb(colorBlue)][Math.floor(Math.random() * 2)];
-    const phase  = Math.random() * Math.PI * 2;
-    const period = 280 + Math.random() * 200;
+    const period = 500 + Math.random() * 400;
     coloredStars.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      rgb, phase, period,
+      rgb, period,
       age: 0,
-      maxAge: period * (2 + Math.random() * 2),
+      maxAge: period,
     });
   }
 
@@ -51,7 +50,7 @@
         for (let i = coloredStars.length - 1; i >= 0; i--) {
           const s = coloredStars[i];
           s.age++;
-          const alpha = Math.max(0, Math.sin(s.phase + (s.age / s.period) * Math.PI * 2));
+          const alpha = Math.sin((s.age / s.maxAge) * Math.PI);
           if (alpha > 0.01) {
             ctxLight.globalAlpha = alpha * 0.85;
             ctxLight.fillStyle   = `rgb(${s.rgb})`;

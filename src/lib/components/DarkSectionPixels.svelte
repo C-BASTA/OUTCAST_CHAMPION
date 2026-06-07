@@ -13,14 +13,13 @@
   let pixels = [];
 
   function spawn() {
-    const phase  = Math.random() * Math.PI * 2;
-    const period = 280 + Math.random() * 200;
+    const period = 500 + Math.random() * 400;
     pixels.push({
       x: Math.random() * w,
       y: Math.random() * h,
-      phase, period,
+      period,
       age: 0,
-      maxAge: period * (2 + Math.random() * 2),
+      maxAge: period,
     });
   }
 
@@ -32,7 +31,7 @@
       for (let i = pixels.length - 1; i >= 0; i--) {
         const p = pixels[i];
         p.age++;
-        const alpha = Math.max(0, Math.sin(p.phase + (p.age / p.period) * Math.PI * 2));
+        const alpha = Math.sin((p.age / p.maxAge) * Math.PI);
         if (alpha > 0.01) {
           ctx.globalAlpha = alpha * 0.85;
           ctx.fillStyle   = '#ffffff';
