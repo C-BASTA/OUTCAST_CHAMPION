@@ -37,8 +37,8 @@
       'expression in sport.',
     ],
   ]
-  const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
-  const T_IN = 0.055, T_OUT = 0.055
+  const TEXT_WINDOWS = [[0.18, 0.44], [0.44, 0.68], [0.68, 0.90]]
+  const T_IN = 0.08, T_OUT = 0.05
 
   // The helmet start the parrallax as soon as the section enters
   let progress = $state(0)
@@ -133,29 +133,41 @@
     }
   })
 
+  const INIT_BLUR_FIRST = 0
+  const INIT_BLUR_REST  = 5
+  const INIT_OPQ_FIRST  = 1
+  const INIT_OPQ_REST   = 0.12
+
   function lineAnim(textIdx, lineIdx, numLines) {
     const [ws, we] = TEXT_WINDOWS[textIdx]
     const p = zoomP
 
+    const initBlur = lineIdx === 0 ? INIT_BLUR_FIRST : INIT_BLUR_REST
+    const initOpq  = lineIdx === 0 ? INIT_OPQ_FIRST  : INIT_OPQ_REST
+
     if (p <= ws || p >= we) {
-      return { opacity: 0, y: p < ws ? 56 : -56 }
+      return { opacity: 0, blur: initBlur, y: p < ws ? 40 : -40 }
     }
 
-    // Exit: all lines slide up together
+    // Exit: all lines fade+blur out together
     if (p > we - T_OUT) {
       const t = ease(remap(p, we - T_OUT, we, 0, 1))
-      return { opacity: 1 - t, y: lerp(0, -56, t) }
+      return { opacity: lerp(1, 0, t), blur: lerp(0, initBlur, t), y: lerp(0, -40, t) }
     }
 
-    // Entry: stagger each line across T_IN * 2 window
-    const staggerSpan = T_IN * 2
+    // Entry: stagger each line across a wider window
+    const staggerSpan = 0.12
     const lineStart = ws + (lineIdx / numLines) * staggerSpan
     const lineEnd = lineStart + T_IN
 
-    if (p < lineStart) return { opacity: 0, y: 56 }
+    if (p < lineStart) return { opacity: 0, blur: initBlur, y: 40 }
 
     const t = ease(clamp(remap(p, lineStart, lineEnd, 0, 1), 0, 1))
-    return { opacity: t, y: lerp(56, 0, t) }
+    return {
+      opacity: lerp(initOpq, 1, t),
+      blur:    lerp(initBlur, 0, t),
+      y:       lerp(40, 0, t)
+    }
   }
 
   onMount(() => {
@@ -241,6 +253,7 @@
                     class="visor-line"
                     style:opacity={anim.opacity}
                     style:transform="translateY({anim.y}px)"
+                    style:filter={anim.blur > 0 ? `blur(${anim.blur.toFixed(2)}px)` : 'none'}
                   >{line}</span>
                 {/each}
               </div>
