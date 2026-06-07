@@ -168,7 +168,7 @@
   const SCROLL_HEIGHT = PX_PER_STEP * faces.length
   const INTRO_PX      = 1200
   const EXIT_PX       = 700
-  const ROTATION_DELAY = 40
+  const ROTATION_DELAY = 350
 
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
   const lerp  = (a, b, t) => a + (b - a) * t
@@ -395,8 +395,11 @@
             const galleryScrolled = scrolled - INTRO_PX
             const rawSmooth = Math.min(faces.length - 1, galleryScrolled / PX_PER_STEP)
             smoothSelected = applySnap(rawSmooth)
-            selected = Math.round(smoothSelected)
-            scheduleRotation(selected)
+            const newSelected = Math.round(smoothSelected)
+            if (newSelected !== selected) {
+              selected = newSelected
+              scheduleRotation(selected)
+            }
           } else {
             smoothSelected = 0
             selected       = 0

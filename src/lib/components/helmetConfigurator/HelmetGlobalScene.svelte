@@ -43,7 +43,7 @@
     if (modelRef) {
       if (helmetStore.smoothRotation) {
         // Lerp esponenziale frame-rate independent: velocità 7 = ~400ms per transizione
-        const f = 1 - Math.exp(-7 * delta)
+        const f = 1 - Math.exp(-3 * delta)
         curRotX += (helmetStore.rotX - curRotX) * f
         curRotY += (helmetStore.rotY - curRotY) * f
         curRotZ += (helmetStore.rotZ - curRotZ) * f
