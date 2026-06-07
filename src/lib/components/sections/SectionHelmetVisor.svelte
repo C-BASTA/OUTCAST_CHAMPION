@@ -37,7 +37,7 @@
       'expression in sport.',
     ],
   ]
-  const TEXT_WINDOWS = [[0.18, 0.44], [0.44, 0.68], [0.68, 0.90]]
+  const TEXT_WINDOWS = [[0.18, 0.44], [0.44, 0.68], [0.68, 0.86]]
   const T_IN = 0.08, T_OUT = 0.05
 
   // The helmet start the parrallax as soon as the section enters
