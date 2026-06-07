@@ -125,7 +125,7 @@
     will-change: transform, opacity;
     opacity: 0;
     margin-bottom: clamp(-48px, -34vw, -24px);
-  text-align: center;
+  text-align: left;
    
     display: flex;
     flex-direction: column;

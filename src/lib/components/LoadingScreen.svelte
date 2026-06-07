@@ -182,7 +182,11 @@
       }
     }
 
-    const preventScroll = (e) => { if (visible && e.cancelable) e.preventDefault() }
+    const preventScroll = (e) => {
+      if (!visible) return
+      if (e.cancelable) e.preventDefault()
+      triggered = true
+    }
     window.addEventListener('wheel',     preventScroll, { passive: false })
     window.addEventListener('touchmove', preventScroll, { passive: false })
 

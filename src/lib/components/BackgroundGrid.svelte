@@ -13,7 +13,9 @@
   let colorBlue   = '#0057b7';
 
   const MAX_COLORED = 30;
-  const STAR_SIZE   = 18;
+  const PIXEL_COLS = 280;
+  const PIXEL_ROWS = 175;
+  let STAR_SIZE = 6;
 
   let coloredStars = [];
 
