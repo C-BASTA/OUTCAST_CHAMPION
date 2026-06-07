@@ -245,6 +245,7 @@
   }
 
   function syncHelmetLayout(scrolledInside, skipVisibility = false) {
+    if (helmetStore.frozen) return
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
@@ -287,6 +288,7 @@
     if (index === currentCenter) {
       const name = faces[index]?.name
       if (name && athleteDetails[name]) {
+        helmetStore.frozen = true
         activeAthlete      = athleteDetails[name]
         activeAthleteIndex = index
       }
@@ -473,7 +475,7 @@
 <AthleteDetail
   athlete={activeAthlete}
   athleteIndex={activeAthleteIndex}
-  onClose={() => { activeAthlete = null; activeAthleteIndex = -1 }}
+  onClose={() => { activeAthlete = null; activeAthleteIndex = -1; helmetStore.frozen = false }}
 />
 
 <style>

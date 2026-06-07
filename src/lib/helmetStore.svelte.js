@@ -17,4 +17,6 @@ export const helmetStore = $state({
   smoothRotation: false,
   // Transizione di uscita: 0 = in posizione, -100 = completamente fuori sopra
   exitY: 0,
+  // true = blocca aggiornamenti camera (es. overlay atleta aperto)
+  frozen: false,
 })
