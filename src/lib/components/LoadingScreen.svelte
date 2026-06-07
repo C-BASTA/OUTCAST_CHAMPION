@@ -158,37 +158,64 @@
         loader.style.opacity = String(1 - fadeP)
         animId = requestAnimationFrame(frame)
       } else {
-        // Prima ripristina scroll e stato, poi rimuovi il loader
-        resetPageScroll()
-        document.documentElement.style.overflow = ''
-        document.body.style.overflow = ''
-        resetPageScroll()
         const lenis = getLenis()
-        if (lenis) {
-          lenis.start()
-          lenis.scrollTo(0, { immediate: true, force: true })
-        }
         ScrollTrigger.refresh()
-        resetPageScroll()
-        // Solo dopo che tutto è sistemato, rimuovi il loader
+
         requestAnimationFrame(() => {
-          resetPageScroll()
           requestAnimationFrame(() => {
-            resetPageScroll()
             visible = false
             ondone?.()
+
+            // capture:true + stopImmediatePropagation → Lenis non vede mai questi eventi
+            const blockInertia = (e) => {
+              if (e.cancelable) e.preventDefault()
+              e.stopImmediatePropagation()
+            }
+            window.addEventListener('wheel',     blockInertia, { passive: false, capture: true })
+            window.addEventListener('touchmove', blockInertia, { passive: false, capture: true })
+
+            // Loop RAF: forza scroll=0 ogni frame per 800ms.
+            // Lenis resta stopped, overflow resta hidden → nessuno scroll può avvenire.
+            // Alla scadenza: ripristina tutto e avvia lenis dal punto zero.
+            const lockUntil = performance.now() + 800
+            function lockLoop() {
+              window.scrollTo(0, 0)
+              document.documentElement.scrollTop = 0
+              document.body.scrollTop = 0
+              if (performance.now() < lockUntil) {
+                requestAnimationFrame(lockLoop)
+              } else {
+                window.removeEventListener('wheel',     blockInertia, { capture: true })
+                window.removeEventListener('touchmove', blockInertia, { capture: true })
+                document.documentElement.style.overflow = ''
+                document.body.style.overflow = ''
+                window.scrollTo(0, 0)
+                if (lenis) {
+                  lenis.start()
+                  lenis.scrollTo(0, { immediate: true, force: true })
+                  requestAnimationFrame(() => {
+                    window.scrollTo(0, 0)
+                    lenis.scrollTo(0, { immediate: true, force: true })
+                    ScrollTrigger.refresh()
+                  })
+                }
+              }
+            }
+            requestAnimationFrame(lockLoop)
           })
         })
       }
     }
 
+    // capture:true + stopImmediatePropagation: Lenis non accumula delta durante il loader
     const preventScroll = (e) => {
       if (!visible) return
       if (e.cancelable) e.preventDefault()
+      e.stopImmediatePropagation()
       triggered = true
     }
-    window.addEventListener('wheel',     preventScroll, { passive: false })
-    window.addEventListener('touchmove', preventScroll, { passive: false })
+    window.addEventListener('wheel',     preventScroll, { passive: false, capture: true })
+    window.addEventListener('touchmove', preventScroll, { passive: false, capture: true })
 
     const onArrowEnter = () => startArrowAnim(ARROW_HOVER)
     const onArrowLeave = () => startArrowAnim(ARROW_REST)
@@ -206,8 +233,8 @@
       loader.style.filter  = ''
       loader.style.opacity = ''
       window.removeEventListener('resize', resize)
-      window.removeEventListener('wheel',     preventScroll)
-      window.removeEventListener('touchmove', preventScroll)
+      window.removeEventListener('wheel',     preventScroll, { capture: true })
+      window.removeEventListener('touchmove', preventScroll, { capture: true })
       btn?.removeEventListener('mouseenter', onArrowEnter)
       btn?.removeEventListener('mouseleave', onArrowLeave)
       cancelAnimationFrame(arrowAnimId)
