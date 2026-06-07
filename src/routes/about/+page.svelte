@@ -166,7 +166,7 @@
     font-family: var(--font-primary, monospace);
     font-size: clamp(80px, 11vw, 150px);
     font-weight: 400;
-    line-height: 0.78;
+    line-height: 1.2;
     color: #030404;
   }
 
@@ -232,14 +232,14 @@
     font-family: var(--font-primary, monospace);
     font-size: clamp(15px, 1.5vw, 20px);
     color: #030404;
-    line-height: 1.75;
+    line-height: 1.2;
   }
 
   .body-text {
     font-family: var(--font-primary, monospace);
     font-size: clamp(13px, 1.25vw, 17px);
     color: #030404;
-    line-height: 1.8;
+    line-height: 1.2;
     max-width: 500px;
     margin: 0;
     transition: filter 1.6s ease, opacity 0.35s ease;

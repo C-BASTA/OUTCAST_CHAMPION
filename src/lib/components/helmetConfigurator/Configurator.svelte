@@ -182,7 +182,7 @@
     overflow: hidden;
     color: var(--mc-muted);
     font-size: 1rem;
-    line-height: 1;
+    line-height: 1.2;
   }
 
   .swatch-custom input[type="color"] {

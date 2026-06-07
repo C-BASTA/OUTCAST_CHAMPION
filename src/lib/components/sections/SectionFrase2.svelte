@@ -78,7 +78,7 @@
     font-size: clamp(30px, 4.85vw, 76px);
     font-weight: 400;
     color: #fafafa;
-    line-height: 1.02;
+    line-height: 1.2;
     letter-spacing: 0;
     will-change: transform, opacity;
     opacity: 0;
@@ -89,7 +89,7 @@
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
     color: #fafafa;
-    line-height: 1;
+    line-height: 1.2;
     letter-spacing: 0.05em;
     opacity: 0;
     margin-bottom: clamp(-48px, -3.5vw, -24px);
@@ -100,7 +100,7 @@
     font-family: 'GeistPixel-Square';
     font-weight: 400;
     font-style: normal;
-    line-height: 0.86;
+    line-height: 1.2;
     transform: translateY(-0.035em);
     color: var(--hex-brand-blue-500);
   }
@@ -118,7 +118,7 @@
 
     .line {
       font-size: clamp(30px, 10.8vw, 58px);
-      line-height: 1.03;
+      line-height: 1.2;
     }
   }
 

@@ -243,7 +243,7 @@
     font-family: var(--font-secondary);
     font-size: 36px;
     font-weight: 400;
-    line-height: 1;
+    line-height: 1.2;
     min-width: 80px;
     flex-shrink: 0;
     transform: translateY(-20px);
@@ -255,7 +255,7 @@
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(52px, 5.3vw, 80px);
     font-weight: 400;
-    line-height: 1.12;
+    line-height: 1.2;
     letter-spacing: 0;
     white-space: nowrap;
     transition: transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);

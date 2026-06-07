@@ -44,7 +44,7 @@
     font-size: clamp(56px, 8vw, 120px);
     font-weight: 400;
     color: #fafafa;
-    line-height: 1;
+    line-height: 1.2;
     margin-bottom: 56px;
   }
 
@@ -63,7 +63,7 @@
     color: #fafafa;
     padding: 12px 0;
     border-bottom: 1px solid rgba(250, 250, 250, 0.12);
-    line-height: 1;
+    line-height: 1.2;
   }
 
   .desc {
@@ -71,7 +71,7 @@
     font-size: 1.25rem;
     color: rgba(250, 250, 250, 0.65);
     max-width: 560px;
-    line-height: 1.65;
+    line-height: 1.2;
     margin-bottom: 32px;
   }
 

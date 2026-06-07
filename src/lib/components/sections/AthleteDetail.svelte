@@ -316,7 +316,7 @@
     font-size: clamp(56px, 9vw, 140px);
     font-weight: 500;
     color: var(--color-ink, #fafafa);
-    line-height: 0.96;
+    line-height: 1.2;
     margin: 0 0 32px 0;
     display: flex;
     flex-direction: column;
@@ -330,7 +330,7 @@
     color: var(--color-ink, #fafafa);
     opacity: 0.45;
     letter-spacing: -0.01em;
-    line-height: 1.4;
+    line-height: 1.2;
     margin: 0 0 40px 0;
     flex-shrink: 0;
   }
@@ -340,7 +340,7 @@
     font-size: 20px;
     font-weight: 400;
     color: var(--color-ink, #fafafa);
-    line-height: 1.5;
+    line-height: 1.2;
     letter-spacing: -0.019em;
     margin: 0;
     max-width: 576px;
@@ -374,7 +374,7 @@
     z-index: 20;
     font-family: var(--font-primary, 'GeistPixel');
     font-size: 28px;
-    line-height: 1;
+    line-height: 1.2;
     color: var(--color-ink, #fafafa);
     opacity: 0.6;
     pointer-events: none;

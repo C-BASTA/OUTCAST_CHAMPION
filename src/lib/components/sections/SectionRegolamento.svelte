@@ -146,7 +146,7 @@
     font-family: var(--font-primary);
     font-size: clamp(52px, 8.5vw, 126px);
     font-weight: 400;
-    line-height: 0.92;
+    line-height: 1.2;
     padding-top: 14px;
     color: rgba(250, 250, 250, 0.38);
     transition: color 0.25s;
@@ -211,7 +211,7 @@
     font-family: var(--font-secondary);
     font-size: 1.05rem;
     color: rgba(250, 250, 250, 0.80);
-    line-height: 1.6;
+    line-height: 1.2;
     margin-bottom: 0.6rem;
   }
 

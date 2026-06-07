@@ -96,14 +96,14 @@
     font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
     color: var(--color-canvas)
-    line-height: 1.4;
+    line-height: 1.2;
     letter-spacing: -0.02em;
     width: fit-content;
     max-width: 50%;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.2em; /* Spazio verticale tra le righe animate */
+    gap: 0;
     
   }
 
@@ -119,11 +119,11 @@
     
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
-    line-height: 1;
+    line-height: 1.2;
     letter-spacing: 0.05em;
     will-change: transform, opacity;
     opacity: 0;
-    margin-bottom: clamp(-48px, -34vw, -24px);
+    margin-bottom: -0.4em;
   text-align: left;
    
     display: flex;

@@ -212,9 +212,7 @@
               style:opacity={anim.phase === 'hidden' ? 0 : anim.phase === 'out' ? anim.exitOpacity : 1}
               style:transform="translateY({anim.y}px)"
               aria-hidden={anim.phase === 'hidden' ? 'true' : 'false'}
-            >{#each chars as char, j}<span
-                style:opacity={anim.phase === 'in' ? (anim.charProgress * chars.length > j ? 1 : 0) : undefined}
-              >{char}</span>{/each}</p>
+            >{txt}</p>
           {/each}
         </div>
       {/if}
@@ -333,7 +331,7 @@
     text-align: center;
     font-family: var(--font-primary, 'GeistPixel');
     font-size: 48px;
-    
+    line-height: 1.2;
     color: var(--color-ink-inverted);
     
     will-change: opacity, transform;
@@ -372,7 +370,7 @@
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: 1rem;
-    line-height: 1.75;
+    line-height: 1.2;
     color: var(--color-canvas-dark);
     margin: 0;
     padding: 0 0 0 16px;

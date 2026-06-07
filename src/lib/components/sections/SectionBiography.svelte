@@ -286,7 +286,7 @@
   .caption {
     font-size: 1rem;
     color: #030404;
-    line-height: 1.45;
+    line-height: 1.2;
     font-family: 'GeistPixel-Square', monospace;
   }
   .caption strong { font-weight: 700; }
@@ -298,7 +298,7 @@
   .quote-text {
     font-family: 'GeistPixel-Grid', monospace;
     font-size: 2.5rem;
-    line-height: 1.1;
+    line-height: 1.2;
     color: #1a1a1a;
   }
 
@@ -325,7 +325,7 @@
   .vertical-caption {
     font-size: 1rem;
     color: #030404;
-    line-height: 1.45;
+    line-height: 1.2;
     margin-bottom: 8px;
     font-family: 'GeistPixel-Square', monospace;
   }
@@ -347,7 +347,7 @@
     font-family: 'GeistPixel-Square', monospace;
     font-size: 1.5rem;
     font-weight: 600;
-    line-height: 1.3;
+    line-height: 1.2;
     color: #1a1a1a;
     font-style: italic;
   }
