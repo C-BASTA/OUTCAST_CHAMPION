@@ -190,7 +190,7 @@
 
       <!-- MODIFICATO: .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
       <!-- .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
-      <div class="helmet-card">
+      <div class="helmet-card" style:visibility={helmetStore.visible ? 'hidden' : 'visible'}>
         <!-- Spostiamo la transform CSS su questo div interno dedicato all'animazione di entrata -->
         <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
           <div class="canvas-container">

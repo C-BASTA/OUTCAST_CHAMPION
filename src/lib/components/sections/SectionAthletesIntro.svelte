@@ -70,7 +70,6 @@
   .wrapper {
     position: relative;
     width: 100%;
-    background: #030404;
   }
 
   .sticky {

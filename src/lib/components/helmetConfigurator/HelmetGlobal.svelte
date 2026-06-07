@@ -75,7 +75,7 @@
 <div
   class="helmet-global"
   style:padding-left={helmetStore.viewerPaddingLeft}
-  style:opacity={helmetStore.visible ? '1' : '0'}
+  style:visibility={helmetStore.visible ? 'visible' : 'hidden'}
 >
   <!-- Pixel grigi: sempre fissi, non traslati -->
   <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
@@ -101,7 +101,6 @@
     justify-content: flex-end;
     pointer-events: none;
     background: #030404;
-    transition: opacity 0.6s ease;
   }
 
   .pixel-bg {

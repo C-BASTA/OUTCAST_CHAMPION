@@ -244,7 +244,7 @@
     rotationDelayId = setTimeout(() => updateRotation(index), ROTATION_DELAY)
   }
 
-  function syncHelmetLayout(scrolledInside) {
+  function syncHelmetLayout(scrolledInside, skipVisibility = false) {
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
@@ -256,7 +256,7 @@
 
     exitT = 0
     helmetStore.exitY   = 0
-    helmetStore.visible = scrolledInside > 0
+    if (!skipVisibility) helmetStore.visible = scrolledInside >= 0
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {
@@ -348,7 +348,7 @@
   }
 
   onMount(() => {
-    syncHelmetLayout(0)
+    syncHelmetLayout(0, true)
 
     // ── 1. Inizializza Lenis ──────────────────────────────────────────────
     lenis = new Lenis({
