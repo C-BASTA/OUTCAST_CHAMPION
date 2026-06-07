@@ -18,12 +18,13 @@
     const greys = ['245,245,245', '210,210,210', '175,175,175']
     const rgb    = greys[Math.floor(Math.random() * greys.length)]
     const period = 500 + Math.random() * 400
+    const maxAge = period
     stars.push({
       x: Math.random() * w,
       y: Math.random() * h,
       rgb, period,
-      age: 0,
-      maxAge: period,
+      age: Math.floor(Math.random() * maxAge),
+      maxAge,
     })
   }
 
@@ -74,7 +75,7 @@
 <div
   class="helmet-global"
   style:padding-left={helmetStore.viewerPaddingLeft}
-  style:visibility={helmetStore.visible ? 'visible' : 'hidden'}
+  style:opacity={helmetStore.visible ? '1' : '0'}
 >
   <!-- Pixel grigi: sempre fissi, non traslati -->
   <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
@@ -100,6 +101,7 @@
     justify-content: flex-end;
     pointer-events: none;
     background: #030404;
+    transition: opacity 0.6s ease;
   }
 
   .pixel-bg {

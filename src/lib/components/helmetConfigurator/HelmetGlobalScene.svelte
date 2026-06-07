@@ -82,6 +82,6 @@
 
 <T.Group bind:ref={floatGroup}>
   {#if $gltf}
-    <T is={$gltf.scene} scale={1.7} position={[0, 0.1, 0]} bind:ref={modelRef} />
+    <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} bind:ref={modelRef} />
   {/if}
 </T.Group>
