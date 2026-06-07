@@ -11,9 +11,31 @@
   const MOBILE_BREAKPOINT = 768
 
   const VISOR_TEXTS = [
-    'The modern Olympic movement is founded on an intrinsic paradox: the aspiration for universality through a political neutrality that frequently clashes with the brutal reality of global conflicts.',
-    'The case of Vladyslav Heraskevych, the Ukrainian skeleton racer disqualified during the Milano Cortina 2026 Winter Olympics, represents a fundamental breaking point in this narrative.',
-    'Vladyslav Heraskevych is a symbol of moral resistance. His exclusion from competition—caused by a helmet honoring athletes killed in the war—has sparked debate about the limits of personal expression in sport.',
+    [
+      'The modern Olympic movement',
+      'is founded on an intrinsic paradox:',
+      'the aspiration for universality',
+      'through a political neutrality that',
+      'frequently clashes with the brutal',
+      'reality of global conflicts.',
+    ],
+    [
+      'The case of Vladyslav Heraskevych,',
+      'the Ukrainian skeleton racer',
+      'disqualified during the',
+      'Milano Cortina 2026 Winter Olympics,',
+      'represents a fundamental',
+      'breaking point in this narrative.',
+    ],
+    [
+      'Vladyslav Heraskevych is a symbol',
+      'of moral resistance.',
+      'His exclusion from competition—caused',
+      'by a helmet honoring athletes killed',
+      'in the war—has sparked debate',
+      'about the limits of personal',
+      'expression in sport.',
+    ],
   ]
   const TEXT_WINDOWS = [[0.20, 0.42], [0.42, 0.64], [0.64, 0.86]]
   const T_IN = 0.055, T_OUT = 0.055
@@ -111,24 +133,29 @@
     }
   })
 
-  const CHAR_WINDOW = T_IN * 3
-
-  function textAnim(i) {
-    const [ws, we] = TEXT_WINDOWS[i]
+  function lineAnim(textIdx, lineIdx, numLines) {
+    const [ws, we] = TEXT_WINDOWS[textIdx]
     const p = zoomP
+
     if (p <= ws || p >= we) {
-      return { phase: 'hidden', charProgress: 0, y: p < ws ? 56 : -56, exitOpacity: 1 }
+      return { opacity: 0, y: p < ws ? 56 : -56 }
     }
+
+    // Exit: all lines slide up together
     if (p > we - T_OUT) {
       const t = ease(remap(p, we - T_OUT, we, 0, 1))
-      return { phase: 'out', charProgress: 1, y: lerp(0, -56, t), exitOpacity: 1 - t }
+      return { opacity: 1 - t, y: lerp(0, -56, t) }
     }
-    const y = p < ws + T_IN ? lerp(56, 0, ease(remap(p, ws, ws + T_IN, 0, 1))) : 0
-    const charProgress = clamp(remap(p, ws, ws + CHAR_WINDOW, 0, 1), 0, 1)
-    if (charProgress < 1) {
-      return { phase: 'in', charProgress, y, exitOpacity: 1 }
-    }
-    return { phase: 'visible', charProgress: 1, y: 0, exitOpacity: 1 }
+
+    // Entry: stagger each line across T_IN * 2 window
+    const staggerSpan = T_IN * 2
+    const lineStart = ws + (lineIdx / numLines) * staggerSpan
+    const lineEnd = lineStart + T_IN
+
+    if (p < lineStart) return { opacity: 0, y: 56 }
+
+    const t = ease(clamp(remap(p, lineStart, lineEnd, 0, 1), 0, 1))
+    return { opacity: t, y: lerp(56, 0, t) }
   }
 
   onMount(() => {
@@ -204,15 +231,20 @@
       <!-- Visor texts: appear during zoom hold phase -->
       {#if zoomP > 0.16 && zoomP < 0.90}
         <div class="text-stage" aria-live="polite">
-          {#each VISOR_TEXTS as txt, i}
-            {@const anim = textAnim(i)}
-            {@const chars = [...txt]}
-            <p
-              class="visor-text"
-              style:opacity={anim.phase === 'hidden' ? 0 : anim.phase === 'out' ? anim.exitOpacity : 1}
-              style:transform="translateY({anim.y}px)"
-              aria-hidden={anim.phase === 'hidden' ? 'true' : 'false'}
-            >{txt}</p>
+          {#each VISOR_TEXTS as lines, i}
+            {@const [ws, we] = TEXT_WINDOWS[i]}
+            {#if zoomP > ws - 0.02 && zoomP < we + 0.02}
+              <div class="visor-block">
+                {#each lines as line, j}
+                  {@const anim = lineAnim(i, j, lines.length)}
+                  <span
+                    class="visor-line"
+                    style:opacity={anim.opacity}
+                    style:transform="translateY({anim.y}px)"
+                  >{line}</span>
+                {/each}
+              </div>
+            {/if}
           {/each}
         </div>
       {/if}
@@ -228,8 +260,8 @@
       <img src="/images/VladAfterBio.jpeg" alt="Vladyslav Heraskevych" />
     </div>
     <div class="mobile-texts">
-      {#each VISOR_TEXTS as txt}
-        <p class="mobile-visor-text">{txt}</p>
+      {#each VISOR_TEXTS as lines}
+        <p class="mobile-visor-text">{lines.join(' ')}</p>
       {/each}
     </div>
   </section>
@@ -322,18 +354,24 @@
     padding-bottom: 10vh;
   }
   
-  .visor-text {
+  .visor-block {
     position: absolute;
     padding: 0 3rem;
     box-sizing: border-box;
     max-width: 900px;
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .visor-line {
+    display: block;
     text-align: center;
     font-family: var(--font-primary, 'GeistPixel');
     font-size: 48px;
     line-height: 1.2;
     color: var(--color-ink-inverted);
-    
     will-change: opacity, transform;
   }
 
