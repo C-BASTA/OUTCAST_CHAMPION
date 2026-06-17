@@ -296,7 +296,7 @@
     max-width: 280px;
   }
   .quote-text {
-    font-family: 'GeistPixel-Grid', monospace;
+    font-family: var(--font-primary);
     font-size: 2.5rem;
     line-height: 1.2;
     color: #1a1a1a;
