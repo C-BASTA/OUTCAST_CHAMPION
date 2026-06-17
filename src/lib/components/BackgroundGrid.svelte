@@ -12,7 +12,7 @@
   let colorYellow = '#ffd700';
   let colorBlue   = '#0057b7';
 
-  const MAX_COLORED = 30;
+  const MAX_COLORED = 40;
   const PIXEL_COLS = 280;
   const PIXEL_ROWS = 175;
   let STAR_SIZE = 6;
@@ -26,11 +26,23 @@
     return `${r},${g},${b}`;
   }
 
+  const ZONES = 6;
+
   function spawnStar() {
     const rgb    = [hexToRgb(colorYellow), hexToRgb(colorBlue)][Math.floor(Math.random() * 2)];
     const period = 500 + Math.random() * 400;
+
+    const zoneW = w / ZONES;
+    const counts = new Array(ZONES).fill(0);
+    for (const s of coloredStars) counts[Math.min(ZONES - 1, Math.floor(s.x / zoneW))]++;
+
+    // Tra le zone con il minimo, scegline una a caso (evita sempre la prima)
+    const minCount = Math.min(...counts);
+    const candidates = counts.reduce((acc, c, i) => (c === minCount ? [...acc, i] : acc), []);
+    const zone = candidates[Math.floor(Math.random() * candidates.length)];
+
     coloredStars.push({
-      x: Math.random() * w,
+      x: zone * zoneW + Math.random() * zoneW,
       y: Math.random() * h,
       rgb, period,
       age: 0,
@@ -71,6 +83,7 @@
     canvasLight.width  = Math.round(w * dpr);
     canvasLight.height = Math.round(h * dpr);
     if (ctxLight) ctxLight.setTransform(dpr, 0, 0, dpr, 0, 0);
+    coloredStars = []; // respawn con distribuzione corretta sulla nuova dimensione
   }
 
   onMount(() => {

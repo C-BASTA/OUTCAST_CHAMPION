@@ -79,8 +79,8 @@
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
 
   // Pixel canvas (exit dissolve)
-  const PIXEL_COLS = 280
-  const PIXEL_ROWS = 175
+  const PIXEL_COLS = 243
+  const PIXEL_ROWS = 152
   let pixelCanvas     = $state(null)
   let pixelThresholds = []   // soglia [0,1] per ogni pixel: quando appare
 
