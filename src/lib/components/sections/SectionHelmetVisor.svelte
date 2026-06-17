@@ -20,14 +20,6 @@
       'reality of global conflicts.',
     ],
     [
-      'The case of Vladyslav Heraskevych,',
-      'the Ukrainian skeleton racer',
-      'disqualified during the',
-      'Milano Cortina 2026 Winter Olympics,',
-      'represents a fundamental',
-      'breaking point in this narrative.',
-    ],
-    [
       'Vladyslav Heraskevych is a symbol',
       'of moral resistance.',
       'His exclusion from competition—caused',
@@ -37,7 +29,7 @@
       'expression in sport.',
     ],
   ]
-  const TEXT_WINDOWS = [[0.18, 0.44], [0.44, 0.68], [0.68, 0.86]]
+  const TEXT_WINDOWS = [[0.18, 0.52], [0.52, 0.86]]
   const T_IN = 0.08, T_OUT = 0.05
 
   // The helmet start the parrallax as soon as the section enters
