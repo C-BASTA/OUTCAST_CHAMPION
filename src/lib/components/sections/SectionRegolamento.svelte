@@ -96,7 +96,7 @@
     background: transparent;
     position: relative;
     z-index: 4;
-    height: 200vh;
+    height: 130vh;
   }
 
   /* Il wrapper sticky rimane attaccato al top finché la section è visibile */

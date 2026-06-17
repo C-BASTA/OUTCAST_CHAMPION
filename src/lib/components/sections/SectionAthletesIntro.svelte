@@ -5,7 +5,7 @@
 
   gsap.registerPlugin(ScrollTrigger);
 
-  const SCROLL_HEIGHT = 1400
+  const SCROLL_HEIGHT = 900
 
   let wrapper
   let ctx

@@ -53,7 +53,7 @@
   .frase-section {
     position: relative;
     width: 100%;
-    height: 130vh;
+    height: 85vh;
     display: flex;
     align-items: center;
     justify-content: center;
