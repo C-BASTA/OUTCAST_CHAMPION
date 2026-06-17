@@ -8,12 +8,12 @@ gsap.registerPlugin(ScrollTrigger);
 
 // 2. Inizializza Lenis
 const lenis = new Lenis({
-  duration: 1.2,           // Durata dell'effetto smooth (più alto = più lento/morbido)
+  duration: 1.8,           // Durata dell'effetto smooth (più alto = più lento/morbido)
   easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Funzione di easing
   orientation: 'vertical', // 'vertical' o 'horizontal'
   gestureOrientation: 'vertical',
   smoothWheel: true,       // Smooth scroll per la rotellina del mouse
-  wheelMultiplier: 1,      // Velocità dello scroll con la rotellina
+  wheelMultiplier: 0.75,   // Velocità dello scroll con la rotellina
 });
 
 // 3. Collega lo scroll di Lenis a ScrollTrigger di GSAP
