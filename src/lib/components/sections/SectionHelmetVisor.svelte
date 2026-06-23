@@ -16,18 +16,20 @@
       'The modern Olympic movement',
       'is founded on an intrinsic paradox:',
       'the aspiration for universality',
-      'through a political neutrality that',
-      'frequently clashes with the brutal',
-      'reality of global conflicts.',
+      'through a political neutrality',
+      'that frequently clashes',
+      'with the brutal reality',
+      'of global conflicts.',
     ],
     [
-      'Vladyslav Heraskevych is a symbol',
-      'of moral resistance.',
-      'His exclusion from competition—caused',
-      'by a helmet honoring athletes killed',
-      'in the war—has sparked debate',
-      'about the limits of personal',
-      'expression in sport.',
+      'Vladyslav Heraskevych',
+      'is a symbol of moral resistance.',
+      'His exclusion from competition',
+      'caused by a helmet honoring',
+      'athletes killed in the war',
+      'has sparked debate about',
+      'the limits of personal expression',
+      'in sport.',
     ],
   ]
   const TEXT_WINDOWS = [[0.18, 0.52], [0.52, 0.86]]
@@ -128,9 +130,9 @@
     }
   })
 
-  const INIT_BLUR_FIRST = 0
+  const INIT_BLUR_FIRST = 5
   const INIT_BLUR_REST  = 5
-  const INIT_OPQ_FIRST  = 1
+  const INIT_OPQ_FIRST  = 0.12
   const INIT_OPQ_REST   = 0.12
 
   function lineAnim(textIdx, lineIdx, numLines) {
@@ -377,8 +379,9 @@
     display: block;
     text-align: center;
     font-family: var(--font-primary, 'GeistPixel');
-    font-size: 48px;
+    font-size: clamp(24px, 3.2vw, 48px);
     line-height: 1.2;
+    white-space: nowrap;
     color: var(--color-ink-inverted);
     will-change: opacity, transform;
   }
