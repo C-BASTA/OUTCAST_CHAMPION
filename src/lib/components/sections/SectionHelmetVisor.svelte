@@ -5,7 +5,8 @@
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   const TOTAL_SCROLL      = 5200   // px of scroll space after 100vh
-  const ENTRY_END         = 0.18   // fraction of progress dedicated to entry animation
+  const ENTRY_END         = 0.10   // fraction of progress dedicated to entry animation
+  const ENTRY_START_Y     = 58     // vh: keep the helmet rising from below, but visible sooner
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
   const MOBILE_BREAKPOINT = 768
@@ -46,11 +47,13 @@
 
   // progress 0→ENTRY_END → entryP 0→1 (eased)
   let entryP = $derived(ease(clamp(progress / ENTRY_END, 0, 1)))
+  // Helmet camera/rotation starts immediately, while the text timeline still waits for the entry.
+  let helmetP = $derived(progress)
   // progress ENTRY_END→1 → zoomP 0→1
   let zoomP  = $derived(clamp((progress - ENTRY_END) / (1 - ENTRY_END), 0, 1))
 
   let cameraZ = $derived.by(() => {
-    const p = zoomP
+    const p = helmetP
     if (p < 0.20) return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
     if (p < 0.86) return CAM_CLOSE
     if (p < 0.98) return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
@@ -59,7 +62,7 @@
 
   let helmetTransform = $derived.by(() => {
     if (entryP >= 1) return ''
-    const ty = lerp(100, 0, entryP)
+    const ty = lerp(ENTRY_START_Y, 0, entryP)
     return `translateY(${ty.toFixed(3)}vh)`
   })
 
@@ -226,7 +229,7 @@
         <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
           <div class="canvas-container">
             <Canvas renderMode="always" rendererParameters={{ alpha: true }}>
-              <HelmetZoomScene {zoomP} {cameraZ} />
+              <HelmetZoomScene zoomP={helmetP} {cameraZ} />
             </Canvas>
           </div>
         </div>

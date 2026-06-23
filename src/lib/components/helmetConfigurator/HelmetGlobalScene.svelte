@@ -30,8 +30,14 @@
   const FLOAT_AMP_Y    = 0.04
   const FLOAT_AMP_ROTX = 0.018
   const FLOAT_AMP_ROTZ = 0.022
+  const CAMERA_FOV = 24
+  const TAU = Math.PI * 2
   let elapsed    = 0
   let floatGroup = $state(null)
+
+  function shortestAngleDelta(from, to) {
+    return ((to - from + Math.PI) % TAU + TAU) % TAU - Math.PI
+  }
 
   useTask((delta) => {
     elapsed += delta
@@ -44,9 +50,9 @@
       if (helmetStore.smoothRotation) {
         // Lerp esponenziale frame-rate independent: velocità 7 = ~400ms per transizione
         const f = 1 - Math.exp(-3 * delta)
-        curRotX += (helmetStore.rotX - curRotX) * f
-        curRotY += (helmetStore.rotY - curRotY) * f
-        curRotZ += (helmetStore.rotZ - curRotZ) * f
+        curRotX += shortestAngleDelta(curRotX, helmetStore.rotX) * f
+        curRotY += shortestAngleDelta(curRotY, helmetStore.rotY) * f
+        curRotZ += shortestAngleDelta(curRotZ, helmetStore.rotZ) * f
       } else {
         // Scroll-driven: applica direttamente senza lag
         curRotX = helmetStore.rotX
@@ -56,7 +62,10 @@
       modelRef.rotation.set(curRotX, curRotY, curRotZ)
     }
     if (floatGroup) {
-      floatGroup.position.y = Math.sin(elapsed * 0.7) * FLOAT_AMP_Y
+      const viewportHeightAtModel = 2 * helmetStore.cameraZ * Math.tan(THREE.MathUtils.degToRad(CAMERA_FOV / 2))
+      const exitOffsetY = (-helmetStore.exitY / 100) * viewportHeightAtModel
+
+      floatGroup.position.y = exitOffsetY + Math.sin(elapsed * 0.7) * FLOAT_AMP_Y
       floatGroup.rotation.x = Math.sin(elapsed * 0.5 + 0.8) * FLOAT_AMP_ROTX
       floatGroup.rotation.z = Math.sin(elapsed * 0.6 + 1.5) * FLOAT_AMP_ROTZ
     }
@@ -76,7 +85,7 @@
   })
 </script>
 
-<T.PerspectiveCamera makeDefault fov={24} bind:ref={camera} />
+<T.PerspectiveCamera makeDefault fov={CAMERA_FOV} bind:ref={camera} />
 <T.DirectionalLight position={[10, 10, 5]} intensity={2.0} color="#ffffff" castShadow />
 <T.AmbientLight intensity={0.5} />
 

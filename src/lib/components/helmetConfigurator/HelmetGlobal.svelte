@@ -80,11 +80,8 @@
   <!-- Pixel grigi: sempre fissi, non traslati -->
   <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-  <!-- Canvas 3D: riceve la traslazione di uscita -->
-  <div
-    class="scene-wrap"
-    style:transform="translateY({helmetStore.exitY}vh)"
-  >
+  <!-- Canvas 3D: resta fullscreen; la traslazione di uscita avviene nella scena -->
+  <div class="scene-wrap">
     <Canvas renderMode="always">
       <HelmetGlobalScene />
     </Canvas>

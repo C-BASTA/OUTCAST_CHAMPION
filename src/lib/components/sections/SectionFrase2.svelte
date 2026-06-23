@@ -10,20 +10,21 @@
 
   onMount(() => {
     ctx = gsap.context(() => {
-      const lines = section.querySelectorAll('.line, .quotes')
+      const lines = section.querySelectorAll('.line')
+      const quote = section.querySelector('blockquote')
 
       gsap.fromTo(lines,
-        { opacity: 0, y: 60 },
+        { opacity: 0, y: 36 },
         {
           opacity: 1,
           y: 0,
           ease: 'power2.out',
+          duration: 0.7,
           stagger: 0.15,
           scrollTrigger: {
-            trigger: section,
-            start: 'top 40%',
-            end: 'center center',
-            scrub: 1,
+            trigger: quote,
+            start: 'top 96%',
+            toggleActions: 'play none none reverse',
             invalidateOnRefresh: true,
           }
         }
@@ -53,13 +54,13 @@
   .frase-section {
     position: relative;
     width: 100%;
-    height: 85vh;
+    min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     z-index: 10;
-    padding: clamp(28px, 6vw, 76px);
+    padding: clamp(0px, 2.5vh, 24px) clamp(20px, 6vw, 76px) clamp(32px, 8vh, 72px);
     background-color: transparent;
   }
 
@@ -82,27 +83,6 @@
     letter-spacing: 0;
     will-change: transform, opacity;
     opacity: 0;
-  }
-
-  .quotes {
-    display: block;
-    font-family: 'GeistPixel-Square', monospace;
-    font-size: clamp(60px, 11vw, 200px);
-    color: #fafafa;
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-    opacity: 0;
-    margin-bottom: clamp(-48px, -3.5vw, -24px);
-  }
-
-  .accent {
-    display: inline-block;
-    font-family: 'GeistPixel-Square';
-    font-weight: 400;
-    font-style: normal;
-    line-height: 1.2;
-    transform: translateY(-0.035em);
-    color: var(--hex-brand-blue-500);
   }
 
   @media (max-width: 760px) {
