@@ -1,8 +1,9 @@
 <script>
   let { athlete, onClose, athleteIndex = -1 } = $props()
 
-  let overlayEl = $state(null)
-  let scrollTop  = $state(0)
+  let overlayEl    = $state(null)
+  let leftPanelEl  = $state(null)
+  let scrollTop    = $state(0)
 
   // ── Scroll constants ──────────────────────────────────────────────
   const TEXT_REVEAL_PX = 1800  // px of overlay-internal scroll to clear all text
@@ -118,6 +119,18 @@
     const onWheel = (e) => {
       e.preventDefault()
       const maxScroll = TEXT_REVEAL_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 300
+
+      // After text reveal, let the left panel scroll if it has overflow
+      if (scrollTop >= TEXT_REVEAL_PX && leftPanelEl) {
+        const panelMax = leftPanelEl.scrollHeight - leftPanelEl.clientHeight
+        if (panelMax > 0) {
+          const prev = leftPanelEl.scrollTop
+          leftPanelEl.scrollTop = clamp(leftPanelEl.scrollTop + e.deltaY, 0, panelMax)
+          // Advance photo scroll only when left panel hits an edge
+          if (leftPanelEl.scrollTop !== prev) return
+        }
+      }
+
       scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
     }
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -131,6 +144,7 @@
       document.documentElement.style.overflow = ''
       window.removeEventListener('wheel', onWheel)
       scrollTop = 0
+      if (leftPanelEl) leftPanelEl.scrollTop = 0
       window.scrollTo(0, savedScrollY)
       const blockMomentum = (e) => e.preventDefault()
       window.addEventListener('wheel', blockMomentum, { passive: false })
@@ -196,7 +210,7 @@
         <!-- Upper: name + descrizione a sx, foto a dx -->
         <div class="upper">
 
-          <div class="left-panel">
+          <div class="left-panel" bind:this={leftPanelEl}>
             <h1 class="athlete-name">
               <span>{nameParts[0]}</span>
               <span>{nameParts[1]}</span>
@@ -297,18 +311,19 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    overflow: visible;
+    overflow-y: auto;
+    scrollbar-width: none;
     justify-content: flex-start;
     z-index: 1;
   }
+  .left-panel::-webkit-scrollbar { display: none; }
 
   .para-group {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
     gap: 40px;
-    min-height: 0;
+    margin-top: auto;
+    padding-bottom: 4px;
   }
 
   .athlete-name {
