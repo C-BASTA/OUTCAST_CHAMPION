@@ -40,7 +40,6 @@
   ]
 
   let active  = $state(null)
-  let hovered = $state(null)
 
   function toggle(key) {
     active = active === key ? null : key
@@ -56,14 +55,12 @@
         <div
           class="folder"
           class:is-open={active === item.key}
-          onmouseenter={() => hovered = item.key}
-          onmouseleave={() => hovered = null}
         >
           <button class="folder-header" onclick={() => toggle(item.key)}>
             <span class="folder-title" class:is-active={active === item.key}>
               {item.title}
             </span>
-            <span class="folder-sub" class:visible={hovered === item.key || active === item.key}>
+            <span class="folder-sub" class:visible={active === item.key}>
               {item.sub}
             </span>
           </button>
@@ -96,15 +93,16 @@
     background: transparent;
     position: relative;
     z-index: 4;
-    height: 130vh;
+    min-height: 130vh;
   }
 
   /* Il wrapper sticky rimane attaccato al top finché la section è visibile */
   .sticky-wrapper {
     position: sticky;
     top: 0;
-    height: 100vh;
-    overflow: hidden;
+    min-height: 100vh;
+    height: auto;
+    overflow: visible;
     padding: 0 80px 60px 80px;
     display: flex;
     flex-direction: column;
@@ -114,13 +112,25 @@
   .folders {
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
     width: 100%;
+    height: auto;
+    min-height: 0;
     max-width: 1400px;
     margin: 0 auto;
   }
 
   .folder {
     border-top: 1px solid rgba(250, 250, 250, 0.14);
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .folder.is-open {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: visible;
   }
 
   .folder-header {
@@ -137,6 +147,7 @@
   }
 
   .folder.is-open .folder-header {
+    flex: 0 0 auto;
     padding-bottom: 20px;
     overflow: visible;
     height: auto;
@@ -165,6 +176,11 @@
     color: rgba(250, 250, 250, 0.75);
   }
 
+  .folder-title:hover + .folder-sub,
+  .folder-header:focus-visible .folder-sub {
+    opacity: 1;
+  }
+
   .folder-sub {
     font-family: var(--font-secondary);
     font-size: 0.88rem;
@@ -181,12 +197,10 @@
   }
 
   .folder-body {
+    flex: 0 0 auto;
+    min-height: 0;
     padding-bottom: 20px;
-    overflow: hidden;
-    max-height: calc(100vh - clamp(56px, 7.5vh, 80px) * 3 - 60px - 120px);
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(250, 250, 250, 0.2) transparent;
+    overflow: visible;
   }
 
   .body-sep {
@@ -200,6 +214,7 @@
     grid-template-columns: 1fr clamp(240px, 34vw, 470px);
     gap: 40px;
     align-items: start;
+    min-height: 0;
   }
 
   .body-text {
