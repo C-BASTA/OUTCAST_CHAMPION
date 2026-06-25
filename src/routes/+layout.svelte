@@ -16,6 +16,7 @@
   ──────────────────────────────────────────────────────
 -->
 <script>
+  import 'virtual:design-tokens'
   import '../app.css'
   import { onMount } from 'svelte'
   import { gsap } from 'gsap'

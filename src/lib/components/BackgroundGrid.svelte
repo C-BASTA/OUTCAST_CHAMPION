@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import { palette } from '$lib/styles/tokens/index';
 
   let { hideColored = false } = $props();
 
@@ -9,8 +10,8 @@
   let dpr = 1;
   let animId;
 
-  let colorYellow = '#ffd700';
-  let colorBlue   = '#0057b7';
+  let colorYellow = palette.brandYellow500;
+  let colorBlue   = palette.brandBlue500;
 
   const MAX_COLORED = 40;
   const PIXEL_COLS = 280;
@@ -87,10 +88,6 @@
   }
 
   onMount(() => {
-    const style = getComputedStyle(document.documentElement);
-    colorYellow = style.getPropertyValue('--hex-brand-yellow-500').trim() || '#ffd700';
-    colorBlue   = style.getPropertyValue('--hex-brand-blue-500').trim()   || '#0057b7';
-
     ctxLight = canvasLight.getContext('2d');
     init();
     draw();

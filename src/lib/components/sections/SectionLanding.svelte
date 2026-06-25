@@ -2,6 +2,7 @@
   import { onMount } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  import { palette } from '$lib/styles/tokens/index'
 
   let wrap, revealCanvas
   let section = $state()
@@ -62,7 +63,7 @@
   const SCROLL_RANGE = 300
   const UNIT = 'Vladyslav Heraskevyč  '
   const TEXT = UNIT.repeat(6)
-  const ROWS = [{ color: '#ffd700', dir: -1 }, { color: '#0057b7', dir: 1 }, { color: '#ffd700', dir: -1 }]
+  const ROWS = [{ color: palette.brandYellow500, dir: -1 }, { color: palette.brandBlue500, dir: 1 }, { color: palette.brandYellow500, dir: -1 }]
   const TRAVEL = 420
 
   let progress = $state(0)

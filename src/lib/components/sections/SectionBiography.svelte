@@ -2,6 +2,7 @@
   import { onMount, tick } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  import { getLayoutTokens } from '$lib/styles/tokens/index'
 
   let paddingLateral = $state(80)
   let paddingTopMain = $state(80)
@@ -95,14 +96,13 @@
 
 
   onMount(() => {
-    const style = getComputedStyle(document.documentElement)
-    paddingLateral = parseInt(style.getPropertyValue('--padding-lateral')) || 80
-    paddingTopMain = parseInt(style.getPropertyValue('--padding-top-biography')) || 80
-
     const checkMobile = () => {
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
       vpW = window.innerWidth
       vpH = window.innerHeight
+      const layout = getLayoutTokens(window.innerWidth)
+      paddingLateral = layout.paddingLateral
+      paddingTopMain = layout.paddingTopBiography
     }
 
     checkMobile()

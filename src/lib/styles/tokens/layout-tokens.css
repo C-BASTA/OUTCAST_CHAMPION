@@ -2,7 +2,7 @@
 :root {
     --padding-lateral: var(--size-10); /* 80px */
     --padding-top-header: var(--size-6); /* 32px */
-    --padding-top-biography: var(--size-12); /* 160px */
+    --padding-top-biography: var(--size-12); /* 107px — overridden by all breakpoints below */
 
     --gap-header-links: var(--size-6); /* 32px */
     --gap-filter-options: var(--size-4); /* 16px */
@@ -62,7 +62,7 @@
     --gap-filter-options-top: var(--size-7); /* 40px */
     --gap-card-grid: var(--size-5); /* 24px */
 
-    --font-size-h1: var(--size-12); /* 128px */
+    --font-size-h1: var(--size-12); /* 107px */
     --font-size-h2: var(--size-5); /* 24px */
     --font-size-links: var(--size-5); /* 24px */
   }
