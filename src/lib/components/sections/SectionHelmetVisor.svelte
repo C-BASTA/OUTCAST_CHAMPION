@@ -181,6 +181,10 @@
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
 
+    // Edge trigger: scriviamo sullo store solo quando cambia lo stato sectionEnded,
+    // non ad ogni evento scroll. Così SectionAthletes può gestire il casco liberamente.
+    let lastSectionEnded = false
+
     const onScroll = () => {
       if (!section || isMobile) return
       const rect = section.getBoundingClientRect()
@@ -188,41 +192,51 @@
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
 
       const sectionEnded = rect.bottom <= window.innerHeight + 1
-      helmetStore.visible = sectionEnded
 
-      if (!sectionEnded) {
-        // Sezione attiva: scriviamo tutti i valori di camera/rotazione/animazione sullo store
-        const p = progress
-        if (p === 0) {
-          // Non ancora entrati: casco fuori schermo
-          helmetStore.entryTransformY = 100
-          helmetStore.floatWeight     = 0
-        } else {
-          const v = computeVisorStoreValues(p)
-          helmetStore.cameraZ          = v.camZ
-          helmetStore.cameraY          = 0.25
+      if (sectionEnded) {
+        // Solo alla prima volta che la sezione finisce: scriviamo stato finale
+        if (!lastSectionEnded) {
+          lastSectionEnded = true
+          helmetStore.visible          = true
+          helmetStore.entryTransformY  = 0
+          helmetStore.floatWeight      = 1
           helmetStore.lookAtX          = 0
+          helmetStore.cameraY          = 0.25
+          helmetStore.cameraZ          = 8.5
           helmetStore.lookAtY          = 0.20
           helmetStore.rotX             = 0.25
-          helmetStore.rotY             = v.rotY
+          helmetStore.rotY             = Math.PI - 0.35
           helmetStore.rotZ             = 0
-          helmetStore.smoothRotation   = false
-          helmetStore.entryTransformY  = v.entryTransformY
-          helmetStore.floatWeight      = v.floatWeight
+          helmetStore.viewerPaddingLeft = '0%'
+          helmetStore.exitY            = 0
         }
+        // Dopo la transizione non tocchiamo più lo store: SectionAthletes gestisce
+        return
+      }
+
+      // Sezione attiva (scrolling verso il basso o ritorno verso l'alto)
+      if (lastSectionEnded) {
+        // Utente ha scrollato indietro nella sezione
+        lastSectionEnded = false
+        helmetStore.visible = false
+      }
+
+      const p = progress
+      if (p === 0) {
+        helmetStore.entryTransformY = 100
+        helmetStore.floatWeight     = 0
       } else {
-        // Sezione terminata: stato iniziale per SectionAthletes
-        helmetStore.entryTransformY  = 0
-        helmetStore.floatWeight      = 1
-        helmetStore.lookAtX          = 0
+        const v = computeVisorStoreValues(p)
+        helmetStore.cameraZ          = v.camZ
         helmetStore.cameraY          = 0.25
-        helmetStore.cameraZ          = 8.5
+        helmetStore.lookAtX          = 0
         helmetStore.lookAtY          = 0.20
         helmetStore.rotX             = 0.25
-        helmetStore.rotY             = Math.PI - 0.35
+        helmetStore.rotY             = v.rotY
         helmetStore.rotZ             = 0
-        helmetStore.viewerPaddingLeft = '0%'
-        helmetStore.exitY            = 0
+        helmetStore.smoothRotation   = false
+        helmetStore.entryTransformY  = v.entryTransformY
+        helmetStore.floatWeight      = v.floatWeight
       }
     }
 
@@ -327,9 +341,10 @@
     will-change: transform;
   }
 
-  /* Pixel canvas: sits above photo (z 2), below helmet (z 3) */
+  /* Pixel canvas: exit dissolve — position fixed così resta sotto HelmetGlobal (z-index:3)
+     e non viene inglobato nello stacking context dello sticky-wrap (z-index:4) */
   .pixel-bg {
-    position: absolute;
+    position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
