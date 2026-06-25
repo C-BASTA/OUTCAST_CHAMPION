@@ -26,6 +26,7 @@
   let curRotX = helmetStore.rotX
   let curRotY = helmetStore.rotY
   let curRotZ = helmetStore.rotZ
+  let curFloatWeight = 0  // lerp interno: evita salti bruschi quando floatWeight cambia
 
   const FLOAT_AMP_Y    = 0.04
   const FLOAT_AMP_ROTX = 0.018
@@ -65,9 +66,11 @@
       const viewportHeightAtModel = 2 * helmetStore.cameraZ * Math.tan(THREE.MathUtils.degToRad(CAMERA_FOV / 2))
       const exitOffsetY = (-helmetStore.exitY / 100) * viewportHeightAtModel
 
-      floatGroup.position.y = exitOffsetY + Math.sin(elapsed * 0.7) * FLOAT_AMP_Y
-      floatGroup.rotation.x = Math.sin(elapsed * 0.5 + 0.8) * FLOAT_AMP_ROTX
-      floatGroup.rotation.z = Math.sin(elapsed * 0.6 + 1.5) * FLOAT_AMP_ROTZ
+      // Lerp graduale del peso fluttuazione: evita il salto brusco tra visor e athletes
+      curFloatWeight += (helmetStore.floatWeight - curFloatWeight) * Math.min(1, delta * 1.2)
+      floatGroup.position.y = exitOffsetY + Math.sin(elapsed * 0.7) * FLOAT_AMP_Y * curFloatWeight
+      floatGroup.rotation.x = Math.sin(elapsed * 0.5 + 0.8) * FLOAT_AMP_ROTX * curFloatWeight
+      floatGroup.rotation.z = Math.sin(elapsed * 0.6 + 1.5) * FLOAT_AMP_ROTZ * curFloatWeight
     }
   })
 

@@ -19,4 +19,8 @@ export const helmetStore = $state({
   exitY: 0,
   // true = blocca aggiornamenti camera (es. overlay atleta aperto)
   frozen: false,
+  // Animazione di entrata: translateY in vh (100 = fuori schermo sotto, 0 = in posizione)
+  entryTransformY: 100,
+  // Peso animazione fluttuazione: 0 = ferma, 1 = piena (usato durante SectionHelmetVisor)
+  floatWeight: 0,
 })

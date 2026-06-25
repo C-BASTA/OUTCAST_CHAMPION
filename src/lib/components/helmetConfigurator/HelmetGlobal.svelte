@@ -75,14 +75,17 @@
 <div
   class="helmet-global"
   style:padding-left={helmetStore.viewerPaddingLeft}
-  style:visibility={helmetStore.visible ? 'visible' : 'hidden'}
+  style:background={helmetStore.visible ? '#030404' : 'transparent'}
 >
   <!-- Pixel grigi: sempre fissi, non traslati -->
   <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-  <!-- Canvas 3D: resta fullscreen; la traslazione di uscita avviene nella scena -->
-  <div class="scene-wrap">
-    <Canvas renderMode="always">
+  <!-- Canvas 3D: la traslazione di entrata e di uscita avvengono qui -->
+  <div
+    class="scene-wrap"
+    style:transform={helmetStore.entryTransformY !== 0 ? `translateY(${helmetStore.entryTransformY}vh)` : undefined}
+  >
+    <Canvas renderMode="always" rendererParameters={{ alpha: true }}>
       <HelmetGlobalScene />
     </Canvas>
   </div>
@@ -97,7 +100,6 @@
     align-items: center;
     justify-content: flex-end;
     pointer-events: none;
-    background: #030404;
   }
 
   .pixel-bg {
