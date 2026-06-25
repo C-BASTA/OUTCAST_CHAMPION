@@ -302,7 +302,8 @@
     top: 0;
     height: 100vh;
     overflow: hidden;
-    background: transparent
+    background: transparent;
+    z-index: 4;
   }
 
   /* Full-bleed bg photo with vertical parallax room */
