@@ -1,7 +1,5 @@
 <script>
   import { onMount } from 'svelte'
-  import { Canvas } from '@threlte/core'
-  import HelmetZoomScene from '../helmetConfigurator/HelmetZoomScene.svelte'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   const TOTAL_SCROLL      = 5200   // px of scroll space after 100vh
@@ -10,6 +8,7 @@
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
   const MOBILE_BREAKPOINT = 768
+  const SIDE              = 0.35
 
   const VISOR_TEXTS = [
     [
@@ -47,26 +46,35 @@
   const remap   = (x, a, b, c, d) => lerp(c, d, clamp(invlerp(a, b, x), 0, 1))
   const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
-  // progress 0→ENTRY_END → entryP 0→1 (eased)
-  let entryP = $derived(ease(clamp(progress / ENTRY_END, 0, 1)))
-  // Helmet camera/rotation starts immediately, while the text timeline still waits for the entry.
-  let helmetP = $derived(progress)
-  // progress ENTRY_END→1 → zoomP 0→1
-  let zoomP  = $derived(clamp((progress - ENTRY_END) / (1 - ENTRY_END), 0, 1))
+  // progress ENTRY_END→1 → zoomP 0→1 (usato solo per il testo e il pixel canvas)
+  let zoomP = $derived(clamp((progress - ENTRY_END) / (1 - ENTRY_END), 0, 1))
 
-  let cameraZ = $derived.by(() => {
-    const p = helmetP
-    if (p < 0.20) return lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
-    if (p < 0.86) return CAM_CLOSE
-    if (p < 0.98) return lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
-    return CAM_FAR
-  })
+  function computeVisorStoreValues(p) {
+    // entryP: 0→1 durante la fase di entrata
+    const entryP = ease(clamp(p / ENTRY_END, 0, 1))
 
-  let helmetTransform = $derived.by(() => {
-    if (entryP >= 1) return ''
-    const ty = lerp(ENTRY_START_Y, 0, entryP)
-    return `translateY(${ty.toFixed(3)}vh)`
-  })
+    // cameraZ: zoom in durante la prima parte, poi zoom out all'uscita
+    let camZ
+    if (p < 0.20) camZ = lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
+    else if (p < 0.86) camZ = CAM_CLOSE
+    else if (p < 0.98) camZ = lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
+    else camZ = CAM_FAR
+
+    // rotY: ruota di lato all'inizio, poi fronta, poi di lato all'uscita
+    let rotY
+    if (p <= 0.20) rotY = lerp(Math.PI + SIDE, Math.PI, ease(clamp(p / 0.20, 0, 1)))
+    else if (p <= 0.86) rotY = Math.PI
+    else if (p <= 0.98) rotY = lerp(Math.PI, Math.PI - SIDE, ease(clamp((p - 0.86) / 0.12, 0, 1)))
+    else rotY = Math.PI - SIDE
+
+    // entryTransformY: il casco sale dal basso durante l'entrata
+    const entryTransformY = entryP >= 1 ? 0 : lerp(ENTRY_START_Y, 0, entryP)
+
+    // floatWeight: la fluttuazione si azzera durante lo zoom-in
+    const floatWeight = ease(Math.max(0, Math.min(1, 1 - p / 0.18)))
+
+    return { camZ, rotY, entryTransformY, floatWeight }
+  }
 
   // Vertical parallax on the bg photo: pans upward continuously from first scroll
   //let bgParallaxY = $derived(-progress * vpH )
@@ -173,10 +181,6 @@
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
 
-    // Flag one-shot: evita che SectionHelmetVisor continui a sovrascrivere
-    // helmetStore.visible = true nelle sezioni successive (Regolamento)
-    let visorEndedTriggered = false
-
     const onScroll = () => {
       if (!section || isMobile) return
       const rect = section.getBoundingClientRect()
@@ -184,19 +188,41 @@
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
 
       const sectionEnded = rect.bottom <= window.innerHeight + 1
-      if (sectionEnded !== helmetStore.visible) {
-        helmetStore.visible = sectionEnded
-        if (sectionEnded) {
-          helmetStore.lookAtX = 0
-          helmetStore.cameraY = 0.25
-          helmetStore.cameraZ = 8.5
-          helmetStore.lookAtY = 0.20
-          helmetStore.rotX   = 0.25
-          helmetStore.rotY   = Math.PI - 0.35
-          helmetStore.rotZ   = 0
-          helmetStore.viewerPaddingLeft = '0%'
-          helmetStore.exitY  = 0
+      helmetStore.visible = sectionEnded
+
+      if (!sectionEnded) {
+        // Sezione attiva: scriviamo tutti i valori di camera/rotazione/animazione sullo store
+        const p = progress
+        if (p === 0) {
+          // Non ancora entrati: casco fuori schermo
+          helmetStore.entryTransformY = 100
+          helmetStore.floatWeight     = 0
+        } else {
+          const v = computeVisorStoreValues(p)
+          helmetStore.cameraZ          = v.camZ
+          helmetStore.cameraY          = 0.25
+          helmetStore.lookAtX          = 0
+          helmetStore.lookAtY          = 0.20
+          helmetStore.rotX             = 0.25
+          helmetStore.rotY             = v.rotY
+          helmetStore.rotZ             = 0
+          helmetStore.smoothRotation   = false
+          helmetStore.entryTransformY  = v.entryTransformY
+          helmetStore.floatWeight      = v.floatWeight
         }
+      } else {
+        // Sezione terminata: stato iniziale per SectionAthletes
+        helmetStore.entryTransformY  = 0
+        helmetStore.floatWeight      = 1
+        helmetStore.lookAtX          = 0
+        helmetStore.cameraY          = 0.25
+        helmetStore.cameraZ          = 8.5
+        helmetStore.lookAtY          = 0.20
+        helmetStore.rotX             = 0.25
+        helmetStore.rotY             = Math.PI - 0.35
+        helmetStore.rotZ             = 0
+        helmetStore.viewerPaddingLeft = '0%'
+        helmetStore.exitY            = 0
       }
     }
 
@@ -223,19 +249,6 @@
 
       <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
       <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
-
-      <!-- MODIFICATO: .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
-      <!-- .helmet-card rimane FISSA e invisibile al 100% dello schermo per non rompere Three.js -->
-      <div class="helmet-card" style:visibility={helmetStore.visible ? 'hidden' : 'visible'}>
-        <!-- Spostiamo la transform CSS su questo div interno dedicato all'animazione di entrata -->
-        <div class="canvas-transform-wrapper" style:transform={helmetTransform}>
-          <div class="canvas-container">
-            <Canvas renderMode="always" rendererParameters={{ alpha: true }}>
-              <HelmetZoomScene zoomP={helmetP} {cameraZ} />
-            </Canvas>
-          </div>
-        </div>
-      </div>
 
       <!-- Visor texts: appear during zoom hold phase -->
       {#if zoomP > 0.16 && zoomP < 0.90}
@@ -322,33 +335,6 @@
     z-index: 2;
     display: block;
     pointer-events: none;
-  }
-
-  /* Helmet card contenitore: Rigidamente fisso e grande quanto lo schermo */
-  .helmet-card {
-    position: absolute;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 3;
-    pointer-events: none; /* Evita che blocchi eventi di click sotto */
-  }
-
-  .canvas-transform-wrapper {
-    width: 100%;
-    height: 100%;
-    will-change: transform;
-    pointer-events: auto;
-  }
-
-  .canvas-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .canvas-container :global(canvas) {
-    display: block;
   }
 
   /* Visor texts: above helmet */
