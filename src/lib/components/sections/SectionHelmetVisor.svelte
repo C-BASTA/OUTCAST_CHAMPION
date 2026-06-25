@@ -259,10 +259,11 @@
     id="helmet-visor"
     style:height="calc(100vh + {TOTAL_SCROLL}px)"
   >
-    <div class="sticky-wrap">
+    <!-- Pixel canvas: fuori dallo sticky-wrap → partecipa al root stacking context
+         a z-index:2 (sotto HelmetGlobal z-index:3, sopra la pagina) -->
+    <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-      <!-- Pixel canvas: exit dissolve (z-index 2, above photo) -->
-      <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
+    <div class="sticky-wrap">
 
       <!-- Visor texts: appear during zoom hold phase -->
       {#if zoomP > 0.16 && zoomP < 0.90}

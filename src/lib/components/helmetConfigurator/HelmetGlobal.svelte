@@ -85,7 +85,7 @@
     class="scene-wrap"
     style:transform={helmetStore.entryTransformY !== 0 ? `translateY(${helmetStore.entryTransformY}vh)` : undefined}
   >
-    <Canvas renderMode="always">
+    <Canvas renderMode="always" rendererParameters={{ alpha: true }}>
       <HelmetGlobalScene />
     </Canvas>
   </div>
