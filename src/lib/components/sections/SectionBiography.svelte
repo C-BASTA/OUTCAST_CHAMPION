@@ -264,6 +264,7 @@
 
   .parallax-img {
     width: 140%;
+    max-inline-size: none;   /* opt out of base.css img clamp; needs >100% for parallax room */
     height: 100%;
     position: absolute;
     left: -20%;
@@ -286,7 +287,6 @@
   .caption {
     font-size: 1rem;
     color: #030404;
-    line-height: 1.2;
     font-family: 'GeistPixel-Square', monospace;
   }
   .caption strong { font-weight: 700; }
@@ -298,7 +298,6 @@
   .quote-text {
     font-family: var(--font-primary);
     font-size: 2.5rem;
-    line-height: 1.2;
     color: #1a1a1a;
   }
 
@@ -325,7 +324,6 @@
   .vertical-caption {
     font-size: 1rem;
     color: #030404;
-    line-height: 1.2;
     margin-bottom: 8px;
     font-family: 'GeistPixel-Square', monospace;
   }
@@ -337,7 +335,7 @@
     background: var(--color-canvas);
     box-shadow: 0 4px 20px rgba(0,0,0,0.08);
   }
-  .vertical-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .vertical-img { width: 100%; height: 100%; object-fit: cover; display: block;}
   .vertical-quote {
     margin: 20px 0 10px;
     padding: 0 16px;
@@ -347,7 +345,6 @@
     font-family: 'GeistPixel-Square', monospace;
     font-size: 1.5rem;
     font-weight: 600;
-    line-height: 1.2;
     color: #1a1a1a;
     font-style: italic;
   }

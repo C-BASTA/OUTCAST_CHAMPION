@@ -96,11 +96,9 @@
     font-size: clamp(1.4rem, 2.8vw, 3rem);
     font-weight: 500;
     color: var(--color-canvas)
-    line-height: 1.2;
     letter-spacing: -0.02em;
     width: fit-content;
     max-width: 50%;
-    margin: 0;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -119,7 +117,6 @@
     
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(60px, 11vw, 200px);
-    line-height: 1.2;
     letter-spacing: 0.05em;
     will-change: transform, opacity;
     opacity: 0;

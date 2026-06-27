@@ -143,11 +143,9 @@
   .logo {
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: inherit;
     letter-spacing: -0.01em;
     pointer-events: auto;
     user-select: none;
-    text-decoration: none;
   }
 
   .dots-btn {
@@ -184,8 +182,6 @@
     left: var(--padding-lateral, 56px);
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: inherit;
-    text-decoration: none;
     letter-spacing: -0.01em;
     z-index: 1;
     pointer-events: auto;
@@ -233,8 +229,6 @@
     position: relative;
     display: flex;
     align-items: flex-start;
-    text-decoration: none;
-    color: inherit;
     cursor: pointer;
   }
 
@@ -243,7 +237,6 @@
     font-family: var(--font-secondary);
     font-size: 36px;
     font-weight: 400;
-    line-height: 1.2;
     min-width: 80px;
     flex-shrink: 0;
     transform: translateY(-20px);
@@ -255,7 +248,6 @@
     font-family: 'GeistPixel-Square', monospace;
     font-size: clamp(52px, 5.3vw, 80px);
     font-weight: 400;
-    line-height: 1.2;
     letter-spacing: 0;
     white-space: nowrap;
     transition: transform 0.32s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -294,7 +286,6 @@
     height: 100%;
     object-fit: cover;
     object-position: center top;
-    display: block;
     filter: grayscale(1);
   }
 

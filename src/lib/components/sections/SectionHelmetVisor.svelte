@@ -362,7 +362,6 @@
     height: 130%;
     object-fit: cover;
     object-position: center 40%;
-    display: block;
     will-change: transform;
   }
 
@@ -394,7 +393,6 @@
   .visor-block {
     position: absolute;
     padding: 0 3rem;
-    box-sizing: border-box;
     max-width: 900px;
     display: flex;
     flex-direction: column;
@@ -407,7 +405,6 @@
     text-align: center;
     font-family: var(--font-primary, 'GeistPixel');
     font-size: clamp(24px, 3.2vw, 48px);
-    line-height: 1.2;
     white-space: nowrap;
     color: var(--color-ink-inverted);
     will-change: opacity, transform;
@@ -434,7 +431,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
   }
   
   .mobile-texts {
@@ -446,9 +442,7 @@
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: 1rem;
-    line-height: 1.2;
     color: var(--color-canvas-dark);
-    margin: 0;
     padding: 0 0 0 16px;
     border-left: 2px solid rgba(250, 250, 250, 0.4);
   }

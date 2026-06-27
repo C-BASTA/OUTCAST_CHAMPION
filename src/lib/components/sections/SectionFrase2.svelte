@@ -79,7 +79,6 @@
     font-size: clamp(30px, 4.85vw, 76px);
     font-weight: 400;
     color: #fafafa;
-    line-height: 1.2;
     letter-spacing: 0;
     will-change: transform, opacity;
     opacity: 0;
@@ -98,7 +97,6 @@
 
     .line {
       font-size: clamp(30px, 10.8vw, 58px);
-      line-height: 1.2;
     }
   }
 

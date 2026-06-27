@@ -182,7 +182,6 @@
     overflow: hidden;
     color: var(--mc-muted);
     font-size: 1rem;
-    line-height: 1.2;
   }
 
   .swatch-custom input[type="color"] {
@@ -193,7 +192,6 @@
     height: 100%;
     cursor: pointer;
     border: none;
-    padding: 0;
   }
 
   /* ── Atmosfera ──────────────────────────────────────────── */

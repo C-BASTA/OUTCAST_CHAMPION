@@ -534,7 +534,6 @@
     font-size: clamp(40px, 4.5vw, 72px);
     font-weight: 400;
     color: var(--hex-neutral-900);
-    line-height: 1.2;
     letter-spacing: -0.02em;
     z-index: 10;
     pointer-events: none;
@@ -573,7 +572,6 @@
     /* Valori iniziali combinati con le rotazioni */
     transform: translateX(3%) translateY(13%) scale(1.1) rotateX(0deg) rotateY(0deg);
     transform-style: preserve-3d;
-    display: block;
     user-select: none;
     -webkit-user-drag: none;
     z-index: 2;
@@ -614,7 +612,6 @@
     font-family: var(--font-primary);
     font-size: clamp(72px, 8.5vw, 128px);
     font-weight: 400;
-    line-height: 1.2;
     white-space: nowrap;
   }
 

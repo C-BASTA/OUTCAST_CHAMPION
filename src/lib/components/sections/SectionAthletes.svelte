@@ -528,7 +528,6 @@
     color: var(--color-ink, #fff);
     /* opacity gestita da JS per il fade laterale */
     letter-spacing: -0.03em;
-    line-height: 1.2;
     text-transform: uppercase;
     display: flex;
     align-items: center;
