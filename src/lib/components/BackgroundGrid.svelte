@@ -52,27 +52,26 @@
   }
 
   function draw() {
-    if (ctxLight) {
-      if (hideColored) {
-        coloredStars.length = 0;
-        ctxLight.clearRect(0, 0, w, h);
-      } else {
-        ctxLight.clearRect(0, 0, w, h);
-        while (coloredStars.length < MAX_COLORED) spawnStar();
+    if (!ctxLight) return  // stop loop if context is lost (unmount race or SSR)
+    if (hideColored) {
+      coloredStars.length = 0;
+      ctxLight.clearRect(0, 0, w, h);
+    } else {
+      ctxLight.clearRect(0, 0, w, h);
+      while (coloredStars.length < MAX_COLORED) spawnStar();
 
-        for (let i = coloredStars.length - 1; i >= 0; i--) {
-          const s = coloredStars[i];
-          s.age++;
-          const alpha = Math.sin((s.age / s.maxAge) * Math.PI);
-          if (alpha > 0.01) {
-            ctxLight.globalAlpha = alpha * 0.85;
-            ctxLight.fillStyle   = `rgb(${s.rgb})`;
-            ctxLight.fillRect(s.x, s.y, STAR_SIZE, STAR_SIZE);
-          }
-          if (s.age >= s.maxAge) coloredStars.splice(i, 1);
+      for (let i = coloredStars.length - 1; i >= 0; i--) {
+        const s = coloredStars[i];
+        s.age++;
+        const alpha = Math.sin((s.age / s.maxAge) * Math.PI);
+        if (alpha > 0.01) {
+          ctxLight.globalAlpha = alpha * 0.85;
+          ctxLight.fillStyle   = `rgb(${s.rgb})`;
+          ctxLight.fillRect(s.x, s.y, STAR_SIZE, STAR_SIZE);
         }
-        ctxLight.globalAlpha = 1;
+        if (s.age >= s.maxAge) coloredStars.splice(i, 1);
       }
+      ctxLight.globalAlpha = 1;
     }
     animId = requestAnimationFrame(draw);
   }

@@ -2,9 +2,9 @@
   import { onMount } from 'svelte'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
-  const TOTAL_SCROLL      = 5200   // px of scroll space after 100vh
+  const TOTAL_SCROLL      = 15000   // px of scroll space after 100vh (longer = dissolve spreads over more scroll → fewer pixels off per cm)
   const ENTRY_END         = 0.10   // fraction of progress dedicated to entry animation
-  const ENTRY_START_Y     = 58     // vh: keep the helmet rising from below, but visible sooner
+  const ENTRY_START_Y     = 80    // vh: helmet starts fully offscreen below, rises as you scroll the white
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
   const MOBILE_BREAKPOINT = 768
@@ -86,55 +86,79 @@
   // Pixel canvas (exit dissolve)
   const PIXEL_COLS = 243
   const PIXEL_ROWS = 152
-  let pixelCanvas     = $state(null)
-  let pixelThresholds = []   // soglia [0,1] per ogni pixel: quando appare
+  let pixelCanvas  = $state(null)
+  // Cells pre-sorted by reveal threshold so the draw effect can binary-search
+  // to the cutoff and only iterate the cells it actually draws (O(K) not O(N)).
+  let sortedCells  = []
 
-  let pixelProgress = $derived(clamp(remap(zoomP, 0.90, 0.99, 0, 1), 0, 1))
+  // Spread the dissolve over a wider zoomP window so pixels switch off in smaller
+  // batches across more scroll frames (smoother pixel-by-pixel reveal).
+  const PIXEL_START = 0.86
+  const PIXEL_END   = 1.0
+  let pixelProgress = $derived(clamp(remap(zoomP, PIXEL_START, PIXEL_END, 0, 1), 0, 1))
+
+  // Count of sorted cells whose threshold <= val (cells already past the front).
+  function cellsBelow(val) {
+    let lo = 0, hi = sortedCells.length
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1
+      if (sortedCells[mid].threshold <= val) lo = mid + 1
+      else hi = mid
+    }
+    return lo
+  }
 
   $effect(() => {
-    if (!pixelCanvas || pixelThresholds.length > 0) return
+    if (!pixelCanvas || sortedCells.length > 0) return
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     pixelCanvas.width  = Math.round(window.innerWidth * dpr)
     pixelCanvas.height = Math.round(window.innerHeight * dpr)
 
-    // Ogni pixel ha una soglia: dipende dalla riga (top→bottom) + jitter per colonna
-    // Risultato: "pioggia" che cade dall'alto verso il basso, sgretolata
     const total = PIXEL_COLS * PIXEL_ROWS
-    pixelThresholds = new Float32Array(total)
+    const cells = new Array(total)
     for (let i = 0; i < total; i++) {
       const row      = Math.floor(i / PIXEL_COLS)
-      const rowT     = row / PIXEL_ROWS                      // 0 = cima, 1 = fondo
-      const colJitter = (Math.random() - 0.5) * 0.75        // randomness orizzontale
-      const rowJitter = (Math.random() - 0.5) * 0.50        // randomness verticale
-      pixelThresholds[i] = Math.max(0, Math.min(1, rowT * 0.55 + 0.22 + colJitter + rowJitter))
+      const rowT     = row / PIXEL_ROWS                     // 0 = top, 1 = bottom
+      // Top→bottom bias (0.05→0.85) plus tighter jitter so thresholds stay spread
+      // across [0,1] with little clamping — pixels keep vanishing right to the end
+      // instead of a chunk all clamping to 1.0 and popping off at once.
+      const colJitter = (Math.random() - 0.5) * 0.30
+      const rowJitter = (Math.random() - 0.5) * 0.22
+      cells[i] = {
+        col: i % PIXEL_COLS,
+        row,
+        threshold: Math.max(0, Math.min(1, rowT * 0.80 + 0.05 + colJitter + rowJitter))
+      }
     }
+    cells.sort((a, b) => a.threshold - b.threshold)
+    sortedCells = cells
   })
 
   $effect(() => {
-    if (!pixelCanvas) return
+    if (!pixelCanvas || sortedCells.length === 0) return
     const ctx = pixelCanvas.getContext('2d')
     const w   = pixelCanvas.width
     const h   = pixelCanvas.height
 
-    if (zoomP < 0.90) {
+    if (zoomP < PIXEL_START) {
       ctx.clearRect(0, 0, w, h)
       return
     }
 
     const cellW = w / PIXEL_COLS
     const cellH = h / PIXEL_ROWS
-    const total = PIXEL_COLS * PIXEL_ROWS
+    const p     = pixelProgress
+
+    // Pixel-by-pixel: each cell is hard black once pixelProgress passes its threshold.
+    const drawCount = cellsBelow(p)
 
     ctx.fillStyle = '#FAFAFA'
     ctx.fillRect(0, 0, w, h)
 
     ctx.fillStyle = '#030404'
-    for (let i = 0; i < total; i++) {
-      if (pixelProgress >= pixelThresholds[i]) {
-        const col = i % PIXEL_COLS
-        const row = Math.floor(i / PIXEL_COLS)
-        ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
-      }
+    for (let j = 0; j < drawCount; j++) {
+      const { col, row } = sortedCells[j]
+      ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
     }
   })
 

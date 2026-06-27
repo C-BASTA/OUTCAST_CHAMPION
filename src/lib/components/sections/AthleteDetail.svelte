@@ -108,7 +108,12 @@
   // ── Lock body scroll + cattura wheel per reveal testo e foto ─────────
   $effect(() => {
     if (!athlete) return
-    const savedScrollY = window.scrollY
+    // If body is already locked (athlete swap without going through null), derive the
+    // saved position from the current top offset — window.scrollY may not have settled
+    // yet after the outgoing effect's window.scrollTo() call.
+    const savedScrollY = document.body.style.position === 'fixed'
+      ? -parseInt(document.body.style.top || '0')
+      : window.scrollY
     document.body.style.position   = 'fixed'
     document.body.style.top        = `-${savedScrollY}px`
     document.body.style.left       = '0'
@@ -118,7 +123,10 @@
 
     const onWheel = (e) => {
       e.preventDefault()
-      const maxScroll = TEXT_REVEAL_PX + (athlete?.photos?.length ?? 0) * PHOTO_STEP_PX + 300
+      // Photos 0..n-1 are revealed with text (no extra scroll); only the remaining
+      // (photos.length - n) extra photos each need PHOTO_STEP_PX of dedicated scroll.
+      const extraPhotos = Math.max(0, (athlete?.photos?.length ?? 0) - paragraphs.length)
+      const maxScroll = TEXT_REVEAL_PX + extraPhotos * PHOTO_STEP_PX + 300
 
       // After text reveal, let the left panel scroll if it has overflow
       if (scrollTop >= TEXT_REVEAL_PX && leftPanelEl) {
