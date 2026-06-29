@@ -1,6 +1,8 @@
 <script>
+  import { onDestroy } from 'svelte'
   import { fade } from 'svelte/transition'
   import AboutOverlay from './AboutOverlay.svelte'
+  import { getLenis } from '$lib/lenis.js'
 
   const { dark = false, overlayDark = false, showLogo = true } = $props()
 
@@ -8,14 +10,41 @@
   let aboutOpen = $state(false)
   let hovered   = $state(null)
 
-  // Blocca lo scroll del body quando un overlay è aperto (runes mode)
+  // Congela la pagina sotto quando un overlay è aperto: blocca lo scroll nativo
+  // e ferma Lenis (lo smooth-scroll che ignora overflow:hidden).
+  let locked = $derived(open || aboutOpen)
   $effect(() => {
-    if (open || aboutOpen) {
-      document.body.style.overflow = 'hidden';
+    if (locked) {
+      document.body.style.overflow = 'hidden'
+      getLenis()?.stop()
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = ''
+      getLenis()?.start()
     }
-  });
+  })
+
+  // Sicurezza: se la navbar viene distrutta mentre è bloccata, ripristina.
+  onDestroy(() => {
+    document.body.style.overflow = ''
+    getLenis()?.start()
+  })
+
+  // Blocco extra a livello di evento: con il solo menu aperto nessuno scroller
+  // (Lenis incluso) deve ricevere wheel/touch. Quando l'About è aperto NON
+  // blocchiamo, così l'overlay può gestire il proprio wheel per gli step.
+  $effect(() => {
+    if (!(open && !aboutOpen)) return
+    const block = (e) => {
+      if (e.cancelable) e.preventDefault()
+      e.stopImmediatePropagation()
+    }
+    window.addEventListener('wheel', block, { passive: false, capture: true })
+    window.addEventListener('touchmove', block, { passive: false, capture: true })
+    return () => {
+      window.removeEventListener('wheel', block, { capture: true })
+      window.removeEventListener('touchmove', block, { capture: true })
+    }
+  })
 
   const items = [
     { num: '01', label: 'Athlete',  href: '#athlete',     grid: false, sub: 'What has he achieved?',    img: '/images/athlete.png' },
@@ -137,11 +166,7 @@
       {/each}
     </nav>
 
-    <!-- Footer -->
-    <footer class="menu-footer">
-      <span>@Politecnico di Milano</span>
-      <span>Corso di Digital e Web Design</span>
-    </footer>
+    
 
   </div>
 
@@ -327,18 +352,5 @@
   }
 
   /* ── Footer overlay ───────────────────────────────────────── */
-  .menu-footer {
-    position: absolute;
-    bottom: 28px;
-    left: var(--padding-lateral, 56px);
-    right: var(--padding-lateral, 56px);
-    display: flex;
-    justify-content: space-between;
-    font-family: var(--font-secondary);
-    font-size: 0.875rem;
-    color: inherit;
-    opacity: 0.5;
-    z-index: 1;
-    pointer-events: none;
-  }
+
 </style>

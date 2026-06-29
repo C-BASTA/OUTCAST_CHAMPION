@@ -52,8 +52,13 @@
             <li>{name}</li>
           {/each}
         </ul>
+      
       </div>
-
+  <!-- Footer -->
+    <footer class="menu-footer">
+      <span>@Politecnico di Milano</span>
+      <span>Corso di Digital e Web Design</span>
+    </footer>
     </main>
 
   </div>
@@ -167,6 +172,27 @@
     color: #030404;
     max-width: 500px;
     transition: filter 1.6s ease, opacity 0.35s ease;
+  }
+
+   .menu-footer {
+   
+    bottom: 28px;
+    left: var(--padding-lateral, 56px);
+    right: var(--padding-lateral,32px);
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-secondary);
+    font-size: 0.875rem;
+    color: inherit;
+  
+    z-index: 1;
+    pointer-events: none;
+    position: fixed;
+  
+   
+
+   
+    
   }
 
   /* ── Mobile ──────────────────────────────────── */

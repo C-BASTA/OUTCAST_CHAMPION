@@ -174,7 +174,7 @@
         style:width="{trackWidth}px"
       >
         {#each horizontalCards as card}
-          <div class="card {card.img.includes('helmet') ? 'helmet-float' : ''}" style:left="{card.x}px" style:top="{card.top}px">
+          <div class="card" style:left="{card.x}px" style:top="{card.top}px">
             {#if !card.noTitle}
               <p class="caption"><strong>{card.boldPart}</strong>{card.rest}</p>
             {/if}
@@ -267,11 +267,6 @@
     left: -20%;
     object-fit: cover;
     will-change: transform;
-  }
-
-  .helmet-float {
-    animation: helmet-bob 4s ease-in-out infinite;
-    overflow: visible !important;
   }
 
   @keyframes helmet-bob {
