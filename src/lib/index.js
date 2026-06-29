@@ -1,6 +1,8 @@
 // place files you want to import through the `$lib` alias in this folder.
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+//import { ScrollTrigger } from "gsap/ScrollTrigger";
+import pkg from 'gsap/ScrollTrigger';
+const { ScrollTrigger } = pkg;
 import Lenis from "@studio-freight/lenis";
 
 // 1. Registra ScrollTrigger come fai di solito
