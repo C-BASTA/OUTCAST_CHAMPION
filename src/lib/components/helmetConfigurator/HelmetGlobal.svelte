@@ -120,4 +120,13 @@
     align-items: center;
     justify-content: flex-end;
   }
+
+  @media (max-width: 768px) {
+    .helmet-global {
+      justify-content: center;
+    }
+    .scene-wrap {
+      justify-content: center;
+    }
+  }
 </style>

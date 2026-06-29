@@ -70,6 +70,7 @@
 
   .page-shell {
     visibility: hidden;
+    background: #FAFAFA;
   }
 
   .page-shell--ready {

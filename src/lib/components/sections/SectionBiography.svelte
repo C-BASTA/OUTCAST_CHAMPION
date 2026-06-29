@@ -83,7 +83,8 @@
     }
   }))
 
-  let verticalCards  = $derived(isMobile ? CARDS_DATA  : [])
+  const MOBILE_EXCLUDED = new Set(['/images/bio/bio-2026-olympic.png'])
+  let verticalCards  = $derived(isMobile ? CARDS_DATA.filter(c => !MOBILE_EXCLUDED.has(c.img)) : [])
   let verticalQuotes = $derived(isMobile ? QUOTES_DATA : [])
 
     let lastCardX     = $derived(isMobile ? 0 : Math.max(...horizontalCards.map(c => c.x + (c.imgW || 0))))
@@ -200,21 +201,16 @@
     <div class="grain-overlay"></div>
     <div class="vertical-container">
       {#each verticalCards as card, i}
-        <div class="vertical-card" style:animation-delay="{i * 0.05}s">
+        <div class="vertical-card vertical-card--{i % 2 === 0 ? 'left' : 'right'}" style:animation-delay="{i * 0.05}s">
+          <div class="vertical-img-frame" style:aspect-ratio="{card.imgW}/{card.imgH}">
+            <img src={card.img} alt="" class="vertical-img" loading="lazy" />
+          </div>
           {#if !card.noTitle}
             <p class="vertical-caption">
               <strong>{card.boldPart}</strong>{card.rest}
             </p>
           {/if}
-          <div class="vertical-img-frame" style:aspect-ratio="{card.imgW}/{card.imgH}">
-            <img src={card.img} alt="" class="vertical-img" loading="lazy" />
-          </div>
         </div>
-        {#if verticalQuotes[i]}
-          <div class="vertical-quote">
-            <span class="vertical-quote-text">"{verticalQuotes[i].text}"</span>
-          </div>
-        {/if}
       {/each}
     </div>
   </section>
@@ -303,47 +299,53 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .bio-section--vertical {
-    background: var(--color-canvas);
-    padding: 80px 24px 120px;
+    background: transparent;
+    padding: 80px 0 120px;
     min-height: 100vh;
   }
   .vertical-container {
-    max-width: 500px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 60px;
+    gap: 48px;
+    padding: 0 20px;
   }
   .vertical-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 58vw;
     animation: fadeInUp 0.6s ease both;
   }
+  .vertical-card--left  { align-self: flex-start; }
+  .vertical-card--right { align-self: flex-end; }
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
     to   { opacity: 1; transform: translateY(0); }
   }
   .vertical-caption {
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: #030404;
-    margin-bottom: 8px;
     font-family: 'GeistPixel-Square', monospace;
+    line-height: 1.4;
   }
-  .vertical-caption strong { font-weight: 700; font-size: 1.1rem; }
+  .vertical-caption strong { font-weight: 700; }
   .vertical-img-frame {
     width: 100%;
     overflow: hidden;
-    border-radius: 12px;
-    background: var(--color-canvas);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   }
-  .vertical-img { width: 100%; height: 100%; object-fit: cover; display: block;}
+  .vertical-img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .vertical-quote {
-    margin: 20px 0 10px;
-    padding: 0 16px;
-    border-left: 3px solid #030404;
+    width: 58vw;
+    padding: 0 0 0 14px;
+    border-left: 2px solid #030404;
   }
+  .vertical-quote--left  { align-self: flex-start; }
+  .vertical-quote--right { align-self: flex-end; }
   .vertical-quote-text {
     font-family: 'GeistPixel-Square', monospace;
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #1a1a1a;
     font-style: italic;

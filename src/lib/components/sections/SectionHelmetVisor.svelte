@@ -210,7 +210,7 @@
     let lastSectionEnded = false
 
     const onScroll = () => {
-      if (!section || isMobile) return
+      if (!section) return
       const rect = section.getBoundingClientRect()
       const totalScrollable = section.offsetHeight - window.innerHeight
       progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
@@ -251,7 +251,7 @@
         helmetStore.floatWeight     = 0
       } else {
         const v = computeVisorStoreValues(p)
-        helmetStore.cameraZ          = v.camZ
+        helmetStore.cameraZ          = isMobile ? v.camZ + 1.5 : v.camZ
         helmetStore.cameraY          = 0.25
         helmetStore.lookAtX          = 0
         helmetStore.lookAtY          = 0.20
@@ -261,6 +261,9 @@
         helmetStore.smoothRotation   = false
         helmetStore.entryTransformY  = v.entryTransformY
         helmetStore.floatWeight      = v.floatWeight
+        if (isMobile) {
+          helmetStore.viewerPaddingLeft = '0%'
+        }
       }
     }
 
@@ -315,16 +318,34 @@
   </section>
 {/if}
 
-<!-- ── Mobile (static fallback) ───────────────────────────────────────── -->
+<!-- ── Mobile (scroll-driven) ─────────────────────────────────────────── -->
 {#if isMobile}
-  <section class="visor-section--mobile" id="helmet-visor">
-    <div class="mobile-photo">
-      <img src="/images/VladAfterBio.jpeg" alt="Vladyslav Heraskevych" />
-    </div>
-    <div class="mobile-texts">
-      {#each VISOR_TEXTS as lines}
-        <p class="mobile-visor-text">{lines.join(' ')}</p>
-      {/each}
+  {@const dezoomStarted = progress > 0.82}
+  <section
+    bind:this={section}
+    class="visor-section--mobile"
+    id="helmet-visor"
+    style:background={dezoomStarted ? '#030404' : '#FAFAFA'}
+  >
+    <div class="mobile-sticky">
+      <div class="mobile-texts">
+        {#each VISOR_TEXTS as lines, i}
+          {@const [ws, we] = TEXT_WINDOWS[i]}
+          {#if zoomP > ws - 0.02 && zoomP < we + 0.02}
+            <p class="mobile-visor-text">
+              {#each lines as line, j}
+                {@const anim = lineAnim(i, j, lines.length)}
+                <span
+                  style:opacity={anim.opacity}
+                  style:transform="translateY({anim.y}px)"
+                  style:filter={anim.blur > 0 ? `blur(${anim.blur.toFixed(2)}px)` : 'none'}
+                  style:display="block"
+                >{line}</span>
+              {/each}
+            </p>
+          {/if}
+        {/each}
+      </div>
     </div>
   </section>
 {/if}
@@ -412,38 +433,38 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .visor-section--mobile {
-    background: var(--color-canvas);
-    padding: 80px 24px 80px;
-    min-height: 100vh;
+    background: #030404;
+    height: calc(100vh + 8000px);
+    position: relative;
+  }
+
+  .visor-section--mobile .mobile-sticky {
+    position: sticky;
+    top: 0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
-    gap: 48px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    padding-top: 0;
+    margin-top: -20vh;
+    z-index: 10;
+    pointer-events: none;
   }
-  
-  .mobile-photo {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border-radius: 8px;
-  }
-  
-  .mobile-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
+
   .mobile-texts {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 24px;
+    width: 100%;
+    text-align: center;
   }
-  
+
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
-    font-size: 1rem;
-    color: var(--color-canvas-dark);
-    padding: 0 0 0 16px;
-    border-left: 2px solid rgba(250, 250, 250, 0.4);
+    font-size: 0.95rem;
+    color: #030404;
+    line-height: 1.6;
   }
 </style>

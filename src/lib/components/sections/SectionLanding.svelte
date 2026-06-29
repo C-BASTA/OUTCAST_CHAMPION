@@ -57,7 +57,7 @@
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
   const HELMET_SCALE = 0.45
-  const HELMET_CENTER_Y = 0.54
+  const HELMET_CENTER_Y = 0.32
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 300
@@ -631,5 +631,32 @@
   @keyframes marquee-r {
     from { transform: translateX(-50%); }
     to   { transform: translateX(0); }
+  }
+
+  /* ── Mobile ──────────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    /* Container dimensionato sull'aspect ratio reale dell'immagine (1856×1666 ≈ 1.11:1)
+       così l'immagine riempie il box esatto senza crop né spazi vuoti */
+    .photo-wrap {
+      width: 160vw;
+      height: 144vw;
+      bottom: 0;
+    }
+
+    .vlad {
+      object-fit: contain;
+      object-position: center center;
+      transform: none;
+    }
+
+    .title {
+      top: 24px;
+      left: 24px;
+      font-size: clamp(32px, 9vw, 52px);
+    }
+
+    .name-row {
+      font-size: clamp(52px, 13vw, 80px);
+    }
   }
 </style>

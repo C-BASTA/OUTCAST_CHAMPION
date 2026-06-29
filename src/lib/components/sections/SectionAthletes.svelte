@@ -188,10 +188,11 @@
     return Math.min(n, step + snapEase(frac))
   }
 
-  const ATH_CAM_Y  = 0.35
-  const ATH_CAM_Z  =  3.8
-  const ATH_LOOK_Y =  0.0
-  const ATH_ROT_X  =  0.0
+  const ATH_CAM_Y        = 0.35
+  const ATH_CAM_Z        = 3.8
+  const ATH_CAM_Z_MOBILE = 5.8   // più lontano su mobile: canvas full-width, altrimenti il casco è troppo grande
+  const ATH_LOOK_Y       = 0.0
+  const ATH_ROT_X        = 0.0
 
   let wrapper  = null
   let selected = $state(0)
@@ -199,6 +200,7 @@
   let introP   = $state(0)
   let exitT    = $state(0)
   let rotationDelayId = null
+  let isMobile = false
 
   // ─── Nastro continuo ────────────────────────────────────────────────────────
   // Altezza di ogni riga in vh — deve matchare gap + font-size effettivi.
@@ -246,6 +248,10 @@
 
   function syncHelmetLayout(scrolledInside, skipVisibility = false) {
     if (helmetStore.frozen) return
+
+    // Su mobile il casco è sempre centrato (padding 0) e visibile durante questa sezione
+    const maxPadding = isMobile ? 0 : 38
+
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
@@ -256,26 +262,32 @@
     }
 
     exitT = 0
-    helmetStore.exitY   = 0
+    helmetStore.exitY = 0
     if (!skipVisibility) helmetStore.visible = scrolledInside >= 0
+
+    // Su mobile il visor section non attiva mai il casco: lo facciamo qui appena la sezione entra
+    if (scrolledInside > 0) {
+      helmetStore.entryTransformY = 0
+      helmetStore.floatWeight = 1
+    }
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
     if (rawIntroP < 1) {
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
-      helmetStore.viewerPaddingLeft = `${lerp(0, 38, ei)}%`
-      helmetStore.lookAtX = lerp(0, -0.8, ei)
+      helmetStore.viewerPaddingLeft = `${lerp(0, maxPadding, ei)}%`
+      helmetStore.lookAtX = lerp(0, isMobile ? 0 : -0.8, ei)
       helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
-      helmetStore.cameraZ = lerp(8.5,  ATH_CAM_Z,  ei)
+      helmetStore.cameraZ = lerp(8.5, isMobile ? ATH_CAM_Z_MOBILE : ATH_CAM_Z, ei)
       helmetStore.lookAtY = lerp(0.20, ATH_LOOK_Y, ei)
       helmetStore.rotX    = lerp(0.25,  ATH_ROT_X,  ei)
       helmetStore.rotY    = lerp(Math.PI - 0.35,  faces[0].rotation.y, ei)
     } else {
       helmetStore.smoothRotation = true
-      helmetStore.viewerPaddingLeft = '38%'
-      helmetStore.lookAtX = -0.8
+      helmetStore.viewerPaddingLeft = isMobile ? '0%' : '38%'
+      helmetStore.lookAtX = isMobile ? 0 : -0.8
       helmetStore.cameraY = ATH_CAM_Y
-      helmetStore.cameraZ = ATH_CAM_Z
+      helmetStore.cameraZ = isMobile ? ATH_CAM_Z_MOBILE : ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y
       helmetStore.rotX    = ATH_ROT_X
     }
@@ -350,6 +362,9 @@
   }
 
   onMount(() => {
+    isMobile = window.innerWidth < 768
+    window.addEventListener('resize', () => { isMobile = window.innerWidth < 768 })
+
     syncHelmetLayout(0, true)
 
     // ── 1. Inizializza Lenis ──────────────────────────────────────────────
@@ -550,6 +565,10 @@
   }
 
   @media (max-width: 768px) {
+    .gallery-sticky {
+      width: 100%;
+    }
+
     .names-tape {
       width: 100%;
       padding-left: 0;
