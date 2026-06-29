@@ -170,8 +170,9 @@
   /* Quando il menu è aperto l'header adotta il tema dell'overlay */
   .nav-root.open .nav-bar              { color: var(--hex-neutral-900); }
   .nav-root.open.overlay-dark .nav-bar { color: var(--hex-neutral-50); }
-  /* About è sempre su sfondo chiaro: forza l'header scuro per restare leggibile */
-  .nav-root.about-open .nav-bar        { color: var(--hex-neutral-900); }
+  /* About è sempre su sfondo chiaro: forza l'header scuro per restare leggibile.
+     Stessa specificità di .open.overlay-dark ma dichiarata dopo → vince. */
+  .nav-root.open.about-open .nav-bar   { color: var(--hex-neutral-900); }
 
   .logo {
     font-family: var(--font-primary);

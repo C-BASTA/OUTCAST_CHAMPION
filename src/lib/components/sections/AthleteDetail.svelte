@@ -298,11 +298,8 @@
     color: var(--color-ink, #fafafa);
     cursor: pointer;
     padding: 8px;
-    opacity: 0.5;
-    transition: opacity 0.2s;
     line-height: 0;
   }
-  .close-btn:hover { opacity: 1; }
 
   /* ── Upper section: name left, text right ── */
   .upper {
