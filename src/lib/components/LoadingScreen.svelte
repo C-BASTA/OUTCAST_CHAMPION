@@ -1,9 +1,9 @@
 <script>
   import { onMount } from 'svelte'
   import { gsap } from 'gsap'
-  //import { ScrollTrigger } from 'gsap/ScrollTrigger'
-  import pkg from 'gsap/ScrollTrigger';
-const { ScrollTrigger } = pkg;
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  
+
   import { getLenis } from '$lib/lenis.js'
 
   let { ondone = undefined } = $props()

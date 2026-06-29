@@ -20,8 +20,8 @@
   import '../app.css'
   import { onMount } from 'svelte'
   import { gsap } from 'gsap'
-  //import { ScrollTrigger } from 'gsap/ScrollTrigger'
-  import pkg from 'gsap/ScrollTrigger';const { ScrollTrigger } = pkg;
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  
   import Lenis from '@studio-freight/lenis'
   import BackgroundGrid from '$lib/components/BackgroundGrid.svelte'
   import { setLenis } from '$lib/lenis.js'

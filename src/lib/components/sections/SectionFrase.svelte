@@ -1,8 +1,8 @@
 <script>
   import { onMount, onDestroy } from 'svelte'
   import { gsap } from 'gsap'
-  //import { ScrollTrigger } from 'gsap/ScrollTrigger'
-  import pkg from 'gsap/ScrollTrigger';const { ScrollTrigger } = pkg;
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  
 
   // Registra il plugin in modo sicuro
   gsap.registerPlugin(ScrollTrigger);
