@@ -58,7 +58,7 @@
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
   const HELMET_SCALE = 0.45
-  const HELMET_CENTER_Y = 0.32
+  const HELMET_CENTER_Y = 0.54
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 300

@@ -31,6 +31,15 @@
   function draw() {
     if (ctx) {
       ctx.clearRect(0, 0, w, h)
+
+      // Le stelle grigie compaiono solo da SectionHelmetVisor in poi
+      // (helmetStore.visible è true dalla sezione visor fino alla fine).
+      if (!helmetStore.visible) {
+        if (stars.length) stars.length = 0
+        animId = requestAnimationFrame(draw)
+        return
+      }
+
       while (stars.length < MAX_STARS) spawnStar()
 
       for (let i = stars.length - 1; i >= 0; i--) {

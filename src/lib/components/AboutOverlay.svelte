@@ -1,54 +1,29 @@
 <script>
-  import { onMount } from 'svelte'
-  import { TEAM, PARAS, QUESTIONS, ABOUT_STEP_PX as STEP_PX } from '$lib/data/about.js'
+  import { TEAM, PARAS, QUESTIONS, ABOUT_STEP_PX } from '$lib/data/about.js'
 
-  const MAX_STEP  = QUESTIONS.length - 1
+  const MAX_STEP = QUESTIONS.length - 1
+  const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
-  let step      = $state(0)
+  // Scroll-locked overlay: body scroll is frozen by the menu, so we drive the
+  // step from our own wheel handler instead of window.scrollY.
+  let scrollPos = $state(0)
+  let step      = $derived(Math.min(MAX_STEP, Math.floor(scrollPos / ABOUT_STEP_PX)))
   let question  = $derived(QUESTIONS[step] ?? 'The team')
   let showTeam  = $derived(step === MAX_STEP)
   let activeIdx = $derived(Math.min(PARAS.length - 1, step))
 
-  onMount(() => {
-    document.documentElement.classList.add('about-no-scrollbar')
-
-    const onScroll = () => {
-      step = Math.min(MAX_STEP, Math.floor(window.scrollY / STEP_PX))
+  $effect(() => {
+    const max = MAX_STEP * ABOUT_STEP_PX + 200
+    const onWheel = (e) => {
+      e.preventDefault()
+      scrollPos = clamp(scrollPos + e.deltaY, 0, max)
     }
-    window.addEventListener('scroll', onScroll, { passive: true })
-
-    return () => {
-      document.documentElement.classList.remove('about-no-scrollbar')
-      window.removeEventListener('scroll', onScroll)
-    }
+    window.addEventListener('wheel', onWheel, { passive: false })
+    return () => window.removeEventListener('wheel', onWheel)
   })
 </script>
 
-<div class="scroll-spacer"></div>
-
-<div class="page-root">
-
-  <header class="about-header">
-    <span></span>
-    <span class="polimi-label">@Politecnico di Milano</span>
-    <button class="back-dots" onclick={() => history.back()} aria-label="Chiudi">
-      <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
-        <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
-        <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
-        <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
-        <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
-        <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
-        <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
-        <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
-        <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
-        <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
-        <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
-        <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
-        <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
-      </svg>
-    </button>
-  </header>
-
+<div class="about-overlay">
   <div class="layout">
 
     <aside class="left-col">
@@ -85,14 +60,12 @@
 </div>
 
 <style>
-  .scroll-spacer {
-    height: calc(4 * 700px + 100vh);
-    pointer-events: none;
-  }
-
-  .page-root {
+  /* Opaco, copre il menu sottostante ma resta SOTTO l'header della navbar
+     (z-index 300) così il bottone × resta cliccabile per chiudere. */
+  .about-overlay {
     position: fixed;
     inset: 0;
+    z-index: 280;
     background: #fafafa;
     color: #030404;
     display: flex;
@@ -100,38 +73,12 @@
     overflow: hidden;
   }
 
-  /* ── Header ──────────────────────────────────── */
-  .about-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 28px 44px 0;
-    flex-shrink: 0;
-  }
-
-  .polimi-label {
-    font-family: var(--font-primary, monospace);
-    font-size: 0.85rem;
-    color: #030404;
-    opacity: 0.55;
-  }
-
-  .back-dots {
-    display: flex;
-    align-items: center;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0 4px;
-    color: #030404;
-  }
-
   /* ── Layout ──────────────────────────────────── */
   .layout {
     display: flex;
     flex: 1;
     overflow: hidden;
-    padding: 0 44px;
+    padding: 96px 44px 0;   /* top spazio per logo/× della navbar */
   }
 
   /* ── Sinistra ────────────────────────────────── */
@@ -224,19 +171,9 @@
 
   /* ── Mobile ──────────────────────────────────── */
   @media (max-width: 768px) {
-    .scroll-spacer { height: calc(4 * 500px + 100vh); }
-    .layout { flex-direction: column; padding: 0 24px 40px; }
+    .layout { flex-direction: column; padding: 96px 24px 40px; }
     .left-col { width: 100%; padding-left: 0; padding-bottom: 24px; flex: 0 0 auto; }
     .about-title { font-size: clamp(64px, 18vw, 110px); }
     .right-col { padding-right: 0; padding-top: 32px; }
-  }
-
-  /* Nasconde la scrollbar del browser solo su questa pagina */
-  :global(html.about-no-scrollbar) {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-  }
-  :global(html.about-no-scrollbar::-webkit-scrollbar) {
-    display: none; /* Chrome/Safari */
   }
 </style>
