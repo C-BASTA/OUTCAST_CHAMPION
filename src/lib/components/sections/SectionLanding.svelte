@@ -1,7 +1,8 @@
 <script>
   import { onMount } from 'svelte'
   import { gsap } from 'gsap'
-  import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  //import { ScrollTrigger } from 'gsap/ScrollTrigger'
+  import pkg from 'gsap/ScrollTrigger';const { ScrollTrigger } = pkg;
   import { palette } from '$lib/styles/tokens/index'
 
   let wrap, revealCanvas
