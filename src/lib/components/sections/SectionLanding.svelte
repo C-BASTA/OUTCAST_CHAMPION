@@ -49,6 +49,9 @@
   const FLOAT_AMP  = 3    // px ampiezza oscillazione Y
   const FLOAT_TILT = 0.4  // gradi ampiezza tilt idle
   let s3_mouseInside = false
+  // Su dispositivi touch non c'è hover: il floating idle non si fermerebbe mai
+  // → lo disattiviamo e l'immagine resta ferma.
+  let isTouch = false
 
   const RADIUS = 190
   const STIFFNESS = 0.15
@@ -59,6 +62,9 @@
   const REVEAL_PAD_TOP = 0.22
   const HELMET_SCALE = 0.45
   const HELMET_CENTER_Y = 0.54
+  // Su mobile la foto riempie il box con la testa più in alto: il casco va alzato
+  const HELMET_CENTER_Y_MOBILE = 0.32
+  let helmetMobile = false
 
   // --- LOGICA SCROLL ORIGINALE ---
   const SCROLL_RANGE = 300
@@ -84,6 +90,7 @@
     if (!wrap || !revealCanvas) return
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    helmetMobile = window.innerWidth < 768
     photoW = wrap.offsetWidth
     photoH = wrap.offsetHeight
     canvasW = photoW * (1 + REVEAL_PAD_X * 2)
@@ -160,7 +167,8 @@
     const helmetW = photoW * HELMET_SCALE
     const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth) 
     const helmetX = padX + photoW * 0.5 - helmetW * 0.5
-    const helmetY = padY + photoH * HELMET_CENTER_Y - helmetH * 0.5
+    const centerY = helmetMobile ? HELMET_CENTER_Y_MOBILE : HELMET_CENTER_Y
+    const helmetY = padY + photoH * centerY - helmetH * 0.5
 
     ctx.save()
     ctx.globalAlpha = alpha
@@ -194,9 +202,12 @@
   }
 
   onMount(() => {
+    isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches
+      || window.innerWidth < 768
+
     helmetImage = new Image()
     helmetImage.src = '/images/Casco_Landing.png'
-    resizeCanvas() 
+    resizeCanvas()
 
     const resizeObserver = new ResizeObserver(resizeCanvas)
     if (wrap) resizeObserver.observe(wrap)
@@ -373,8 +384,8 @@
       // --- AGGIORNAMENTO SPRING 3D ---
       if (photoMotion) {
         // floating idle: oscillazione autonoma quando il mouse è fuori
-        const floatY    = s3_mouseInside ? 0 : Math.sin(now * 0.00052) * FLOAT_AMP
-        const floatTilt = s3_mouseInside ? 0 : Math.sin(now * 0.00037) * FLOAT_TILT
+        const floatY    = (s3_mouseInside || isTouch) ? 0 : Math.sin(now * 0.00052) * FLOAT_AMP
+        const floatTilt = (s3_mouseInside || isTouch) ? 0 : Math.sin(now * 0.00037) * FLOAT_TILT
 
         // spring: vel += (target - cur) * stiff; vel *= damp; cur += vel
         s3_vRX += (s3_tRotX - s3_rX) * S3_STIFF; s3_vRX *= S3_DAMP; s3_rX += s3_vRX
@@ -641,7 +652,7 @@
     .photo-wrap {
       width: 160vw;
       height: 144vw;
-      bottom: 0;
+      bottom: 0vh;
     }
 
     .vlad {
