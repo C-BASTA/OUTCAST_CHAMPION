@@ -191,9 +191,9 @@
   }
 
   .folder-sub {
-    font-family: 'GeistPixel-Square';
+    font-family: var(--font-primary);
     font-size: 0.88rem;
-    color: rgba(250, 250, 250, 0.45);
+    color: neutral-50;
     white-space: nowrap;
     padding-top: 20px;
     flex-shrink: 0;
@@ -234,7 +234,7 @@
   .body-text p {
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: rgba(250, 250, 250, 0.80);
+    color: neutral-50;
     margin-bottom: 0.6rem;
   }
 
