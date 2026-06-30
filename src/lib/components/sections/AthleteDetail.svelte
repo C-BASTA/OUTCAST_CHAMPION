@@ -1,9 +1,19 @@
 <script>
+  import { onMount } from 'svelte'
+
   let { athlete, onClose, athleteIndex = -1 } = $props()
 
   let overlayEl    = $state(null)
   let leftPanelEl  = $state(null)
   let scrollTop    = $state(0)
+  let isMobile     = $state(false)
+
+  onMount(() => {
+    const check = () => { isMobile = window.innerWidth < 768 }
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  })
 
   // ── Scroll constants ──────────────────────────────────────────────
   const TEXT_REVEAL_PX = 1800  // px of overlay-internal scroll to clear all text
@@ -114,49 +124,58 @@
     const savedScrollY = document.body.style.position === 'fixed'
       ? -parseInt(document.body.style.top || '0')
       : window.scrollY
-    document.body.style.position   = 'fixed'
-    document.body.style.top        = `-${savedScrollY}px`
-    document.body.style.left       = '0'
-    document.body.style.right      = '0'
-    document.body.style.overflow   = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
 
-    const onWheel = (e) => {
-      e.preventDefault()
-      // Photos 0..n-1 are revealed with text (no extra scroll); only the remaining
-      // (photos.length - n) extra photos each need PHOTO_STEP_PX of dedicated scroll.
-      const extraPhotos = Math.max(0, (athlete?.photos?.length ?? 0) - paragraphs.length)
-      const maxScroll = TEXT_REVEAL_PX + extraPhotos * PHOTO_STEP_PX + 300
-
-      // After text reveal, let the left panel scroll if it has overflow
-      if (scrollTop >= TEXT_REVEAL_PX && leftPanelEl) {
-        const panelMax = leftPanelEl.scrollHeight - leftPanelEl.clientHeight
-        if (panelMax > 0) {
-          const prev = leftPanelEl.scrollTop
-          leftPanelEl.scrollTop = clamp(leftPanelEl.scrollTop + e.deltaY, 0, panelMax)
-          // Advance photo scroll only when left panel hits an edge
-          if (leftPanelEl.scrollTop !== prev) return
-        }
-      }
-
-      scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
+    // Body lock: position:fixed blocca lo sfondo su tutti i browser/iOS.
+    // Su mobile NON settiamo overflow:hidden su body/documentElement perché
+    // su iOS/Safari impedisce lo scroll dei container figli (overflow-y:scroll).
+    document.body.style.position = 'fixed'
+    document.body.style.top      = `-${savedScrollY}px`
+    document.body.style.left     = '0'
+    document.body.style.right    = '0'
+    if (!isMobile) {
+      document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
     }
-    window.addEventListener('wheel', onWheel, { passive: false })
+
+    let removeWheel = () => {}
+
+    if (!isMobile) {
+      const onWheel = (e) => {
+        e.preventDefault()
+        const extraPhotos = Math.max(0, (athlete?.photos?.length ?? 0) - paragraphs.length)
+        const maxScroll = TEXT_REVEAL_PX + extraPhotos * PHOTO_STEP_PX + 300
+
+        if (scrollTop >= TEXT_REVEAL_PX && leftPanelEl) {
+          const panelMax = leftPanelEl.scrollHeight - leftPanelEl.clientHeight
+          if (panelMax > 0) {
+            const prev = leftPanelEl.scrollTop
+            leftPanelEl.scrollTop = clamp(leftPanelEl.scrollTop + e.deltaY, 0, panelMax)
+            if (leftPanelEl.scrollTop !== prev) return
+          }
+        }
+
+        scrollTop = clamp(scrollTop + e.deltaY, 0, maxScroll)
+      }
+      window.addEventListener('wheel', onWheel, { passive: false })
+      removeWheel = () => window.removeEventListener('wheel', onWheel)
+    }
 
     return () => {
-      document.body.style.position  = ''
-      document.body.style.top       = ''
-      document.body.style.left      = ''
-      document.body.style.right     = ''
-      document.body.style.overflow  = ''
-      document.documentElement.style.overflow = ''
-      window.removeEventListener('wheel', onWheel)
+      document.body.style.position = ''
+      document.body.style.top      = ''
+      document.body.style.left     = ''
+      document.body.style.right    = ''
+      if (!isMobile) {
+        document.body.style.overflow = ''
+        document.documentElement.style.overflow = ''
+        const blockMomentum = (e) => e.preventDefault()
+        window.addEventListener('wheel', blockMomentum, { passive: false })
+        setTimeout(() => window.removeEventListener('wheel', blockMomentum), 400)
+      }
+      removeWheel()
       scrollTop = 0
       if (leftPanelEl) leftPanelEl.scrollTop = 0
       window.scrollTo(0, savedScrollY)
-      const blockMomentum = (e) => e.preventDefault()
-      window.addEventListener('wheel', blockMomentum, { passive: false })
-      setTimeout(() => window.removeEventListener('wheel', blockMomentum), 400)
     }
   })
 
@@ -168,37 +187,53 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if athlete}
-  <!-- Overlay -->
-  <div
-    class="overlay"
-    role="dialog"
-    aria-modal="true"
-  >
-      <!-- Visual panel -->
-      <div class="sticky-panel">
+  <div class="overlay" role="dialog" aria-modal="true">
 
-        <!-- Subtle spotlight behind the text -->
+    <!-- Close button (condiviso tra i due layout) -->
+    <button class="close-btn" onclick={onClose} aria-label="Close">
+      <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
+        <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
+        <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
+        <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
+        <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
+        <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
+      </svg>
+    </button>
+
+    {#if isMobile}
+      <!-- ── Mobile: un unico container che scrolla nativamente ── -->
+      <div class="mobile-scroll">
+        <h1 class="athlete-name">
+          <span>{nameParts[0]}</span>
+          <span>{nameParts[1]}</span>
+        </h1>
+        <p class="role">{athlete.role}</p>
+        <div class="para-group">
+          {#each paragraphs as para}
+            <p class="para">{para}</p>
+          {/each}
+        </div>
+        {#if athlete.photos?.length}
+          <div class="mobile-gallery">
+            {#each athlete.photos as photo, i}
+              <img class="mobile-photo" src={photo} alt="{athlete.name} {i + 1}" loading="lazy" />
+            {/each}
+          </div>
+        {/if}
+      </div>
+
+    {:else}
+      <!-- ── Desktop: sticky panel con foto a destra ── -->
+      <div class="sticky-panel">
         <div class="glow" aria-hidden="true"></div>
 
-        <!-- Close button -->
-        <button class="close-btn" onclick={onClose} aria-label="Close">
-          <svg width="27" height="25" viewBox="0 0 22 20" fill="none" aria-hidden="true">
-            <rect x="0"  y="1"  width="2" height="2" fill="currentColor"/>
-            <rect x="15" y="1"  width="2" height="2" fill="currentColor"/>
-            <rect x="3"  y="4"  width="2" height="2" fill="currentColor"/>
-            <rect x="12" y="4"  width="2" height="2" fill="currentColor"/>
-            <rect x="6"  y="7"  width="2" height="2" fill="currentColor"/>
-            <rect x="9"  y="7"  width="2" height="2" fill="currentColor"/>
-            <rect x="6"  y="10" width="2" height="2" fill="currentColor"/>
-            <rect x="9"  y="10" width="2" height="2" fill="currentColor"/>
-            <rect x="3"  y="13" width="2" height="2" fill="currentColor"/>
-            <rect x="12" y="13" width="2" height="2" fill="currentColor"/>
-            <rect x="0"  y="16" width="2" height="2" fill="currentColor"/>
-            <rect x="15" y="16" width="2" height="2" fill="currentColor"/>
-          </svg>
-        </button>
-
-        <!-- Cover unico che sale dal basso, poi le foto si dissolvono dentro -->
         {#if athlete.photos?.length}
           <div class="photo-cover">
             {#each athlete.photos as photo, i}
@@ -215,9 +250,7 @@
           <span class="photo-counter">{currentPhotoIndex + 1}/{athlete.photos.length}</span>
         {/if}
 
-        <!-- Upper: name + descrizione a sx, foto a dx -->
         <div class="upper">
-
           <div class="left-panel" bind:this={leftPanelEl}>
             <h1 class="athlete-name">
               <span>{nameParts[0]}</span>
@@ -234,10 +267,10 @@
               {/each}
             </div>
           </div>
-
         </div>
-
       </div>
+    {/if}
+
   </div>
 {/if}
 
@@ -409,22 +442,52 @@
 
   /* ── Mobile ── */
   @media (max-width: 768px) {
-    .upper {
-      grid-template-columns: 1fr;
+    /* .mobile-scroll è il container scrollabile — position:absolute inside
+       position:fixed overlay crea un scroll context indipendente su iOS */
+    .mobile-scroll {
+      position: absolute;
+      inset: 0;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      padding: 68px 24px max(40px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
     }
-    .left-panel {
-      padding: 90px 24px 0 24px;
-    }
+
     .athlete-name {
-      font-size: clamp(44px, 13vw, 90px);
+      font-size: clamp(36px, 10vw, 60px);
+      margin-bottom: 4px;
     }
+
     .role {
-      padding-left: 0;
-      margin-top: 16px;
+      margin: 0 0 24px;
     }
-    .right-panel {
-      padding: 24px 24px 24px 24px;
+
+    .para-group {
+      gap: 16px;
+      margin-top: 0;
+      padding-bottom: 0;
     }
-    .photo-item { height: 180px; }
+
+    .para {
+      font-size: 15px;
+    }
+
+    .mobile-gallery {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 36px;
+      padding-bottom: 24px;
+    }
+
+    .mobile-photo {
+      display: block;
+      width: 100%;
+      height: 58vw;
+      object-fit: cover;
+      border-radius: 6px;
+    }
   }
 </style>
