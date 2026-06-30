@@ -111,6 +111,7 @@
 
     let tween = null
     let tickerFn = null
+    const mobileTweens = []
 
     if (!isMobile) {
       tween = gsap.to(cardsTrack, {
@@ -132,6 +133,30 @@
         }
       }
       gsap.ticker.add(tickerFn)
+    } else {
+      // Mobile: parallax verticale legato allo scroll, una ScrollTrigger per card
+      tick().then(() => {
+        if (!section) return
+        section.querySelectorAll('.vertical-img').forEach((img) => {
+          mobileTweens.push(
+            gsap.fromTo(
+              img,
+              { yPercent: 7 },
+              {
+                yPercent: -7,
+                ease: 'none',
+                scrollTrigger: {
+                  trigger: img.closest('.vertical-card'),
+                  start: 'top bottom',
+                  end: 'bottom top',
+                  scrub: true,
+                  invalidateOnRefresh: true,
+                },
+              }
+            )
+          )
+        })
+      })
     }
 
     const onResize = async () => {
@@ -147,6 +172,10 @@
       tween?.scrollTrigger?.kill()
       tween?.kill()
       if (tickerFn) gsap.ticker.remove(tickerFn)
+      mobileTweens.forEach((t) => {
+        t.scrollTrigger?.kill()
+        t.kill()
+      })
     }
   })
 
@@ -198,7 +227,7 @@
 
 <!-- ── Mobile layout (verticale) ──────────────────────────────────────── -->
 {#if isMobile}
-  <section class="bio-section bio-section--vertical" id="athlete-bio">
+  <section bind:this={section} class="bio-section bio-section--vertical" id="athlete-bio">
     <div class="grain-overlay"></div>
     <div class="vertical-container">
       {#each verticalCards as card, i}
@@ -326,12 +355,21 @@
   }
   .vertical-caption strong { font-weight: 700; }
   .vertical-img-frame {
+    position: relative;
     width: 100%;
     overflow: hidden;
-    border-radius: 8px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   }
-  .vertical-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .vertical-img {
+    position: absolute;
+    left: 0;
+    top: -10%;
+    width: 100%;
+    height: 120%;          /* extra vertical room for the scroll parallax */
+    object-fit: cover;
+    display: block;
+    will-change: transform;
+  }
   .vertical-quote {
     width: 58vw;
     padding: 0 0 0 14px;

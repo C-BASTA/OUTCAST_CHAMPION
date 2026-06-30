@@ -51,7 +51,7 @@
     <span class="line">the people depicted on </span>
     <span class="line"> this helmet weighs more </span>
     <span class="line">
-        than any <strong class="accent accent-sacrifice">medal</strong>, because
+        than any <span class="nowrap"><strong class="accent accent-sacrifice">medal</strong>,</span> because
     </span>
     <span class="line"> they gave the most</span>
      <span class="line"> precious thing they had:</span>
@@ -104,6 +104,10 @@
     letter-spacing: 0.05em;
     opacity: 0;
     margin-bottom: clamp(-48px, -3.5vw, -24px);
+  }
+
+  .nowrap {
+    white-space: nowrap;
   }
 
   .accent {

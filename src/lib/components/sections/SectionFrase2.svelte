@@ -87,6 +87,7 @@
     .frase-section {
       align-items: center;
       padding: 28px 20px;
+      margin-bottom: clamp(56px, 14vh, 140px);
     }
 
     blockquote {
