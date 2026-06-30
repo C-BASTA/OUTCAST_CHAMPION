@@ -353,4 +353,40 @@
 
   /* ── Footer overlay ───────────────────────────────────────── */
 
+  /* ── Mobile: menu a tutta larghezza, niente tagli a destra ──── */
+  @media (max-width: 768px) {
+    .menu-nav {
+      left: 24px;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      gap: clamp(28px, 5vh, 52px);
+    }
+
+    .menu-item {
+      align-items: flex-start;
+    }
+
+    .item-num {
+      font-size: 20px;
+      min-width: 40px;
+      transform: translateY(-8px);
+    }
+
+    .item-label {
+      font-size: clamp(38px, 13vw, 60px);
+    }
+
+    /* Niente hover su touch: sub e immagine non servono e causavano l'overflow */
+    .item-sub { display: none; }
+    .hover-img { display: none; }
+
+    /* "About us" già a piena opacità; nessuno spostamento all'hover su mobile */
+    .item-label.grid { opacity: 1; }
+    .menu-item:hover .item-label,
+    .menu-item:hover .item-label.grid {
+      transform: none;
+    }
+  }
+
 </style>

@@ -1,5 +1,16 @@
 <script>
   import { slide } from 'svelte/transition'
+  import { onMount } from 'svelte'
+
+  // Su mobile il pannello aperto scrolla internamente: serve a Lenis per cederne lo scroll
+  let isMobile = $state(false)
+  onMount(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => (isMobile = mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  })
 
   const ITEMS = [
     {
@@ -66,7 +77,7 @@
           </button>
 
           {#if active === item.key}
-            <div class="folder-body" transition:slide={{ duration: 400 }}>
+            <div class="folder-body" transition:slide={{ duration: 400 }} data-lenis-prevent={isMobile ? '' : undefined}>
               <div class="body-grid">
                 <div class="body-text">
                   {#each item.body as para}
@@ -247,6 +258,106 @@
       white-space: normal;
       max-width: 30%;
       text-align: right;
+    }
+
+    .folder-title {
+      font-size: clamp(36px, 11.5vw, 80px);
+      flex-shrink: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  /* ── Mobile: accordion a tutto schermo, niente overflow di pagina ─────── */
+  @media (max-width: 768px) {
+    .regolamento-section {
+      min-height: 100svh;
+      height: 100svh;
+    }
+
+    .sticky-wrapper {
+      position: static;
+      min-height: 0;
+      height: 100svh;
+      padding: 24px 20px;
+      justify-content: stretch;
+    }
+
+    .folders {
+      flex: 1 1 auto;
+      height: 100%;
+      min-height: 0;
+      justify-content: stretch;
+    }
+
+    /* Chiuse: le cartelle si dividono lo schermo → target più grandi */
+    .folder {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    /* Con una aperta, le altre si riducono al solo titolo */
+    .folders.has-active .folder:not(.is-open) {
+      flex: 0 0 auto;
+      justify-content: flex-start;
+    }
+
+    .folder.is-open {
+      flex: 1 1 auto;
+      justify-content: flex-start;
+    }
+
+    /* Il corpo aperto riempie lo spazio e scrolla internamente se serve */
+    .folder.is-open .folder-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .body-grid {
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .body-text {
+      column-count: 1;
+    }
+
+    .body-text p {
+      font-size: 0.95rem;
+    }
+
+    /* Titolo sempre su una riga: header impilato, sub sotto e solo se aperto */
+    .folder-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .folder-title {
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
+
+    .folder-sub {
+      text-align: left;
+      max-width: none;
+      padding-top: 0;
+    }
+
+    .folder-sub:not(.visible) {
+      display: none;
+    }
+
+    /* Niente hover su mobile: i titoli sono già alla massima opacità */
+    .folder-title:not(.is-active),
+    .folder-header:hover .folder-title:not(.is-active) {
+      color: rgba(250, 250, 250, 1);
     }
   }
 </style>
