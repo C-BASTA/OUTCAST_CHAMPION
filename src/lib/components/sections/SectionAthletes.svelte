@@ -201,7 +201,12 @@
   let introP   = $state(0)
   let exitT    = $state(0)
   let rotationDelayId = null
-  let isMobile = false
+  let isMobile = $state(false)
+
+  function abbreviateName(name) {
+    const parts = name.trim().split(/\s+/)
+    return parts.length < 2 ? name : `${parts[0][0]}. ${parts.slice(1).join(' ')}`
+  }
 
   // ─── Nastro continuo ────────────────────────────────────────────────────────
   // Altezza di ogni riga in vh — deve matchare gap + font-size effettivi.
@@ -222,9 +227,10 @@
     const center = smoothSelected
     const items = []
     // Renderizza tutti i nomi: la clip del contenitore li nasconde comunque
+    const rowVh = isMobile ? 13 : ROW_VH
     for (let i = 0; i < faces.length; i++) {
       const offsetFromCenter = i - center          // in "steps" rispetto al centro
-      const yVh = offsetFromCenter * ROW_VH        // posizione Y in vh dal centro
+      const yVh = offsetFromCenter * rowVh         // posizione Y in vh dal centro
       const distAbs = Math.abs(offsetFromCenter)
       // Opacità: 1 al centro, decade verso i laterali
       const opacity = Math.max(0, 1 - distAbs * 0.35)
@@ -480,7 +486,7 @@
             onclick={() => selectFace(item.index)}
             onkeydown={(e) => e.key === 'Enter' && selectFace(item.index)}
           >
-            <span>{@html item.face.label ?? item.face.name}</span>
+            <span>{@html isMobile ? abbreviateName(item.face.name) : (item.face.label ?? item.face.name)}</span>
           </div>
         {/each}
       </div>
@@ -572,26 +578,14 @@
 
     .names-tape {
       width: 100%;
-      padding-left: 0;
-      display: flex;
-      justify-content: center;
     }
 
     .name {
-      left: 50%;
-      translate: -50% 0;
-      transform-origin: center center;
-      max-width: 92vw;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: clamp(2rem, 10vw, 4.8rem);
     }
 
     .name.selected {
       scale: 1.12;
-    }
-
-    .name:hover {
-      margin-left: 0;
     }
   }
 </style>
