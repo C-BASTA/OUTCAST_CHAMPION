@@ -487,7 +487,7 @@
       width: 100%;
       height: 58vw;
       object-fit: cover;
-      border-radius: 6px;
+      border-radius: 0;
     }
   }
 </style>
