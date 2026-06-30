@@ -376,7 +376,7 @@
   }
 
   .role {
-    font-family: var(--font-secondary, 'Geist'), sans-serif;
+    font-family: var(--font-primary, 'GeistPixel');
     font-size: 18px;
     font-weight: 400;
     color: var(--color-ink, #fafafa);

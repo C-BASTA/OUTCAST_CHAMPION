@@ -279,7 +279,7 @@
 
   /* Numero: fisso, non si sposta all'hover */
   .item-num {
-    font-family: var(--font-secondary);
+    font-family: 'GeistPixel-Square';
     font-size: 36px;
     font-weight: 400;
     min-width: 80px;
@@ -336,7 +336,7 @@
 
   /* Sub-testo a destra della label, stesso livello del numero */
   .item-sub {
-    font-family: var(--font-secondary);
+    font-family: 'GeistPixel-Square';
     font-size: 0.88rem;
     white-space: nowrap;
     margin-left: 150px;

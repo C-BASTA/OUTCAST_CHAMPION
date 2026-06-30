@@ -63,7 +63,9 @@
   const HELMET_SCALE = 0.45
   const HELMET_CENTER_Y = 0.54
   // Su mobile la foto riempie il box con la testa più in alto: il casco va alzato
+  // e rimpicciolito rispetto al desktop.
   const HELMET_CENTER_Y_MOBILE = 0.32
+  const HELMET_SCALE_MOBILE = 0.4
   let helmetMobile = false
 
   // --- LOGICA SCROLL ORIGINALE ---
@@ -164,8 +166,8 @@
 
     const padX = photoW * REVEAL_PAD_X
     const padY = photoH * REVEAL_PAD_TOP
-    const helmetW = photoW * HELMET_SCALE
-    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth) 
+    const helmetW = photoW * (helmetMobile ? HELMET_SCALE_MOBILE : HELMET_SCALE)
+    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth)
     const helmetX = padX + photoW * 0.5 - helmetW * 0.5
     const centerY = helmetMobile ? HELMET_CENTER_Y_MOBILE : HELMET_CENTER_Y
     const helmetY = padY + photoH * centerY - helmetH * 0.5

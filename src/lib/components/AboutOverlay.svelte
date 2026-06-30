@@ -157,7 +157,7 @@
   }
 
   .question-label {
-    font-family: var(--font-primary, monospace);
+    font-family: 'GeistPixel-Square';
     font-size: clamp(17px, 1.1vw, 16px);
     color: #030404;
     
@@ -233,7 +233,7 @@
     right: var(--padding-lateral,32px);
     display: flex;
     justify-content: space-between;
-    font-family: var(--font-secondary);
+    font-family: 'GeistPixel-Square';
     font-size: 0.875rem;
     color: inherit;
   opacity: 0.8;
