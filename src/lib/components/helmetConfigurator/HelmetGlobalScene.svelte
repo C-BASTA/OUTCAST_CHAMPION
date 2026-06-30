@@ -60,7 +60,7 @@
         curRotY = helmetStore.rotY
         curRotZ = helmetStore.rotZ
       }
-      modelRef.rotation.set(curRotX, curRotY, curRotZ)
+      modelRef.rotation.set(curRotX, curRotY + Math.PI, curRotZ)
     }
     if (floatGroup) {
       const viewportHeightAtModel = 2 * helmetStore.cameraZ * Math.tan(THREE.MathUtils.degToRad(CAMERA_FOV / 2))
@@ -74,7 +74,7 @@
     }
   })
 
-  const gltf = useGltf('/models/casco_con_facce.glb', { dracoLoader: useDraco('/draco/') })
+  const gltf = useGltf('/models/CascoVlad13.glb', { dracoLoader: useDraco('/draco/') })
 
   $effect(() => {
     if (!$gltf) return
@@ -94,6 +94,6 @@
 
 <T.Group bind:ref={floatGroup}>
   {#if $gltf}
-    <T is={$gltf.scene} scale={2} position={[0, 0.1, 0]} bind:ref={modelRef} />
+    <T is={$gltf.scene} scale={1.25} position={[0, 0.1, 0]} bind:ref={modelRef} />
   {/if}
 </T.Group>
