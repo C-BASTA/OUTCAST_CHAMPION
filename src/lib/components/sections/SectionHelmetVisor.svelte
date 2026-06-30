@@ -7,6 +7,10 @@
   const ENTRY_START_Y     = 100   // vh: helmet starts fully offscreen below = smooth glide (must match the p===0 offscreen value to avoid a jump). Use ENTRY_END to tune how soon it settles.
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
+  // Su mobile (canvas full-width, viewport stretto e alto) il casco va più vicino così
+  // riempie il frame e non si vede lo sfondo dietro la cupola. Tiene CAM_FAR comune così
+  // il de-zoom finale atterra esattamente sul valore di handoff (8.5) → nessuno scatto.
+  const CAM_CLOSE_MOBILE  = 2.3
   const MOBILE_BREAKPOINT = 768
   const SIDE              = 0.35
 
@@ -49,15 +53,17 @@
   // progress ENTRY_END→1 → zoomP 0→1 (usato solo per il testo e il pixel canvas)
   let zoomP = $derived(clamp((progress - ENTRY_END) / (1 - ENTRY_END), 0, 1))
 
-  function computeVisorStoreValues(p) {
+  function computeVisorStoreValues(p, camClose) {
     // entryP: 0→1 durante la fase di entrata
     const entryP = ease(clamp(p / ENTRY_END, 0, 1))
 
-    // cameraZ: zoom in durante la prima parte, poi zoom out all'uscita
+    // cameraZ: zoom in durante la prima parte, poi zoom out all'uscita.
+    // camClose è il punto di massimo zoom (più piccolo = più vicino); CAM_FAR è comune
+    // così il de-zoom finale combacia col valore di handoff della sezione successiva.
     let camZ
-    if (p < 0.20) camZ = lerp(CAM_FAR, CAM_CLOSE, ease(remap(p, 0.00, 0.20, 0, 1)))
-    else if (p < 0.86) camZ = CAM_CLOSE
-    else if (p < 0.98) camZ = lerp(CAM_CLOSE, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
+    if (p < 0.20) camZ = lerp(CAM_FAR, camClose, ease(remap(p, 0.00, 0.20, 0, 1)))
+    else if (p < 0.86) camZ = camClose
+    else if (p < 0.98) camZ = lerp(camClose, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
     else camZ = CAM_FAR
 
     // rotY: ruota di lato all'inizio, poi fronta, poi di lato all'uscita
@@ -256,8 +262,8 @@
         helmetStore.entryTransformY = 100
         helmetStore.floatWeight     = 0
       } else {
-        const v = computeVisorStoreValues(p)
-        helmetStore.cameraZ          = isMobile ? v.camZ + 1.5 : v.camZ
+        const v = computeVisorStoreValues(p, isMobile ? CAM_CLOSE_MOBILE : CAM_CLOSE)
+        helmetStore.cameraZ          = v.camZ
         helmetStore.cameraY          = 0.25
         helmetStore.lookAtX          = 0
         helmetStore.lookAtY          = 0.20
@@ -326,12 +332,12 @@
 
 <!-- ── Mobile (scroll-driven) ─────────────────────────────────────────── -->
 {#if isMobile}
-  {@const dezoomStarted = progress > 0.82}
+  {@const darkFade = clamp((progress - 0.96) / 0.04, 0, 1)}
   <section
     bind:this={section}
     class="visor-section--mobile"
     id="helmet-visor"
-    style:background={dezoomStarted ? '#030404' : '#FAFAFA'}
+    style:background="rgba(3, 4, 4, {darkFade})"
   >
     <div class="mobile-sticky">
       <div class="mobile-texts">
@@ -439,7 +445,9 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .visor-section--mobile {
-    background: #030404;
+    /* Sempre trasparente: durante la salita E il de-zoom si vedono i pixel dietro.
+       Il passaggio a scuro avviene a fine sezione tramite HelmetGlobal/athletes. */
+    background: transparent;
     height: calc(100vh + 8000px);
     position: relative;
   }
@@ -452,7 +460,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0 32px;
+    padding: 0 18px;
     padding-top: 0;
     margin-top: -20vh;
     z-index: 10;
@@ -469,8 +477,8 @@
 
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
-    font-size: 0.95rem;
+    font-size: clamp(1.3rem, 6vw, 1.9rem);
     color: #030404;
-    line-height: 1.6;
+    line-height: 1.5;
   }
 </style>

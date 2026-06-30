@@ -27,7 +27,17 @@
 
       // navDark = true (testo bianco) dall'inizio di helmet-visor in poi
       navDark = scrollY >= (visorEl?.offsetTop ?? Infinity) + 1550
-      inBio   = !!(bioEl && scrollY >= bioEl.offsetTop)
+
+      // I pixel colorati di sfondo sono nascosti durante la biografia (layout fitto).
+      // Su mobile però tutta la sezione visor (casco che sale, zoom e de-zoom) resta
+      // trasparente: i pixel restano visibili dietro al casco per l'intera sezione,
+      // niente sfondo bianco/scuro piatto. Lo scuro arriva solo nella sezione atleti.
+      const isMobile  = window.innerWidth < 768
+      const visorTop  = visorEl?.offsetTop ?? Infinity
+      const visorBottom = visorTop + (visorEl ? visorEl.offsetHeight - window.innerHeight : 0)
+      const inBioRange = !!(bioEl && scrollY >= bioEl.offsetTop)
+      const inVisor   = isMobile && scrollY >= visorTop && scrollY < visorBottom
+      inBio = inBioRange && !inVisor
 
       navShowLogo = scrollY >= window.innerHeight * 0.2
     }
