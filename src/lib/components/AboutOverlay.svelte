@@ -101,14 +101,14 @@
     font-family: var(--font-primary, monospace);
     font-size: clamp(80px, 11vw, 150px);
     font-weight: 400;
-    color: #030404;
+    color: neutral-900;
   }
 
   .question-label {
     font-family: var(--font-primary, monospace);
-    font-size: clamp(13px, 1.1vw, 16px);
+    font-size: clamp(17px, 1.1vw, 16px);
     color: #030404;
-    opacity: 0.65;
+    
     letter-spacing: 0.02em;
     padding-bottom: 8px;
     margin-top: 80px;
@@ -163,7 +163,7 @@
   .team-list li {
     font-family: var(--font-primary, monospace);
     font-size: clamp(15px, 1.5vw, 20px);
-    color: #030404;
+    color: neutral-900;
   }
 
   .body-text {
@@ -184,7 +184,7 @@
     font-family: var(--font-secondary);
     font-size: 0.875rem;
     color: inherit;
-  
+  opacity: 0.8;
     z-index: 1;
     pointer-events: none;
     position: fixed;

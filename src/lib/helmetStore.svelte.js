@@ -23,4 +23,7 @@ export const helmetStore = $state({
   entryTransformY: 100,
   // Peso animazione fluttuazione: 0 = ferma, 1 = piena (usato durante SectionHelmetVisor)
   floatWeight: 0,
+  // true = disegna le stelle grigie anche quando visible è false
+  // (es. durante la dissolvenza a pixel di SectionHelmetVisor)
+  starsVisible: false,
 })

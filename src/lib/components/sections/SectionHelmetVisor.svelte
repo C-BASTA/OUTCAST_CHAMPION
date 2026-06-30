@@ -3,8 +3,8 @@
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   const TOTAL_SCROLL      = 15000   // px of scroll space after 100vh (longer = dissolve spreads over more scroll → fewer pixels off per cm)
-  const ENTRY_END         = 0.10   // fraction of progress dedicated to entry animation
-  const ENTRY_START_Y     = 80    // vh: helmet starts fully offscreen below, rises as you scroll the white
+  const ENTRY_END         = 0.05   // fraction of progress for the entry rise (smaller = helmet comes up sooner → less white gap before it)
+  const ENTRY_START_Y     = 60   // vh: helmet starts fully offscreen below = smooth glide (must match the p===0 offscreen value to avoid a jump). Use ENTRY_END to tune how soon it settles.
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
   const MOBILE_BREAKPOINT = 768
@@ -96,6 +96,12 @@
   const PIXEL_START = 0.86
   const PIXEL_END   = 1.0
   let pixelProgress = $derived(clamp(remap(zoomP, PIXEL_START, PIXEL_END, 0, 1), 0, 1))
+
+  // Mostra le stelle grigie (di HelmetGlobal) durante la dissolvenza/cambio colore,
+  // anche se helmetStore.visible è ancora false in questa fase.
+  $effect(() => {
+    helmetStore.starsVisible = !isMobile && zoomP >= PIXEL_START
+  })
 
   // Count of sorted cells whose threshold <= val (cells already past the front).
   function cellsBelow(val) {

@@ -32,9 +32,9 @@
     if (ctx) {
       ctx.clearRect(0, 0, w, h)
 
-      // Le stelle grigie compaiono solo da SectionHelmetVisor in poi
-      // (helmetStore.visible è true dalla sezione visor fino alla fine).
-      if (!helmetStore.visible) {
+      // Le stelle grigie compaiono da SectionHelmetVisor in poi (visible) e
+      // anche durante la dissolvenza a pixel del visor (starsVisible).
+      if (!helmetStore.visible && !helmetStore.starsVisible) {
         if (stars.length) stars.length = 0
         animId = requestAnimationFrame(draw)
         return
