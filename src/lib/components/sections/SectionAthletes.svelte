@@ -581,13 +581,13 @@
       left: 50%;
       translate: -50% 0;
       transform-origin: center center;
-      text-align: center;
-      letter-spacing: 0.01em;
-      font-size: var(--font-size-h2, 2rem);
+      max-width: 92vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .name.selected {
-      scale: 1.50;
+      scale: 1.12;
     }
 
     .name:hover {

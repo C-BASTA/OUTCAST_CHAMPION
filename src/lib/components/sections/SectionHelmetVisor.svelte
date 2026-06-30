@@ -90,12 +90,13 @@
   let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
 
   // Pixel canvas (exit dissolve)
-  const PIXEL_COLS = 243
-  const PIXEL_ROWS = 152
+  const CELL_SIZE  = 6   // dimensione pixel target in CSS px — uguale in X e Y → quadrati
   let pixelCanvas  = $state(null)
   // Cells pre-sorted by reveal threshold so the draw effect can binary-search
   // to the cutoff and only iterate the cells it actually draws (O(K) not O(N)).
   let sortedCells  = []
+  let pixelCols    = 0
+  let pixelRows    = 0
 
   // Spread the dissolve over a wider zoomP window so pixels switch off in smaller
   // batches across more scroll frames (smoother pixel-by-pixel reveal).
@@ -106,7 +107,7 @@
   // Mostra le stelle grigie (di HelmetGlobal) durante la dissolvenza/cambio colore,
   // anche se helmetStore.visible è ancora false in questa fase.
   $effect(() => {
-    helmetStore.starsVisible = !isMobile && zoomP >= PIXEL_START
+    helmetStore.starsVisible = zoomP >= PIXEL_START
   })
 
   // Count of sorted cells whose threshold <= val (cells already past the front).
@@ -126,19 +127,23 @@
     pixelCanvas.width  = Math.round(window.innerWidth * dpr)
     pixelCanvas.height = Math.round(window.innerHeight * dpr)
 
-    const total = PIXEL_COLS * PIXEL_ROWS
+    // Calcola cols e rows in modo che ogni cella sia CELL_SIZE × CELL_SIZE CSS px
+    pixelCols = Math.ceil(window.innerWidth  / CELL_SIZE)
+    pixelRows = Math.ceil(window.innerHeight / CELL_SIZE)
+
+    const total = pixelCols * pixelRows
     const cells = new Array(total)
     for (let i = 0; i < total; i++) {
-      const row      = Math.floor(i / PIXEL_COLS)
-      const rowT     = row / PIXEL_ROWS                     // 0 = top, 1 = bottom
+      const col  = i % pixelCols
+      const row  = Math.floor(i / pixelCols)
+      const rowT = row / pixelRows                         // 0 = top, 1 = bottom
       // Top→bottom bias (0.05→0.85) plus tighter jitter so thresholds stay spread
       // across [0,1] with little clamping — pixels keep vanishing right to the end
       // instead of a chunk all clamping to 1.0 and popping off at once.
       const colJitter = (Math.random() - 0.5) * 0.30
       const rowJitter = (Math.random() - 0.5) * 0.22
       cells[i] = {
-        col: i % PIXEL_COLS,
-        row,
+        col, row,
         threshold: Math.max(0, Math.min(1, rowT * 0.80 + 0.05 + colJitter + rowJitter))
       }
     }
@@ -147,7 +152,7 @@
   })
 
   $effect(() => {
-    if (!pixelCanvas || sortedCells.length === 0) return
+    if (!pixelCanvas || sortedCells.length === 0 || pixelCols === 0) return
     const ctx = pixelCanvas.getContext('2d')
     const w   = pixelCanvas.width
     const h   = pixelCanvas.height
@@ -157,9 +162,9 @@
       return
     }
 
-    const cellW = w / PIXEL_COLS
-    const cellH = h / PIXEL_ROWS
-    const p     = pixelProgress
+    // cellSize uguale in entrambe le direzioni → pixel quadrati a qualsiasi risoluzione
+    const cellSize = w / pixelCols
+    const p        = pixelProgress
 
     // Pixel-by-pixel: each cell is hard black once pixelProgress passes its threshold.
     const drawCount = cellsBelow(p)
@@ -170,7 +175,7 @@
     ctx.fillStyle = '#030404'
     for (let j = 0; j < drawCount; j++) {
       const { col, row } = sortedCells[j]
-      ctx.fillRect(col * cellW, row * cellH, cellW + 1, cellH + 1)
+      ctx.fillRect(col * cellSize, row * cellSize, cellSize + 1, cellSize + 1)
     }
   })
 
@@ -290,6 +295,10 @@
   })
 </script>
 
+<!-- Pixel canvas: position fixed, condiviso tra desktop e mobile.
+     z-index:2 (sotto HelmetGlobal z-index:3, sopra la pagina) -->
+<canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
+
 <!-- ── Desktop (sticky vertical scroll + 3D helmet) ───────────────────── -->
 {#if !isMobile}
   <section
@@ -298,10 +307,6 @@
     id="helmet-visor"
     style:height="calc(100vh + {TOTAL_SCROLL}px)"
   >
-    <!-- Pixel canvas: fuori dallo sticky-wrap → partecipa al root stacking context
-         a z-index:2 (sotto HelmetGlobal z-index:3, sopra la pagina) -->
-    <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
-
     <div class="sticky-wrap">
 
       <!-- Visor texts: appear during zoom hold phase -->
@@ -332,12 +337,10 @@
 
 <!-- ── Mobile (scroll-driven) ─────────────────────────────────────────── -->
 {#if isMobile}
-  {@const darkFade = clamp((progress - 0.96) / 0.04, 0, 1)}
   <section
     bind:this={section}
     class="visor-section--mobile"
     id="helmet-visor"
-    style:background="rgba(3, 4, 4, {darkFade})"
   >
     <div class="mobile-sticky">
       <div class="mobile-texts">
