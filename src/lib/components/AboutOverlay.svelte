@@ -4,17 +4,20 @@
   const MAX_STEP = QUESTIONS.length - 1
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
-  // Scroll-locked overlay: body scroll is frozen by the menu, so we drive the
-  // step from our own wheel handler instead of window.scrollY.
-  let scrollPos = $state(0)
-  let step      = $derived(Math.min(MAX_STEP, Math.floor(scrollPos / ABOUT_STEP_PX)))
+  // Desktop: lo step è pilotato dal wheel (lo scroll del body è bloccato dal menu).
+  // Mobile: titolo + label restano fissi e i paragrafi scrollano in .right-col;
+  // uno scroll-spy aggiorna lo step (e quindi la domanda) quando un paragrafo appare.
+  let isMobile = $state(false)
+  let scrollEl = $state()
+
+  let scrollPos   = $state(0)
+  let mobileStep  = $state(0)
+  let desktopStep = $derived(Math.min(MAX_STEP, Math.floor(scrollPos / ABOUT_STEP_PX)))
+  let step      = $derived(isMobile ? mobileStep : desktopStep)
   let question  = $derived(QUESTIONS[step] ?? 'The team')
   let showTeam  = $derived(step === MAX_STEP)
   let activeIdx = $derived(Math.min(PARAS.length - 1, step))
 
-  // Su mobile non c'è il wheel: l'overlay diventa una pagina scrollabile come il
-  // regolamento (tutti i paragrafi + team visibili, scroll nativo).
-  let isMobile = $state(false)
   $effect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
     const update = () => (isMobile = mq.matches)
@@ -23,6 +26,7 @@
     return () => mq.removeEventListener('change', update)
   })
 
+  // Desktop: wheel → step
   $effect(() => {
     if (isMobile) return
     const max = MAX_STEP * ABOUT_STEP_PX + 200
@@ -32,6 +36,39 @@
     }
     window.addEventListener('wheel', onWheel, { passive: false })
     return () => window.removeEventListener('wheel', onWheel)
+  })
+
+  // Mobile: scroll-spy → la label cambia quando il paragrafo corrispondente
+  // (o il blocco team, ultimo step) supera la linea di riferimento.
+  $effect(() => {
+    if (!isMobile || !scrollEl) return
+    // Ogni paragrafo = altezza esatta del pannello → se ne vede uno per volta
+    const setSlideH = () => scrollEl.style.setProperty('--slide-h', scrollEl.clientHeight + 'px')
+    const onScroll = () => {
+      const max = scrollEl.scrollHeight - scrollEl.clientHeight
+      // Estremi netti: in cima "Who?", in fondo "The team"
+      if (scrollEl.scrollTop <= 2) { mobileStep = 0; return }
+      if (max > 0 && scrollEl.scrollTop >= max - 2) { mobileStep = MAX_STEP; return }
+
+      const items = [
+        ...scrollEl.querySelectorAll('.body-text'),
+        scrollEl.querySelector('.team-block'),
+      ].filter(Boolean)
+      const refY = scrollEl.getBoundingClientRect().top + scrollEl.clientHeight * 0.3
+      let active = 0
+      items.forEach((el, i) => {
+        if (el.getBoundingClientRect().top <= refY) active = i
+      })
+      mobileStep = active
+    }
+    setSlideH()
+    onScroll()
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', setSlideH)
+    return () => {
+      scrollEl.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', setSlideH)
+    }
   })
 </script>
 
@@ -43,7 +80,7 @@
       <p class="question-label">{question}</p>
     </aside>
 
-    <main class="right-col">
+    <main class="right-col" bind:this={scrollEl} data-lenis-prevent>
 
       <!-- Paragrafi: si nascondono quando appare il team (solo desktop) -->
       <div class="text-stack" class:hidden={showTeam && !isMobile}>
@@ -57,20 +94,23 @@
         {/each}
       </div>
 
-      <!-- Team: appare all'ultimo step (sempre visibile e in flusso su mobile) -->
-      <div class="team-block" class:visible={showTeam || isMobile}>
-        <ul class="team-list">
-          {#each TEAM as name}
-            <li>{name}</li>
-          {/each}
-        </ul>
-      
+      <!-- Ultima schermata su mobile: team + footer insieme -->
+      <div class="last-screen">
+        <!-- Team: appare all'ultimo step (sempre visibile e in flusso su mobile) -->
+        <div class="team-block" class:visible={showTeam || isMobile}>
+          <ul class="team-list">
+            {#each TEAM as name}
+              <li>{name}</li>
+            {/each}
+          </ul>
+        </div>
+
+        <!-- Footer -->
+        <footer class="menu-footer">
+          <span>@Politecnico di Milano</span>
+          <span>Corso di Digital e Web Design</span>
+        </footer>
       </div>
-  <!-- Footer -->
-    <footer class="menu-footer">
-      <span>@Politecnico di Milano</span>
-      <span>Corso di Digital e Web Design</span>
-    </footer>
     </main>
 
   </div>
@@ -209,37 +249,68 @@
 
   /* ── Mobile ──────────────────────────────────── */
   @media (max-width: 768px) {
-    /* Pagina scrollabile come il regolamento: tutto il contenuto in flusso */
-    .about-overlay {
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
+    /* Titolo + label fissi in alto; scrolla solo .right-col */
+    .about-overlay { overflow: hidden; }
 
     .layout {
       flex-direction: column;
-      padding: 96px 24px 40px;
-      flex: 0 0 auto;
-      overflow: visible;
+      padding: 92px 24px 0;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
 
     .left-col {
       width: 100%;
-      padding-left: 0;
-      padding-bottom: 24px;
       flex: 0 0 auto;
+      padding-left: 0;
+      padding-top: 0;
+      padding-bottom: 12px;
     }
 
-    .about-title { font-size: clamp(64px, 18vw, 110px); }
+    .about-title { font-size: clamp(52px, 15vw, 96px); }
 
+    .question-label {
+      margin-top: 14px;
+      font-size: clamp(16px, 4.6vw, 22px);
+    }
+
+    /* Area scrollabile dei paragrafi + team, uno per schermata */
     .right-col {
-      padding-right: 0;
-      padding-top: 32px;
-      padding-bottom: 0;
-      overflow: visible;
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: y mandatory;
     }
 
-    .text-stack { overflow: visible; }
+    .text-stack {
+      overflow: visible;
+      gap: 0;
+    }
+
+    /* Ogni paragrafo riempie il pannello: se ne vede uno per volta, spaziatura uniforme */
+    .body-text {
+      font-size: clamp(15px, 4.3vw, 18px);
+      line-height: 1.5;
+      max-width: none;
+      min-height: var(--slide-h, 72vh);
+      display: flex;
+      align-items: center;
+      scroll-snap-align: center;
+    }
+
+    /* Ultima schermata: team + footer, una sola scermata come i paragrafi */
+    .last-screen {
+      min-height: var(--slide-h, 72vh);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 32px;
+      scroll-snap-align: center;
+    }
 
     /* Il blocco team scorre dopo i paragrafi invece di essere sovrapposto */
     .team-block {
@@ -247,16 +318,16 @@
       inset: auto;
       opacity: 1;
       pointer-events: auto;
-      padding: 40px 0 0;
+      padding: 0;
       transition: none;
     }
 
     .team-list li { font-size: clamp(16px, 4.5vw, 20px); }
 
-    /* Footer in flusso a fine pagina, non più fixed sopra il contenuto */
+    /* Footer in flusso a fine scroll, non più fixed sopra il contenuto */
     .menu-footer {
       position: static;
-      margin-top: 48px;
+      margin-top: 0;
       flex-direction: column;
       gap: 4px;
       pointer-events: auto;

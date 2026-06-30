@@ -650,8 +650,8 @@
     /* Container dimensionato sull'aspect ratio reale dell'immagine (1856×1666 ≈ 1.11:1)
        così l'immagine riempie il box esatto senza crop né spazi vuoti */
     .photo-wrap {
-      width: 160vw;
-      height: 144vw;
+      width: 180vw;
+      height: 162vw;
       bottom: 0vh;
     }
 
@@ -665,6 +665,7 @@
       top: 24px;
       left: 24px;
       font-size: clamp(32px, 9vw, 52px);
+      line-height: 0.95;
     }
 
     .name-row {

@@ -122,8 +122,16 @@
       ctx.textAlign    = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillStyle    = '#030404'
-      ctx.fillText('Outcast',  w / 2, h * 0.38)
-      ctx.fillText('Champion', w / 2, h * 0.58)
+      if (w < 768) {
+        // Mobile: interlinea ridotta, proporzionale alla dimensione del testo
+        const midY = h * 0.46
+        const gap  = sz * 1.15
+        ctx.fillText('Outcast',  w / 2, midY - gap / 2)
+        ctx.fillText('Champion', w / 2, midY + gap / 2)
+      } else {
+        ctx.fillText('Outcast',  w / 2, h * 0.38)
+        ctx.fillText('Champion', w / 2, h * 0.58)
+      }
     }
 
     function resize() {
