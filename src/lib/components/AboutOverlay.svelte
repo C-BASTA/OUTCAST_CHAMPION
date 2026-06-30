@@ -12,7 +12,19 @@
   let showTeam  = $derived(step === MAX_STEP)
   let activeIdx = $derived(Math.min(PARAS.length - 1, step))
 
+  // Su mobile non c'è il wheel: l'overlay diventa una pagina scrollabile come il
+  // regolamento (tutti i paragrafi + team visibili, scroll nativo).
+  let isMobile = $state(false)
   $effect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => (isMobile = mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  })
+
+  $effect(() => {
+    if (isMobile) return
     const max = MAX_STEP * ABOUT_STEP_PX + 200
     const onWheel = (e) => {
       e.preventDefault()
@@ -33,20 +45,20 @@
 
     <main class="right-col">
 
-      <!-- Paragrafi: si nascondono quando appare il team -->
-      <div class="text-stack" class:hidden={showTeam}>
+      <!-- Paragrafi: si nascondono quando appare il team (solo desktop) -->
+      <div class="text-stack" class:hidden={showTeam && !isMobile}>
         {#each PARAS as para, i}
           {@const dist    = i - activeIdx}
           {@const blurPx  = showTeam ? 48 : (dist > 0 ? dist * 6 : 0)}
           {@const opacity = showTeam ? 0  : (dist === 0 ? 1 : dist > 0 ? Math.max(0.15, 1 - dist * 0.32) : 1)}
-          <p class="body-text" style="filter: blur({blurPx}px); opacity: {opacity};">
+          <p class="body-text" style="filter: blur({isMobile ? 0 : blurPx}px); opacity: {isMobile ? 1 : opacity};">
             {para}
           </p>
         {/each}
       </div>
 
-      <!-- Team: appare all'ultimo step -->
-      <div class="team-block" class:visible={showTeam}>
+      <!-- Team: appare all'ultimo step (sempre visibile e in flusso su mobile) -->
+      <div class="team-block" class:visible={showTeam || isMobile}>
         <ul class="team-list">
           {#each TEAM as name}
             <li>{name}</li>
@@ -197,9 +209,57 @@
 
   /* ── Mobile ──────────────────────────────────── */
   @media (max-width: 768px) {
-    .layout { flex-direction: column; padding: 96px 24px 40px; }
-    .left-col { width: 100%; padding-left: 0; padding-bottom: 24px; flex: 0 0 auto; }
+    /* Pagina scrollabile come il regolamento: tutto il contenuto in flusso */
+    .about-overlay {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    .layout {
+      flex-direction: column;
+      padding: 96px 24px 40px;
+      flex: 0 0 auto;
+      overflow: visible;
+    }
+
+    .left-col {
+      width: 100%;
+      padding-left: 0;
+      padding-bottom: 24px;
+      flex: 0 0 auto;
+    }
+
     .about-title { font-size: clamp(64px, 18vw, 110px); }
-    .right-col { padding-right: 0; padding-top: 32px; }
+
+    .right-col {
+      padding-right: 0;
+      padding-top: 32px;
+      padding-bottom: 0;
+      overflow: visible;
+    }
+
+    .text-stack { overflow: visible; }
+
+    /* Il blocco team scorre dopo i paragrafi invece di essere sovrapposto */
+    .team-block {
+      position: static;
+      inset: auto;
+      opacity: 1;
+      pointer-events: auto;
+      padding: 40px 0 0;
+      transition: none;
+    }
+
+    .team-list li { font-size: clamp(16px, 4.5vw, 20px); }
+
+    /* Footer in flusso a fine pagina, non più fixed sopra il contenuto */
+    .menu-footer {
+      position: static;
+      margin-top: 48px;
+      flex-direction: column;
+      gap: 4px;
+      pointer-events: auto;
+    }
   }
 </style>
