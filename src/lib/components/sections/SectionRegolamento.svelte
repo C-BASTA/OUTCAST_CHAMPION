@@ -191,7 +191,7 @@
   }
 
   .folder-sub {
-    font-family: var(--font-primary);
+    font-family: GeistPixel-Square, monospace;
     font-size: 0.88rem;
     color: neutral-50;
     white-space: nowrap;
