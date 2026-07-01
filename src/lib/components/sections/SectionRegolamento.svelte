@@ -181,11 +181,11 @@
     color: var(--color-ink);
   }
 
-  .folder-header:hover .folder-title:not(.is-active) {
+  .folder-header:hover .folder-title:not(.is-active)  {
     color: rgba(250, 250, 250, 0.75);
   }
+ .folder-header:hover .folder-sub,
 
-  .folder-title:hover + .folder-sub,
   .folder-header:focus-visible .folder-sub {
     opacity: 1;
   }
