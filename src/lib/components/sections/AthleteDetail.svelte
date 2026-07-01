@@ -87,12 +87,15 @@
     'Ivan-Kononenko-3':        '50% 20%',
     'Karyna-Bakhur-1':         '50% 26%',
     'Maksym-Halinichev-1':     '50% 26%',
-    'Mykyta-Kozubenko-2':      '50% 22%',
+    'Mykyta-Kozubenko-2':      '50% 10%',
     'Nazar-Zuy-3':             '50% 25%',
     'Viktoriia-Ivashko-1':     '50% 28%',
     'Viktoriia-Ivashko-3':     '50% 24%',
     'Yevhen-Malyshev-1':       '50% 26%',
     'Yevhen-Malyshev-3':       '50% 25%',
+    'Pavlo-Ishchenko-2':       '50% 15%',
+    'Oleksiy-Loginov-3':       '50% 10%',
+    'Oleksandr-Peleshenko-3':  '50% 20%',
   }
   const photoFocus = (src) => {
     const key = src.split('/').pop().replace('.webp', '')
