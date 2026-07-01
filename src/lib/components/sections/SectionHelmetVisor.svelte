@@ -467,8 +467,15 @@
     font-family: var(--font-primary, 'GeistPixel');
     font-size: clamp(24px, 3.2vw, 48px);
     white-space: nowrap;
-    color: var(--color-ink-inverted);
+    color: #030404;
     will-change: opacity, transform;
+    pointer-events: auto;
+    user-select: text;
+  }
+
+  .visor-line::selection {
+    background: #030404;
+    color: #FAFAFA;
   }
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
@@ -510,6 +517,14 @@
     font-size: clamp(1.1rem, 5.1vw, 1.3rem);
     color: #030404;
     line-height: 1.55;
+    pointer-events: auto;
+    user-select: text;
+  }
+
+  .mobile-visor-text::selection,
+  .mobile-visor-line::selection {
+    background: #030404;
+    color: #FAFAFA;
   }
 
   .mobile-visor-line {
