@@ -61,5 +61,8 @@ export default defineConfig({
 		threlteStudio({ apply: 'serve' }),
 		designTokensPlugin(),
 		sveltekit()
-	]
+	],
+	ssr: {
+		noExternal: ['gsap']
+	}
 })
