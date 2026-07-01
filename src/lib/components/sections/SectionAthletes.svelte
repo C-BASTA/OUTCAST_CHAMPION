@@ -227,7 +227,7 @@
     const center = smoothSelected
     const items = []
     // Renderizza tutti i nomi: la clip del contenitore li nasconde comunque
-    const rowVh = isMobile ? 13 : ROW_VH
+    const rowVh = isMobile ? 10 : ROW_VH
     for (let i = 0; i < faces.length; i++) {
       const offsetFromCenter = i - center          // in "steps" rispetto al centro
       const yVh = offsetFromCenter * rowVh         // posizione Y in vh dal centro

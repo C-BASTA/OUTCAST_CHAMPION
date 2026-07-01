@@ -507,16 +507,13 @@
       position: sticky;
       top: 0;
       z-index: 3;
-      padding: 64px 24px 16px;
+      padding: 64px 24px 32px;
       background: linear-gradient(
         to bottom,
-        rgba(3, 4, 4, 0.97) 0%,
-        rgba(3, 4, 4, 0.96) 72%,
-        rgba(3, 4, 4, 0.72) 89%,
+        #030404 0%,
+        #030404 88%,
         rgba(3, 4, 4, 0) 100%
       );
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
     }
 
     .mobile-body {
