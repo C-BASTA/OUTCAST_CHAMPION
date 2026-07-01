@@ -159,7 +159,7 @@
   .question-label {
     font-family: 'GeistPixel-Square';
     font-size: clamp(17px, 1.1vw, 16px);
-    color: #030404;
+    color: neutral-900;
     
     letter-spacing: 0.02em;
     padding-bottom: 8px;
@@ -268,10 +268,10 @@
       padding-bottom: 12px;
     }
 
-    .about-title { font-size: clamp(52px, 15vw, 96px); }
+    .about-title { font-size: clamp(58px, 16.5vw, 104px); }
 
     .question-label {
-      margin-top: 14px;
+      margin-top: 28px;
       font-size: clamp(16px, 4.6vw, 22px);
     }
 

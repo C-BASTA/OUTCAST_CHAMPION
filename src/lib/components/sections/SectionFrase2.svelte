@@ -96,7 +96,7 @@
     }
 
     .line {
-      font-size: clamp(30px, 10.8vw, 58px);
+      font-size: clamp(30px, 10.8vw, 40px);
     }
   }
 

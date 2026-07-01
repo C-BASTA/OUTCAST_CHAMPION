@@ -108,7 +108,7 @@
     
     const config = {
       version: '1.0',
-      modelPath: '/models/CascoVlad13.glb',
+      modelPath: '/models/CascoVlad13_compressed.glb',
       exportDate: new Date().toISOString(),
       decals: decals.map(d => ({
         imageUrl: d.userData.imageUrl,

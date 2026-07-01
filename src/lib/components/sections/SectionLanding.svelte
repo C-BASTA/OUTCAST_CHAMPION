@@ -663,6 +663,10 @@
       transform: none;
     }
 
+    .helmet-reveal {
+      left: -11%;
+    }
+
     .title {
       top: 24px;
       left: 24px;

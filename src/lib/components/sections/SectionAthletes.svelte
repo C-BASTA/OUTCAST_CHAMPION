@@ -547,7 +547,7 @@
     font-family: var(--font-primary, 'GeistPixel'), monospace;
     font-size: var(--font-size-h1);
     font-weight: 500;
-    color: var(--color-ink, #fff);
+    color: neutral-50;
     /* opacity gestita da JS per il fade laterale */
     letter-spacing: -0.03em;
     text-transform: uppercase;

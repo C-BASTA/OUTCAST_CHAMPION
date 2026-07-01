@@ -64,7 +64,7 @@
     }
   })
 
-  const gltf = useGltf('/models/CascoVlad13.glb', { dracoLoader: useDraco('/draco/') })
+  const gltf = useGltf('/models/CascoVlad13_compressed.glb', { dracoLoader: useDraco('/draco/') })
 
   $effect(() => {
     if (!$gltf) return
