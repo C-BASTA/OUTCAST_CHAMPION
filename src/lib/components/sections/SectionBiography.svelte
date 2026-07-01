@@ -92,7 +92,7 @@
   let trackWidth    = $derived(isMobile ? 0 : lastCardX + paddingLateral)
   let maxOffsetX    = $derived(Math.max(0, trackWidth - vpW))
   
-  const PAUSE_PX    = 150
+  const PAUSE_PX    = 100
   let sectionHeight = $derived(isMobile ? 'auto' : `calc(100vh + ${maxOffsetX + PAUSE_PX}px)`)
 
 
