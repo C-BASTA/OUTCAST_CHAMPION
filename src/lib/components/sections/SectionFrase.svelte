@@ -142,7 +142,8 @@
     }
 
     .line {
-      font-size: clamp(30px, 10.8vw, 40px);
+      font-size: clamp(20px, 6.8vw, 28px);
+      line-height: 1.18;
     }
   }
 
