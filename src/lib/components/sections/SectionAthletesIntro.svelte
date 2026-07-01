@@ -103,7 +103,14 @@
     display: flex;
     flex-direction: column;
     gap: 0;
-    
+    pointer-events: auto;
+    user-select: text;
+  }
+
+  .quote::selection,
+  .line::selection {
+    background: #FAFAFA;
+    color: #030404;
   }
 
   .line {

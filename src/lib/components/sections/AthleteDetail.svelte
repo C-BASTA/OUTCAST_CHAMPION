@@ -434,6 +434,12 @@
     letter-spacing: -0.019em;
     max-width: 576px;
     flex-shrink: 0;
+    user-select: text;
+  }
+
+  .para::selection {
+    background: #FAFAFA;
+    color: #030404;
   }
 
   /* ── Photo cover ── */

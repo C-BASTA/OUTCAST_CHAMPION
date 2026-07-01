@@ -81,6 +81,12 @@
     letter-spacing: 0;
     will-change: transform, opacity;
     opacity: 0;
+    user-select: text;
+  }
+
+  .line::selection {
+    background: #FAFAFA;
+    color: #030404;
   }
 
   @media (max-width: 760px) {

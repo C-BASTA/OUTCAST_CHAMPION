@@ -474,8 +474,8 @@
   }
 
   .visor-line::selection {
-    background: #030404;
-    color: #FAFAFA;
+    background: #FAFAFA;
+    color: #030404;
   }
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
@@ -523,8 +523,8 @@
 
   .mobile-visor-text::selection,
   .mobile-visor-line::selection {
-    background: #030404;
-    color: #FAFAFA;
+    background: #FAFAFA;
+    color: #030404;
   }
 
   .mobile-visor-line {

@@ -234,8 +234,14 @@
   .body-text p {
     font-family: var(--font-primary);
     font-size: 1.05rem;
-    color: neutral-50;
+    color: #FAFAFA;
     margin-bottom: 0.6rem;
+    user-select: text;
+  }
+
+  .body-text p::selection {
+    background: #FAFAFA;
+    color: #030404;
   }
 
   .body-img-wrap img {
