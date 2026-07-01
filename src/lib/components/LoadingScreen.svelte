@@ -12,6 +12,9 @@
   let btn       = $state()
   let visible   = $state(true)
   let triggered = $state(false)
+  let exitStarted = false
+  // Riferimento a startExit accessibile dal template; viene popolato in onMount
+  let doExit = () => { triggered = true }
 
   const T_TOTAL = 1800
 
@@ -217,12 +220,22 @@
       }
     }
 
+    function startExit() {
+      if (exitStarted) return
+      exitStarted = true
+      triggered = true
+      // Garantisce che il loop rAF stia girando anche se si era fermato per qualsiasi motivo
+      cancelAnimationFrame(animId)
+      animId = requestAnimationFrame(frame)
+    }
+    doExit = startExit
+
     // capture:true + stopImmediatePropagation: Lenis non accumula delta durante il loader
     const preventScroll = (e) => {
       if (!visible) return
       if (e.cancelable) e.preventDefault()
       e.stopImmediatePropagation()
-      triggered = true
+      startExit()
     }
     window.addEventListener('wheel',     preventScroll, { passive: false, capture: true })
     window.addEventListener('touchmove', preventScroll, { passive: false, capture: true })
@@ -258,7 +271,7 @@
   <button
     bind:this={btn}
     class="arrow-btn"
-    onclick={() => { triggered = true }}
+    onclick={doExit}
     aria-label="Entra nel sito"
   ></button>
 </div>

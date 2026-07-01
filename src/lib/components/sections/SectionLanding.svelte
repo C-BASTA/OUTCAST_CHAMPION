@@ -502,11 +502,12 @@
       style:opacity={photoOpacity}
     >
       <div class="photo-motion" bind:this={photoMotion}>
-        <img 
-          class="vlad" 
-          src="/images/vlad-espanso-hd-nobg.png" 
-          alt="Vlad" 
-          draggable="false" 
+        <img
+          class="vlad"
+          src="/images/vlad-espanso-hd-nobg.webp"
+          alt="Vlad"
+          draggable="false"
+          fetchpriority="high"
         />
         <canvas class="helmet-reveal" bind:this={revealCanvas} aria-hidden="true"></canvas>
       </div>

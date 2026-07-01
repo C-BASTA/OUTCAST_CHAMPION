@@ -48,6 +48,10 @@
   })
 </script>
 
+<svelte:head>
+  <link rel="preload" as="image" href="/images/vlad-espanso-hd-nobg.webp" fetchpriority="high" />
+</svelte:head>
+
 <LoadingScreen ondone={() => { loaderDone = true }} />
 
 <div class="page-shell" class:page-shell--ready={loaderDone}>
@@ -80,11 +84,14 @@
 
   .page-shell {
     visibility: hidden;
+    opacity: 0;
     background: #FAFAFA;
   }
 
   .page-shell--ready {
     visibility: visible;
+    opacity: 1;
+    transition: opacity 0.55s ease 0.05s;
   }
 
   #athletes-section {
