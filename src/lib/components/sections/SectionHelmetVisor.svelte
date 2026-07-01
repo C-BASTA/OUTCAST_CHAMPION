@@ -35,6 +35,32 @@
       'in sport.',
     ],
   ]
+  // Su mobile il blocco è stretto: righe pre-spezzate a misura così nessuna frase
+  // va a capo da sola (le uniche due frasi lunghe di VISOR_TEXTS sono divise qui).
+  // Vengono rivelate riga per riga con lo stesso stagger fluido delle altre scritte.
+  const MOBILE_VISOR_TEXTS = [
+    [
+      'The modern Olympic movement',
+      'is founded on an',
+      'intrinsic paradox:',
+      'the aspiration for universality',
+      'through a political neutrality',
+      'that frequently clashes',
+      'with the brutal reality',
+      'of global conflicts.',
+    ],
+    [
+      'Vladyslav Heraskevych',
+      'is a symbol of',
+      'moral resistance.',
+      'His exclusion from competition',
+      'caused by a helmet honoring',
+      'athletes killed in the war',
+      'has sparked debate about',
+      'the limits of personal',
+      'expression in sport.',
+    ],
+  ]
   const TEXT_WINDOWS = [[0.18, 0.52], [0.52, 0.86]]
   const T_IN = 0.08, T_OUT = 0.05
 
@@ -344,17 +370,16 @@
   >
     <div class="mobile-sticky">
       <div class="mobile-texts">
-        {#each VISOR_TEXTS as lines, i}
+        {#each MOBILE_VISOR_TEXTS as lines, i}
           {@const [ws, we] = TEXT_WINDOWS[i]}
           {#if zoomP > ws - 0.02 && zoomP < we + 0.02}
             <p class="mobile-visor-text">
               {#each lines as line, j}
                 {@const anim = lineAnim(i, j, lines.length)}
                 <span
+                  class="mobile-visor-line"
                   style:opacity={anim.opacity}
                   style:transform="translateY({anim.y}px)"
-                  style:filter={anim.blur > 0 ? `blur(${anim.blur.toFixed(2)}px)` : 'none'}
-                  style:display="block"
                 >{line}</span>
               {/each}
             </p>
@@ -473,15 +498,22 @@
   .mobile-texts {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
     width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
     text-align: center;
   }
 
   .mobile-visor-text {
     font-family: var(--font-primary, 'GeistPixel', monospace);
-    font-size: clamp(1.3rem, 6vw, 1.9rem);
+    font-size: clamp(1.1rem, 5.1vw, 1.3rem);
     color: #030404;
-    line-height: 1.5;
+    line-height: 1.55;
+  }
+
+  .mobile-visor-line {
+    display: block;
+    will-change: opacity, transform;
   }
 </style>

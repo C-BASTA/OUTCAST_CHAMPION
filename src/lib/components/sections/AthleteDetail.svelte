@@ -69,6 +69,36 @@
     })
   })
 
+  // ── Focus foto (mobile) ───────────────────────────────────────────
+  // Il box mobile è landscape (~1.72:1) mentre le foto sono quadrate: object-fit:cover
+  // mostra solo la fascia verticale centrale, tagliando teste/piedi. Qui spostiamo il
+  // fuoco su/giù per-foto così la persona non viene tagliata. Chiave = nome file senza
+  // estensione; valore = object-position. Default '50% 50%'.
+  const PHOTO_FOCUS = {
+    'Alina-Perehudova-1':      '50% 22%',
+    'Andriy-Kutsenko-1':       '50% 30%',
+    'Andriy-Kutsenko-3':       '50% 20%',
+    'Andriy-Yaremenko-1':      '50% 25%',
+    'Andriy-Yaremenko-2':      '50% 30%',
+    'Daria-Kurdel-2':          '50% 28%',
+    'Fedor-Epifanov-1':        '50% 26%',
+    'Fedor-Epifanov-3':        '50% 22%',
+    'Ivan-Kononenko-2':        '50% 30%',
+    'Ivan-Kononenko-3':        '50% 20%',
+    'Karyna-Bakhur-1':         '50% 26%',
+    'Maksym-Halinichev-1':     '50% 26%',
+    'Mykyta-Kozubenko-2':      '50% 22%',
+    'Nazar-Zuy-3':             '50% 25%',
+    'Viktoriia-Ivashko-1':     '50% 28%',
+    'Viktoriia-Ivashko-3':     '50% 24%',
+    'Yevhen-Malyshev-1':       '50% 26%',
+    'Yevhen-Malyshev-3':       '50% 25%',
+  }
+  const photoFocus = (src) => {
+    const key = src.split('/').pop().replace('.webp', '')
+    return PHOTO_FOCUS[key] ?? '50% 50%'
+  }
+
   // ── Gallery ───────────────────────────────────────────────────────
   const PHOTO_STEP_PX  = 1400  // scroll per ogni cambio foto dopo la prima
   const PHOTO_INIT_BLUR    = 50
@@ -208,25 +238,35 @@
     </button>
 
     {#if isMobile}
-      <!-- ── Mobile: un unico container che scrolla nativamente ── -->
+      <!-- ── Mobile: header fisso (nome + sport) + corpo scrollabile ── -->
       <div class="mobile-scroll">
-        <h1 class="athlete-name">
-          <span>{nameParts[0]}</span>
-          <span>{nameParts[1]}</span>
-        </h1>
-        <p class="role">{athlete.role}</p>
-        <div class="para-group">
-          {#each paragraphs as para}
-            <p class="para">{para}</p>
-          {/each}
+        <div class="mobile-header">
+          <h1 class="athlete-name">
+            <span>{nameParts[0]}</span>
+            <span>{nameParts[1]}</span>
+          </h1>
+          <p class="role">{athlete.role}</p>
         </div>
-        {#if athlete.photos?.length}
-          <div class="mobile-gallery">
-            {#each athlete.photos as photo, i}
-              <img class="mobile-photo" src={photo} alt="{athlete.name} {i + 1}" loading="lazy" />
+        <div class="mobile-body">
+          <div class="para-group">
+            {#each paragraphs as para}
+              <p class="para">{para}</p>
             {/each}
           </div>
-        {/if}
+          {#if athlete.photos?.length}
+            <div class="mobile-gallery">
+              {#each athlete.photos as photo, i}
+                <img
+                  class="mobile-photo"
+                  src={photo}
+                  alt="{athlete.name} {i + 1}"
+                  style:object-position={photoFocus(photo)}
+                  loading="lazy"
+                />
+              {/each}
+            </div>
+          {/if}
+        </div>
       </div>
 
     {:else}
@@ -450,14 +490,51 @@
       overflow-y: scroll;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
-      padding: 68px 24px max(40px, env(safe-area-inset-bottom));
+      padding: 0;
       display: flex;
       flex-direction: column;
+    }
+
+    /* Header fisso: nome + sport restano in alto mentre il corpo scorre sotto.
+       Il gradiente scuro maschera il testo che scorre dietro. */
+    .mobile-header {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      padding: 64px 24px 16px;
+      background: linear-gradient(
+        to bottom,
+        rgba(3, 4, 4, 0.97) 0%,
+        rgba(3, 4, 4, 0.96) 72%,
+        rgba(3, 4, 4, 0.72) 89%,
+        rgba(3, 4, 4, 0) 100%
+      );
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+
+    .mobile-body {
+      padding: 8px 24px max(40px, env(safe-area-inset-bottom));
+    }
+
+    /* X un po' più piccola in alto a destra */
+    .close-btn {
+      top: 20px;
+      right: 20px;
+      padding: 6px;
+    }
+    .close-btn svg {
+      width: 19px;
+      height: 17px;
     }
 
     .athlete-name {
       font-size: clamp(36px, 10vw, 60px);
       margin-bottom: 4px;
+    }
+
+    .mobile-header .role {
+      margin: 0;
     }
 
     .role {
