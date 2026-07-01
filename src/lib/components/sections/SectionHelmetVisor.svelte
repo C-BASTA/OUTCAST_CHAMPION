@@ -3,7 +3,7 @@
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
   const TOTAL_SCROLL      = 15000   // px of scroll space after 100vh (longer = dissolve spreads over more scroll → fewer pixels off per cm)
-  const ENTRY_END         = 0.1   // fraction of progress for the entry rise (smaller = helmet comes up sooner → less white gap before it)
+  const ENTRY_END         = 0.045   // fraction of progress for the entry rise (smaller = helmet comes up sooner → less white gap before it)
   const ENTRY_START_Y     = 100   // vh: helmet starts fully offscreen below = smooth glide (must match the p===0 offscreen value to avoid a jump). Use ENTRY_END to tune how soon it settles.
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
@@ -264,7 +264,7 @@
 
       const p = progress
       if (p === 0) {
-        helmetStore.entryTransformY = 100
+        helmetStore.entryTransformY = ENTRY_START_Y
         helmetStore.floatWeight     = 0
       } else {
         const v = computeVisorStoreValues(p, isMobile ? CAM_CLOSE_MOBILE : CAM_CLOSE)
