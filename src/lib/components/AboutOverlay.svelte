@@ -94,7 +94,7 @@
         {/each}
       </div>
 
-      <!-- Ultima schermata su mobile: team + footer insieme -->
+      <!-- Ultima schermata su mobile: team (il footer è fuori, sempre fisso) -->
       <div class="last-screen">
         <!-- Team: appare all'ultimo step (sempre visibile e in flusso su mobile) -->
         <div class="team-block" class:visible={showTeam || isMobile}>
@@ -104,16 +104,17 @@
             {/each}
           </ul>
         </div>
-
-        <!-- Footer -->
-        <footer class="menu-footer">
-          <span>@Politecnico di Milano</span>
-          <span>Corso di Digital e Web Design</span>
-        </footer>
       </div>
     </main>
 
   </div>
+
+  <!-- Footer: figlio diretto dell'overlay fisso → sempre visibile e ancorato in
+       fondo, sia desktop che mobile (robusto anche su iOS, fuori dallo scroll) -->
+  <footer class="menu-footer">
+    <span>@Politecnico di Milano</span>
+    <span>Corso di Digital e Web Design</span>
+  </footer>
 </div>
 
 <style>
@@ -298,7 +299,12 @@
       max-width: none;
       min-height: var(--slide-h, 72vh);
       display: flex;
-      align-items: center;
+      /* Prima riga allineata in alto: tutti i paragrafi iniziano alla stessa
+         altezza, a prescindere dalla loro lunghezza. */
+      align-items: flex-start;
+      padding-top: 4vh;
+      /* Spazio in fondo per il footer fisso */
+      padding-bottom: 9vh;
       scroll-snap-align: center;
     }
 
@@ -309,6 +315,8 @@
       flex-direction: column;
       justify-content: center;
       gap: 32px;
+      /* Come i paragrafi: alzato e con spazio per il footer fisso */
+      padding-bottom: 9vh;
       scroll-snap-align: center;
     }
 
@@ -324,13 +332,30 @@
 
     .team-list li { font-size: clamp(16px, 4.5vw, 20px); }
 
-    /* Footer in flusso a fine scroll, non più fixed sopra il contenuto */
+    /* Footer sempre visibile, fisso in fondo: una frase a sinistra, una a destra.
+       Banda a tutta larghezza dello stesso colore dello sfondo (#fafafa): invisibile
+       ma maschera i paragrafi che scorrono dietro; padding-bottom lo stacca dal
+       bordo inferiore del telefono (+ safe-area per il notch/home bar). */
     .menu-footer {
-      position: static;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
       margin-top: 0;
-      flex-direction: column;
-      gap: 4px;
-      pointer-events: auto;
+      background: #fafafa;
+      padding: 16px 24px calc(8px + env(safe-area-inset-bottom, 0px));
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px;
+      /* Su una riga ciascuna, così stanno affiancate anche su schermi stretti.
+         Leggermente più grandi. Se su schermi molto stretti si sovrappongono,
+         abbassa il fattore vw (es. 2.4vw). */
+      font-size: clamp(0.64rem, 2.9vw, 0.88rem);
+      white-space: nowrap;
+      color: rgba(3, 4, 4, 0.8);
+      opacity: 1;
+      pointer-events: none;
     }
   }
 </style>

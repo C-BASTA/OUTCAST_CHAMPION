@@ -508,12 +508,12 @@
       position: sticky;
       top: 0;
       z-index: 3;
-      padding: 64px 24px 16px;
+      padding: 64px 24px 30px;
       background: linear-gradient(
         to bottom,
-        rgba(3, 4, 4, 0.97) 50%,
-        rgba(3, 4, 4, 0.96) 82%,
-        rgba(3, 4, 4, 1) 89%,
+        rgba(3, 4, 4, 0.97) 90%,
+        rgba(3, 4, 4, 0.96) 70%,
+        rgba(3, 4, 4, 1) 90%,
         rgba(3, 4, 4, 0) 100%
       );
       
@@ -537,11 +537,11 @@
 
     .athlete-name {
       font-size: clamp(36px, 10vw, 60px);
-      margin-bottom: 4px;
+      margin-bottom: 20px;
     }
 
     .mobile-header .role {
-      margin: 0;
+      margin: 0.5;
     }
 
     .role {
