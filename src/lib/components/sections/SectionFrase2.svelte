@@ -63,7 +63,7 @@
     /* Contenuto centrato (come la prima citazione) così lo scrub la rivela con
        lo stesso tempismo; altezza ridotta a 100vh per avvicinarla agli atleti
        (meno spazio vuoto sopra). Abbassa ancora per stringere di più. */
-    height: 85vh;
+    height: 65vh;
     display: flex;
     align-items: center;
     justify-content: center;
