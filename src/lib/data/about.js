@@ -19,4 +19,4 @@ export const PARAS = [
 
 export const QUESTIONS = ['Who?', 'What?', 'How?', 'Why?', 'The team']
 
-export const ABOUT_STEP_PX = 700
+export const ABOUT_STEP_PX = 450

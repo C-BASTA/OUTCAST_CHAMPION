@@ -453,7 +453,7 @@
     bottom: 40px;
     will-change: transform;
     overflow: hidden;
-    border-radius: 2px;
+    border-radius: 0;
     z-index: 5;
     animation: photo-cover-in 1.4s cubic-bezier(0.08, 1, 0.2, 1) both;
   }
