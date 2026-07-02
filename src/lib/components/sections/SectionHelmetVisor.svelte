@@ -501,7 +501,7 @@
     font-family: var(--font-primary, 'GeistPixel', monospace);
     font-size: clamp(1.1rem, 5.1vw, 1.3rem);
     color: #030404;
-    line-height: 1.55;
+    line-height: 1.5;
     pointer-events: auto;
     user-select: text;
   }
