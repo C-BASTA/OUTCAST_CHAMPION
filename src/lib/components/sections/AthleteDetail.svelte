@@ -429,6 +429,7 @@
   .para {
     font-family: var(--font-primary, 'GeistPixel');
     font-size: 20px;
+    line-height: 1.5;
     font-weight: 400;
     color: var(--color-ink, #fafafa);
     letter-spacing: -0.019em;
@@ -510,12 +511,12 @@
       padding: 64px 24px 16px;
       background: linear-gradient(
         to bottom,
-        rgba(3, 4, 4, 0.97) 0%,
-        rgba(3, 4, 4, 0.96) 72%,
-        rgba(3, 4, 4, 0.72) 89%,
+        rgba(3, 4, 4, 0.97) 50%,
+        rgba(3, 4, 4, 0.96) 82%,
+        rgba(3, 4, 4, 1) 89%,
         rgba(3, 4, 4, 0) 100%
       );
-      -webkit-backdrop-filter: blur(6px);
+      
       backdrop-filter: blur(6px);
     }
 
