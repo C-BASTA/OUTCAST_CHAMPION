@@ -244,7 +244,7 @@
     //   progress = -rect.top / (section.offsetHeight - window.innerHeight)
     const st = ScrollTrigger.create({
       trigger: section,
-      start: 'top top',
+      start: 'top 35%',
       end: 'bottom bottom',
       onUpdate(self) {
         progress = self.progress
