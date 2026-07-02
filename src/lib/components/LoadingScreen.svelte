@@ -138,6 +138,7 @@
     }
 
     function resize() {
+      if (!canvas) return
       dpr = Math.min(window.devicePixelRatio || 1, 2)
       w   = window.innerWidth
       h   = window.innerHeight
