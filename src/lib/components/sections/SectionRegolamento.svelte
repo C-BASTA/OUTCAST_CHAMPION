@@ -234,6 +234,7 @@
   .body-text p {
     font-family: var(--font-primary);
     font-size: 1.05rem;
+    line-height: 1.5;
     color: #FAFAFA;
     margin-bottom: 0.6rem;
     user-select: text;
@@ -244,9 +245,12 @@
     color: #030404;
   }
 
+  /* Dimensione fissa e uguale per tutte e tre le immagini: object-fit ritaglia
+     così l'aspect ratio della sorgente non cambia il box mostrato. */
   .body-img-wrap img {
+    display: block;
     width: 100%;
-    height: auto;
+    height: 280px;
     object-fit: cover;
   }
 
@@ -336,6 +340,11 @@
 
     .body-text p {
       font-size: 0.95rem;
+    }
+
+    /* Stessa dimensione fissa (più piccola) per tutte e tre su mobile */
+    .body-img-wrap img {
+      height: 200px;
     }
 
     /* Titolo sempre su una riga: header impilato, sub sotto e solo se aperto */
