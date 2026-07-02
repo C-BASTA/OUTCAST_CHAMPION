@@ -9,7 +9,7 @@
   const SCROLL_VH_DESKTOP = 600
   const SCROLL_VH_MOBILE  = 400
 
-  const ENTRY_END         = 0.03
+  const ENTRY_END         = 0.1
   const ENTRY_START_Y     = 80
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
@@ -244,7 +244,7 @@
     //   progress = -rect.top / (section.offsetHeight - window.innerHeight)
     const st = ScrollTrigger.create({
       trigger: section,
-      start: 'top 35%',
+      start: 'top 55%',
       end: 'bottom bottom',
       onUpdate(self) {
         progress = self.progress
