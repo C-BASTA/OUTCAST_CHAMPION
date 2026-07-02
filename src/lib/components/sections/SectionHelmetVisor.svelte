@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte'
+  import { onMount, tick } from 'svelte'
   import { gsap } from 'gsap'
   import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
@@ -229,12 +229,16 @@
     helmetStore.exitY            = 0
   }
 
-  onMount(() => {
+  onMount(async () => {
     const checkSize = () => {
       vpH      = window.innerHeight
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
     checkSize()
+    // Aspetta che Svelte aggiorni il DOM dopo il cambio di isMobile,
+    // così `section` punta alla sezione giusta (mobile o desktop) prima
+    // che ScrollTrigger venga creato.
+    await tick()
     window.addEventListener('resize', checkSize)
 
     let lastSectionEnded = false
