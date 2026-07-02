@@ -356,7 +356,7 @@
     bind:this={section}
     class="visor-section--mobile"
     id="helmet-visor"
-    style:height="{SCROLL_VH_MOBILE + 100}vh"
+    style:height="calc(100vh + 8000px)"
   >
     <div class="mobile-sticky">
       <div class="mobile-texts">
