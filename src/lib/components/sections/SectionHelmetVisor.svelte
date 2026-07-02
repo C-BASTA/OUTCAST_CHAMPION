@@ -1,15 +1,18 @@
 <script>
   import { onMount } from 'svelte'
+  import { gsap } from 'gsap'
+  import { ScrollTrigger } from 'gsap/ScrollTrigger'
   import { helmetStore } from '$lib/helmetStore.svelte.js'
 
-  const TOTAL_SCROLL      = 15000   // px of scroll space after 100vh (longer = dissolve spreads over more scroll → fewer pixels off per cm)
-  const ENTRY_END         = 0.03 // fraction of progress for the entry rise (smaller = helmet comes up sooner → less white gap before it)
-  const ENTRY_START_Y     = 80 // vh: helmet starts fully offscreen below = smooth glide (must match the p===0 offscreen value to avoid a jump). Use ENTRY_END to tune how soon it settles.
+  // Scroll space in viewport heights — scales with any screen size.
+  // Desktop: 6 vh-lengths of scrollable room; mobile: 4.
+  const SCROLL_VH_DESKTOP = 600
+  const SCROLL_VH_MOBILE  = 400
+
+  const ENTRY_END         = 0.03
+  const ENTRY_START_Y     = 80
   const CAM_FAR           = 8.5
   const CAM_CLOSE         = 1.8
-  // Su mobile (canvas full-width, viewport stretto e alto) il casco va più vicino così
-  // riempie il frame e non si vede lo sfondo dietro la cupola. Tiene CAM_FAR comune così
-  // il de-zoom finale atterra esattamente sul valore di handoff (8.5) → nessuno scatto.
   const CAM_CLOSE_MOBILE  = 2.3
   const MOBILE_BREAKPOINT = 768
   const SIDE              = 0.35
@@ -35,9 +38,7 @@
       'in sport.',
     ],
   ]
-  // Su mobile il blocco è stretto: righe pre-spezzate a misura così nessuna frase
-  // va a capo da sola (le uniche due frasi lunghe di VISOR_TEXTS sono divise qui).
-  // Vengono rivelate riga per riga con lo stesso stagger fluido delle altre scritte.
+
   const MOBILE_VISOR_TEXTS = [
     [
       'The modern Olympic movement',
@@ -61,10 +62,10 @@
       'expression in sport.',
     ],
   ]
+
   const TEXT_WINDOWS = [[0.18, 0.52], [0.52, 0.86]]
   const T_IN = 0.08, T_OUT = 0.05
 
-  // The helmet start the parrallax as soon as the section enters
   let progress = $state(0)
   let section  = $state(null)
   let vpH      = $state(900)
@@ -76,67 +77,46 @@
   const remap   = (x, a, b, c, d) => lerp(c, d, clamp(invlerp(a, b, x), 0, 1))
   const ease    = (t) => t < 0.5 ? 4*t*t*t : 1 - ((-2*t+2)**3)/2
 
-  // progress ENTRY_END→1 → zoomP 0→1 (usato solo per il testo e il pixel canvas)
   let zoomP = $derived(clamp((progress - ENTRY_END) / (1 - ENTRY_END), 0, 1))
 
   function computeVisorStoreValues(p, camClose) {
-    // entryP: 0→1 durante la fase di entrata
     const entryP = ease(clamp(p / ENTRY_END, 0, 1))
 
-    // cameraZ: zoom in durante la prima parte, poi zoom out all'uscita.
-    // camClose è il punto di massimo zoom (più piccolo = più vicino); CAM_FAR è comune
-    // così il de-zoom finale combacia col valore di handoff della sezione successiva.
     let camZ
     if (p < 0.20) camZ = lerp(CAM_FAR, camClose, ease(remap(p, 0.00, 0.20, 0, 1)))
     else if (p < 0.86) camZ = camClose
     else if (p < 0.98) camZ = lerp(camClose, CAM_FAR, ease(remap(p, 0.86, 0.98, 0, 1)))
     else camZ = CAM_FAR
 
-    // rotY: ruota di lato all'inizio, poi fronta, poi di lato all'uscita
     let rotY
     if (p <= 0.20) rotY = lerp(Math.PI + SIDE, Math.PI, ease(clamp(p / 0.20, 0, 1)))
     else if (p <= 0.86) rotY = Math.PI
     else if (p <= 0.98) rotY = lerp(Math.PI, Math.PI - SIDE, ease(clamp((p - 0.86) / 0.12, 0, 1)))
     else rotY = Math.PI - SIDE
 
-    // entryTransformY: il casco sale dal basso durante l'entrata
     const entryTransformY = entryP >= 1 ? 0 : lerp(ENTRY_START_Y, 0, entryP)
-
-    // floatWeight: la fluttuazione si azzera durante lo zoom-in
     const floatWeight = ease(Math.max(0, Math.min(1, 1 - p / 0.18)))
 
     return { camZ, rotY, entryTransformY, floatWeight }
   }
 
-  // Vertical parallax on the bg photo: pans upward continuously from first scroll
-  //let bgParallaxY = $derived(-progress * vpH )
   let bgParallaxY = $derived(-ease(progress) * vpH * 0.5)
+  let bgOpacity   = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
 
-  // Background photo fades out as camera starts zooming in
-  let bgOpacity = $derived(1 - ease(remap(zoomP, 0.00, 0.28, 0, 1)))
-
-  // Pixel canvas (exit dissolve)
-  const CELL_SIZE  = 6   // dimensione pixel target in CSS px — uguale in X e Y → quadrati
+  const CELL_SIZE  = 6
   let pixelCanvas  = $state(null)
-  // Cells pre-sorted by reveal threshold so the draw effect can binary-search
-  // to the cutoff and only iterate the cells it actually draws (O(K) not O(N)).
   let sortedCells  = []
   let pixelCols    = 0
   let pixelRows    = 0
 
-  // Spread the dissolve over a wider zoomP window so pixels switch off in smaller
-  // batches across more scroll frames (smoother pixel-by-pixel reveal).
   const PIXEL_START = 0.86
   const PIXEL_END   = 1.0
   let pixelProgress = $derived(clamp(remap(zoomP, PIXEL_START, PIXEL_END, 0, 1), 0, 1))
 
-  // Mostra le stelle grigie (di HelmetGlobal) durante la dissolvenza/cambio colore,
-  // anche se helmetStore.visible è ancora false in questa fase.
   $effect(() => {
     helmetStore.starsVisible = zoomP >= PIXEL_START
   })
 
-  // Count of sorted cells whose threshold <= val (cells already past the front).
   function cellsBelow(val) {
     let lo = 0, hi = sortedCells.length
     while (lo < hi) {
@@ -153,7 +133,6 @@
     pixelCanvas.width  = Math.round(window.innerWidth * dpr)
     pixelCanvas.height = Math.round(window.innerHeight * dpr)
 
-    // Calcola cols e rows in modo che ogni cella sia CELL_SIZE × CELL_SIZE CSS px
     pixelCols = Math.ceil(window.innerWidth  / CELL_SIZE)
     pixelRows = Math.ceil(window.innerHeight / CELL_SIZE)
 
@@ -162,10 +141,7 @@
     for (let i = 0; i < total; i++) {
       const col  = i % pixelCols
       const row  = Math.floor(i / pixelCols)
-      const rowT = row / pixelRows                         // 0 = top, 1 = bottom
-      // Top→bottom bias (0.05→0.85) plus tighter jitter so thresholds stay spread
-      // across [0,1] with little clamping — pixels keep vanishing right to the end
-      // instead of a chunk all clamping to 1.0 and popping off at once.
+      const rowT = row / pixelRows
       const colJitter = (Math.random() - 0.5) * 0.30
       const rowJitter = (Math.random() - 0.5) * 0.22
       cells[i] = {
@@ -188,11 +164,8 @@
       return
     }
 
-    // cellSize uguale in entrambe le direzioni → pixel quadrati a qualsiasi risoluzione
     const cellSize = w / pixelCols
     const p        = pixelProgress
-
-    // Pixel-by-pixel: each cell is hard black once pixelProgress passes its threshold.
     const drawCount = cellsBelow(p)
 
     ctx.fillStyle = '#FAFAFA'
@@ -221,16 +194,14 @@
       return { opacity: 0, blur: initBlur, y: p < ws ? 40 : -40 }
     }
 
-    // Exit: all lines fade+blur out together
     if (p > we - T_OUT) {
       const t = ease(remap(p, we - T_OUT, we, 0, 1))
       return { opacity: lerp(1, 0, t), blur: lerp(0, initBlur, t), y: lerp(0, -40, t) }
     }
 
-    // Entry: stagger each line across a wider window
     const staggerSpan = 0.12
     const lineStart = ws + (lineIdx / numLines) * staggerSpan
-    const lineEnd = lineStart + T_IN
+    const lineEnd   = lineStart + T_IN
 
     if (p < lineStart) return { opacity: 0, blur: initBlur, y: 40 }
 
@@ -242,100 +213,118 @@
     }
   }
 
+  // Writes the "section ended" final state to helmetStore once.
+  function applyEndState() {
+    helmetStore.visible          = true
+    helmetStore.entryTransformY  = 0
+    helmetStore.floatWeight      = 1
+    helmetStore.lookAtX          = 0
+    helmetStore.cameraY          = 0.25
+    helmetStore.cameraZ          = 8.5
+    helmetStore.lookAtY          = 0.20
+    helmetStore.rotX             = 0.25
+    helmetStore.rotY             = Math.PI - 0.35
+    helmetStore.rotZ             = 0
+    helmetStore.viewerPaddingLeft = '0%'
+    helmetStore.exitY            = 0
+  }
+
   onMount(() => {
     const checkSize = () => {
-      vpH = window.innerHeight
+      vpH      = window.innerHeight
       isMobile = window.innerWidth < MOBILE_BREAKPOINT
     }
+    checkSize()
+    window.addEventListener('resize', checkSize)
 
-    // Edge trigger: scriviamo sullo store solo quando cambia lo stato sectionEnded,
-    // non ad ogni evento scroll. Così SectionAthletes può gestire il casco liberamente.
     let lastSectionEnded = false
 
-    const onScroll = () => {
-      if (!section) return
-      const rect = section.getBoundingClientRect()
-      const totalScrollable = section.offsetHeight - window.innerHeight
-      progress = Math.max(0, Math.min(1, -rect.top / totalScrollable))
+    // ScrollTrigger fires via Lenis → ScrollTrigger.update() wired in layout.svelte.
+    // start:'top top' / end:'bottom bottom' maps exactly to the old manual formula:
+    //   progress = -rect.top / (section.offsetHeight - window.innerHeight)
+    const st = ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: 'bottom bottom',
+      onUpdate(self) {
+        progress = self.progress
 
-      const sectionEnded = rect.bottom <= window.innerHeight + 1
+        // progress === 1 coincides with rect.bottom === window.innerHeight (section ended)
+        if (self.progress >= 1) {
+          if (!lastSectionEnded) {
+            lastSectionEnded = true
+            applyEndState()
+          }
+          return
+        }
 
-      if (sectionEnded) {
-        // Solo alla prima volta che la sezione finisce: scriviamo stato finale
-        if (!lastSectionEnded) {
-          lastSectionEnded = true
-          helmetStore.visible          = true
-          helmetStore.entryTransformY  = 0
-          helmetStore.floatWeight      = 1
-          helmetStore.lookAtX          = 0
+        // User scrolled back into the section from below
+        if (lastSectionEnded) {
+          lastSectionEnded = false
+          helmetStore.visible = false
+        }
+
+        const p = self.progress
+        if (p === 0) {
+          helmetStore.entryTransformY = ENTRY_START_Y
+          helmetStore.floatWeight     = 0
+        } else {
+          const v = computeVisorStoreValues(p, isMobile ? CAM_CLOSE_MOBILE : CAM_CLOSE)
+          helmetStore.cameraZ          = v.camZ
           helmetStore.cameraY          = 0.25
-          helmetStore.cameraZ          = 8.5
+          helmetStore.lookAtX          = 0
           helmetStore.lookAtY          = 0.20
           helmetStore.rotX             = 0.25
-          helmetStore.rotY             = Math.PI - 0.35
+          helmetStore.rotY             = v.rotY
           helmetStore.rotZ             = 0
-          helmetStore.viewerPaddingLeft = '0%'
-          helmetStore.exitY            = 0
+          helmetStore.smoothRotation   = false
+          helmetStore.entryTransformY  = v.entryTransformY
+          helmetStore.floatWeight      = v.floatWeight
+          if (isMobile) {
+            helmetStore.viewerPaddingLeft = '0%'
+          }
         }
-        // Dopo la transizione non tocchiamo più lo store: SectionAthletes gestisce
-        return
-      }
-
-      // Sezione attiva (scrolling verso il basso o ritorno verso l'alto)
-      if (lastSectionEnded) {
-        // Utente ha scrollato indietro nella sezione
-        lastSectionEnded = false
-        helmetStore.visible = false
-      }
-
-      const p = progress
-      if (p === 0) {
+      },
+      // Fired when the user scrolls forward past the section end (progress stays 1)
+      onLeave() {
+        if (!lastSectionEnded) {
+          lastSectionEnded = true
+          applyEndState()
+        }
+      },
+      // Fired when the user scrolls back before the section start
+      onLeaveBack() {
+        progress = 0
+        if (lastSectionEnded) {
+          lastSectionEnded = false
+          helmetStore.visible = false
+        }
         helmetStore.entryTransformY = ENTRY_START_Y
         helmetStore.floatWeight     = 0
-      } else {
-        const v = computeVisorStoreValues(p, isMobile ? CAM_CLOSE_MOBILE : CAM_CLOSE)
-        helmetStore.cameraZ          = v.camZ
-        helmetStore.cameraY          = 0.25
-        helmetStore.lookAtX          = 0
-        helmetStore.lookAtY          = 0.20
-        helmetStore.rotX             = 0.25
-        helmetStore.rotY             = v.rotY
-        helmetStore.rotZ             = 0
-        helmetStore.smoothRotation   = false
-        helmetStore.entryTransformY  = v.entryTransformY
-        helmetStore.floatWeight      = v.floatWeight
-        if (isMobile) {
-          helmetStore.viewerPaddingLeft = '0%'
-        }
-      }
-    }
+      },
+    })
 
-    checkSize()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    window.addEventListener('resize', checkSize)
-    onScroll()
     return () => {
-      window.removeEventListener('scroll', onScroll)
+      st.kill()
       window.removeEventListener('resize', checkSize)
     }
   })
 </script>
 
-<!-- Pixel canvas: position fixed, condiviso tra desktop e mobile.
-     z-index:2 (sotto HelmetGlobal z-index:3, sopra la pagina) -->
+<!-- Pixel canvas: position fixed, shared between desktop and mobile.
+     z-index:2 (below HelmetGlobal z-index:3, above page) -->
 <canvas bind:this={pixelCanvas} class="pixel-bg"></canvas>
 
-<!-- ── Desktop (sticky vertical scroll + 3D helmet) ───────────────────── -->
+<!-- ── Desktop ────────────────────────────────────────────────────────────── -->
 {#if !isMobile}
   <section
     bind:this={section}
     class="visor-section"
     id="helmet-visor"
-    style:height="calc(100vh + {TOTAL_SCROLL}px)"
+    style:height="{SCROLL_VH_DESKTOP + 100}vh"
   >
     <div class="sticky-wrap">
 
-      <!-- Visor texts: appear during zoom hold phase -->
       {#if zoomP > 0.16 && zoomP < 0.90}
         <div class="text-stage" aria-live="polite">
           {#each VISOR_TEXTS as lines, i}
@@ -361,12 +350,13 @@
   </section>
 {/if}
 
-<!-- ── Mobile (scroll-driven) ─────────────────────────────────────────── -->
+<!-- ── Mobile ─────────────────────────────────────────────────────────────── -->
 {#if isMobile}
   <section
     bind:this={section}
     class="visor-section--mobile"
     id="helmet-visor"
+    style:height="{SCROLL_VH_MOBILE + 100}vh"
   >
     <div class="mobile-sticky">
       <div class="mobile-texts">
@@ -406,7 +396,6 @@
     z-index: 4;
   }
 
-  /* Full-bleed bg photo with vertical parallax room */
   .bg-photo {
     position: absolute;
     inset: 0;
@@ -414,7 +403,7 @@
     z-index: 0;
     will-change: opacity;
   }
-  
+
   .bg-photo img {
     position: absolute;
     top: 0;
@@ -426,8 +415,8 @@
     will-change: transform;
   }
 
-  /* Pixel canvas: exit dissolve — position fixed così resta sotto HelmetGlobal (z-index:3)
-     e non viene inglobato nello stacking context dello sticky-wrap (z-index:4) */
+  /* Pixel canvas: fixed so it sits below HelmetGlobal (z-index:3) and outside
+     the sticky-wrap stacking context (z-index:4). */
   .pixel-bg {
     position: fixed;
     inset: 0;
@@ -438,7 +427,6 @@
     pointer-events: none;
   }
 
-  /* Visor texts: above helmet */
   .text-stage {
     position: absolute;
     inset: 0;
@@ -450,7 +438,7 @@
     z-index: 4;
     padding-bottom: 10vh;
   }
-  
+
   .visor-block {
     position: absolute;
     padding: 0 3rem;
@@ -480,10 +468,7 @@
 
   /* ── Mobile ──────────────────────────────────────────────────────────── */
   .visor-section--mobile {
-    /* Sempre trasparente: durante la salita E il de-zoom si vedono i pixel dietro.
-       Il passaggio a scuro avviene a fine sezione tramite HelmetGlobal/athletes. */
     background: transparent;
-    height: calc(100vh + 8000px);
     position: relative;
   }
 
