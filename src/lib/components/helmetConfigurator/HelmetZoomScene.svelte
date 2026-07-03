@@ -64,18 +64,8 @@
     }
   })
 
-  const gltf = useGltf('/models/CascoVlad13_compressed.glb', { dracoLoader: useDraco('/draco/') })
+  const gltf = useGltf('/models/casco_0307.gltf', { dracoLoader: useDraco('/draco/') })
 
-  $effect(() => {
-    if (!$gltf) return
-    $gltf.scene.traverse((node) => {
-      if (!(node instanceof THREE.Mesh)) return
-      if (!(node.material instanceof THREE.MeshStandardMaterial)) return
-      node.material.color.set('#ffffff')
-      node.material.roughness = 0.4
-      node.material.metalness = 0.8
-    })
-  })
 </script>
 
 <T.PerspectiveCamera makeDefault fov={24} bind:ref={camera} />
