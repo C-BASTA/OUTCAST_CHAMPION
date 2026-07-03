@@ -34,7 +34,7 @@
   
   <div class="viewer">
     <CascoViewer 
-      modelPath="/models/CascoVlad13_compressed.glb"
+      modelPath="/models/casco_0307.gltf"
       onApplyFace={handleViewerReady}
     />
   </div>

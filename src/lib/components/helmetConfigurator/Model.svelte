@@ -17,7 +17,7 @@
   import * as THREE from 'three'
   import { config } from '$lib/config.svelte.js'
 
-  const gltf = useGltf('/models/CascoVlad13_compressed.glb', { dracoLoader: useDraco('/draco/') })
+  const gltf = useGltf('/models/casco_0307.gltf', { dracoLoader: useDraco('/draco/') })
 
   /*
     $effect: si ri-esegue automaticamente ogni volta che

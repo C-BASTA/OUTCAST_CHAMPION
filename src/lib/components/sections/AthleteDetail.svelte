@@ -432,6 +432,7 @@
   .para {
     font-family: var(--font-primary, 'GeistPixel');
     font-size: 20px;
+    line-height: 1.5;
     font-weight: 400;
     color: var(--color-ink, #fafafa);
     letter-spacing: -0.019em;
@@ -455,7 +456,7 @@
     bottom: 40px;
     will-change: transform;
     overflow: hidden;
-    border-radius: 2px;
+    border-radius: 0;
     z-index: 5;
     animation: photo-cover-in 1.4s cubic-bezier(0.08, 1, 0.2, 1) both;
   }
@@ -510,13 +511,16 @@
       position: sticky;
       top: 0;
       z-index: 3;
-      padding: 64px 24px 32px;
+      padding: 64px 24px 30px;
       background: linear-gradient(
         to bottom,
-        #030404 0%,
-        #030404 88%,
+        rgba(3, 4, 4, 0.97) 90%,
+        rgba(3, 4, 4, 0.96) 70%,
+        rgba(3, 4, 4, 1) 90%,
         rgba(3, 4, 4, 0) 100%
       );
+      
+      backdrop-filter: blur(6px);
     }
 
     .mobile-body {
@@ -536,11 +540,11 @@
 
     .athlete-name {
       font-size: clamp(36px, 10vw, 60px);
-      margin-bottom: 4px;
+      margin-bottom: 20px;
     }
 
     .mobile-header .role {
-      margin: 0;
+      margin: 0.5;
     }
 
     .role {

@@ -355,6 +355,11 @@
 
   /* ── Mobile: menu a tutta larghezza, niente tagli a destra ──── */
   @media (max-width: 768px) {
+    /* Logo e bottone allineati dall'alto (non centrati verticalmente) */
+    .nav-bar {
+      align-items: flex-start;
+    }
+
     .menu-nav {
       left: 24px;
       right: 24px;

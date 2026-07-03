@@ -133,17 +133,25 @@
   @media (max-width: 760px) {
     .frase-section {
       align-items: center;
+      /* Meno spazio vuoto sopra/sotto la citazione: sezione più bassa che
+         su desktop (130vh → 90vh). Abbassa ancora questo valore per stringere. */
+      height: 110vh;
+      /* Stacco dalla biografia che segue: aumenta per distanziarla di più. */
+      margin-bottom: 8vh;
       padding: 28px 20px;
     }
 
     blockquote {
       max-width: 100%;
       text-align: left;
+      /* Alza la citazione lasciando più spazio sotto (resta centrata, poi
+         spostata su). Aumenta questo valore per alzarla ancora di più. */
+      transform: translateY(-40px);
     }
 
     .line {
-      font-size: clamp(20px, 6.8vw, 28px);
-      line-height: 1.18;
+      font-size: clamp(40px, 6.8vw, 28px);
+      line-height: 1.2;
     }
   }
 
