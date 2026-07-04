@@ -55,9 +55,10 @@
     }
 
     const parked =
-      !helmetStore.visible &&
-      helmetStore.entryTransformY >= 100 &&
-      !helmetStore.starsVisible
+      (!helmetStore.visible &&
+        helmetStore.entryTransformY >= 100 &&
+        !helmetStore.starsVisible) ||
+      helmetStore.exitY <= -100   // exit completo: nascondi il modello
     if (floatGroup) floatGroup.visible = !parked
 
     if (camera) {

@@ -202,6 +202,9 @@
   let exitT    = $state(0)
   let rotationDelayId = null
   let isMobile = $state(false)
+  // Salva lo scroll relativo alla sezione quando si apre un overlay atleta,
+  // così al chiusura si può ripristinare lo stato helmet senza aspettare Lenis.
+  let savedScrolledInside = 0
 
   function abbreviateName(name) {
     const parts = name.trim().split(/\s+/)
@@ -242,6 +245,7 @@
   })
 
   function updateRotation(index) {
+    if (helmetStore.frozen) return   // non cambiare rotazione mentre overlay è aperto
     if (!faces[index]) return
     const rotation = faces[index].rotation ?? { x: 0, y: 0, z: 0 }
     helmetStore.rotX = rotation.x
@@ -263,8 +267,10 @@
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
-      helmetStore.exitY = lerp(0, -105, ease(exitT))
-      helmetStore.visible = true
+      const exitEased = ease(exitT)
+      helmetStore.exitY = lerp(0, -120, exitEased)
+      helmetStore.floatWeight = lerp(1, 0, exitEased)   // ferma la fluttuazione durante l'uscita
+      helmetStore.visible = exitT < 1                    // nascondi completamente a fine exit
       clearTimeout(rotationDelayId)
       return
     }
@@ -311,6 +317,11 @@
     if (index === currentCenter) {
       const name = faces[index]?.name
       if (name && athleteDetails[name]) {
+        // Salva la posizione scroll relativa prima di fixare il body
+        if (wrapper) {
+          const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY
+          savedScrolledInside = window.scrollY - wrapperTop
+        }
         helmetStore.frozen = true
         activeAthlete      = athleteDetails[name]
         activeAthleteIndex = index
@@ -501,7 +512,14 @@
 <AthleteDetail
   athlete={activeAthlete}
   athleteIndex={activeAthleteIndex}
-  onClose={() => { activeAthlete = null; activeAthleteIndex = -1; helmetStore.frozen = false }}
+  onClose={() => {
+    activeAthlete = null
+    activeAthleteIndex = -1
+    helmetStore.frozen = false
+    // Ripristina immediatamente lo stato helmet senza aspettare Lenis
+    syncHelmetLayout(savedScrolledInside, true)
+  }}
+  restoreScroll={(y) => lenis?.scrollTo(y, { immediate: true })}
 />
 
 <style>

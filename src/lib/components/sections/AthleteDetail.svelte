@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte'
 
-  let { athlete, onClose, athleteIndex = -1 } = $props()
+  let { athlete, onClose, athleteIndex = -1, restoreScroll = null } = $props()
 
   let overlayEl    = $state(null)
   let leftPanelEl  = $state(null)
@@ -208,7 +208,11 @@
       removeWheel()
       scrollTop = 0
       if (leftPanelEl) leftPanelEl.scrollTop = 0
-      window.scrollTo(0, savedScrollY)
+      if (restoreScroll) {
+        restoreScroll(savedScrollY)
+      } else {
+        window.scrollTo(0, savedScrollY)
+      }
     }
   })
 
