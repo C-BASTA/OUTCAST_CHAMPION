@@ -515,11 +515,24 @@
   onClose={() => {
     activeAthlete = null
     activeAthleteIndex = -1
-    helmetStore.frozen = false
-    // Ripristina immediatamente lo stato helmet senza aspettare Lenis
-    syncHelmetLayout(savedScrolledInside, true)
+    // Non sbloccare subito: Lenis sta ancora emettendo scroll=0 (body era fixed).
+    // restoreScroll sblocca dopo che Lenis ha aggiornato la posizione.
+    // Il timeout è solo una safety-net nel caso il callback non arrivi.
+    setTimeout(() => {
+      if (helmetStore.frozen) {
+        helmetStore.frozen = false
+        syncHelmetLayout(savedScrolledInside, true)
+      }
+    }, 150)
   }}
-  restoreScroll={(y) => lenis?.scrollTo(y, { immediate: true })}
+  restoreScroll={(y) => {
+    lenis?.scrollTo(y, { immediate: true })
+    // Aspetta un frame: Lenis ha ora la posizione corretta, poi sblocca
+    requestAnimationFrame(() => {
+      helmetStore.frozen = false
+      syncHelmetLayout(savedScrolledInside, true)
+    })
+  }}
 />
 
 <style>
