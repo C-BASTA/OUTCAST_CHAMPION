@@ -56,7 +56,7 @@
 
     const parked =
       !helmetStore.visible &&
-      helmetStore.entryTransformY >= 100 &&
+      (helmetStore.entryTransformY >= 100 || helmetStore.exitY <= -100) &&
       !helmetStore.starsVisible
     if (floatGroup) floatGroup.visible = !parked
 

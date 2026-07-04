@@ -263,8 +263,9 @@
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
-      helmetStore.exitY = lerp(0, -105, ease(exitT))
-      helmetStore.visible = true
+      helmetStore.exitY = lerp(0, -120, ease(exitT))
+      helmetStore.floatWeight = lerp(1, 0, ease(exitT))
+      helmetStore.visible = exitT < 1
       clearTimeout(rotationDelayId)
       return
     }
