@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 308.85 308.85">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #2356b1;
+      }
+
+      .cls-2 {
+        fill: #fff;
+      }
+
+      .cls-3 {
+        fill: #f9d949;
+        font-family: GeistPixel-Grid, 'Geist Pixel';
+        font-size: 330.9px;
+      }
+    </style>
+  </defs>
+  <rect class="cls-2" x="-8.5" y="-8.5" width="325.86" height="325.86"/>
+  <g id="Livello_1" data-name="Livello 1">
+    <rect class="cls-1" width="308.85" height="308.85"/>
+    <text class="cls-3" transform="translate(41.26 276.4)"><tspan x="0" y="0">O</tspan></text>
+  </g>
+</svg>

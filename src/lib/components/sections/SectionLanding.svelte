@@ -10,6 +10,8 @@
   let _scale = 1 // fisso, serve solo per il calcolo del mouse
   let ctx
   let helmetImage
+  let helmetOffscreen = null  // canvas pre-renderizzato alla dimensione display
+  let helmetOffscreenX = 0, helmetOffscreenY = 0
   let _cx = 0, _cy = 0, _r = 0, _vx = 0, _vy = 0, _vr = 0
   let _tCx = 0, _tCy = 0, _tR = 0
   let _hovering = false
@@ -60,8 +62,9 @@
   const TILE_FADE_START = 0.58
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
-  const HELMET_SCALE = 0.45
-  const HELMET_CENTER_Y = 0.54
+  const HELMET_SCALE = 1.2
+  const HELMET_CENTER_Y = 0.55
+  const HELMET_CENTER_X = 0.45
   // Su mobile la foto riempie il box con la testa più in alto: il casco va alzato
   // e rimpicciolito rispetto al desktop.
   const HELMET_CENTER_Y_MOBILE = 0.32
@@ -88,6 +91,28 @@
   const rand = (min, max) => min + Math.random() * (max - min)
   const pick = (items) => items[Math.floor(Math.random() * items.length)]
 
+  function buildHelmetOffscreen() {
+    if (!helmetImage?.complete || !helmetImage.naturalWidth || !photoW) return
+    const scale = helmetMobile ? HELMET_SCALE_MOBILE : HELMET_SCALE
+    const centerX = HELMET_CENTER_X
+    const centerY = helmetMobile ? HELMET_CENTER_Y_MOBILE : HELMET_CENTER_Y
+    const padX = photoW * REVEAL_PAD_X
+    const padY = photoH * REVEAL_PAD_TOP
+    const w = photoW * scale
+    const h = w * (helmetImage.naturalHeight / helmetImage.naturalWidth)
+    const x = padX + photoW * centerX - w * 0.5
+    const y = padY + photoH * centerY - h * 0.5
+    const oc = document.createElement('canvas')
+    oc.width  = Math.round(canvasW)
+    oc.height = Math.round(canvasH)
+    const octx = oc.getContext('2d')
+    octx.imageSmoothingEnabled = true
+    octx.drawImage(helmetImage, x, y, w, h)
+    helmetOffscreen  = oc
+    helmetOffscreenX = 0
+    helmetOffscreenY = 0
+  }
+
   function resizeCanvas() {
     if (!wrap || !revealCanvas) return
 
@@ -102,6 +127,7 @@
     ctx = revealCanvas.getContext('2d')
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.imageSmoothingEnabled = true
+    buildHelmetOffscreen()
   }
 
   function addTile(x, y, size, ttl, delay = 0, isTrail = false) {
@@ -162,22 +188,17 @@
   }
 
   function drawHelmetTile(tile, alpha, offsetX = 0, offsetY = 0) {
-    if (!ctx || !helmetImage?.complete || !helmetImage.naturalWidth) return
+    if (!ctx || !helmetOffscreen) return
 
     const padX = photoW * REVEAL_PAD_X
     const padY = photoH * REVEAL_PAD_TOP
-    const helmetW = photoW * (helmetMobile ? HELMET_SCALE_MOBILE : HELMET_SCALE)
-    const helmetH = helmetW * (helmetImage.naturalHeight / helmetImage.naturalWidth)
-    const helmetX = padX + photoW * 0.5 - helmetW * 0.5
-    const centerY = helmetMobile ? HELMET_CENTER_Y_MOBILE : HELMET_CENTER_Y
-    const helmetY = padY + photoH * centerY - helmetH * 0.5
 
     ctx.save()
     ctx.globalAlpha = alpha
     ctx.beginPath()
     ctx.rect(tile.x + padX + offsetX, tile.y + padY + offsetY, tile.size, tile.size)
     ctx.clip()
-    ctx.drawImage(helmetImage, helmetX, helmetY, helmetW, helmetH)
+    ctx.drawImage(helmetOffscreen, helmetOffscreenX, helmetOffscreenY)
     ctx.restore()
   }
 
@@ -208,6 +229,7 @@
       || window.innerWidth < 768
 
     helmetImage = new Image()
+    helmetImage.onload = buildHelmetOffscreen
     helmetImage.src = '/images/Casco_Landing.png'
     resizeCanvas()
 
