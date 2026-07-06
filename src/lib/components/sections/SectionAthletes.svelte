@@ -439,6 +439,20 @@
     })
   })
 
+  function handleOverlayClose() {
+    activeAthlete      = null
+    activeAthleteIndex = -1
+    helmetStore.frozen = false
+    // AthleteDetail's cleanup removes position:fixed and calls window.scrollTo —
+    // wait for that to settle before re-syncing the helmet state.
+    setTimeout(() => {
+      if (!wrapper) return
+      const wrapperTop  = wrapper.getBoundingClientRect().top + window.scrollY
+      const scrolled    = window.scrollY - wrapperTop
+      syncHelmetLayout(scrolled)
+    }, 50)
+  }
+
   onDestroy(() => {
     if (masterTimeline) {
       masterTimeline.scrollTrigger?.kill()
@@ -501,7 +515,7 @@
 <AthleteDetail
   athlete={activeAthlete}
   athleteIndex={activeAthleteIndex}
-  onClose={() => { activeAthlete = null; activeAthleteIndex = -1; helmetStore.frozen = false }}
+  onClose={handleOverlayClose}
 />
 
 <style>
