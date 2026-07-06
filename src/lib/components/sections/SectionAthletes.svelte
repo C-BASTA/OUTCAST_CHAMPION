@@ -91,10 +91,10 @@
       role: 'Weightlifter, 14 years old.',
       description: 'A 14-year-old weightlifter, Alina was already the Under-17 national champion in 2021 and was part of the preparation program for the Ukrainian national team. She was killed in 2022 during the siege of Mariupol, a victim of the bombings that destroyed the residential neighborhood where she lived. Alina died under the rubble of her home along with her mother; in the same context, her brother was killed by a Russian sniper while attempting to rescue the two women trapped after the bombardment.',
     },
-    'Oleksandr Peleshenko': {
-      name: 'Oleksandr Peleshenko',
-      role: 'Two-time European Weightlifting Champion, 30 years old.',
-      description: 'A two-time European weightlifting champion (2016 and 2017), he represented Ukraine at the Rio 2016 Olympic Games, finishing fourth in the 85 kg category. He joined the Ukrainian Armed Forces in February 2022, putting his remarkable physical strength at the service of combat units and heavy military logistics at the front. He operated in conflict zones for over two consecutive years before his final mission. He fell in combat in May 2024 at the age of 30, leaving behind a significant sporting legacy on the world stage.',
+    'Roman Polishchuk': {
+      name: 'Roman Polishchuk',
+      role: 'High jump specialist, 29 years old.',
+      description: 'A 29-year-old high jump specialist, he competed for years in Ukrainian athletics circuits, participating in numerous significant national competitions. He enlisted as a volunteer in the armed forces in the early days of the February 2022 invasion, serving in the 206th battalion of the 241st Territorial Defense Brigade. He took part in several defensive operations to counter the advance of Russian troops in the country. He was killed in action in March 2023 during a field combat, leaving his sports career behind to defend the homeland.',
     },
     'Kateryna Diachenko': {
       name: 'Kateryna Diachenko',
@@ -108,7 +108,7 @@
     },
     'Andriy Kutsenko': {
       name: 'Andriy Kutsenko',
-      role: 'Track Cycling Champion.',
+      role: 'Track Cycling Champion, 34 years old.',
       description: 'A multiple-time Ukrainian track cycling champion and leading national team athlete, he represented Ukrainian colors in numerous international competitions. At the outbreak of the Russian invasion in 2022, he decided to suspend his sporting career to enlist in the army and defend national territory. He served actively in various combat operations for over two consecutive years. He died during a combat mission in the Donetsk region on July 3, 2024, and was commemorated by the cycling federation for his civil and military commitment.',
     },
     'Daria Kurdel': {
@@ -141,28 +141,28 @@
   let activeAthleteIndex = $state(-1)
 
   const faces = [
-    { name: 'Maksym Halinichev',     rotation: { x: 0, y: 1.83,  z: 0 } },
-    { name: 'Dmytro Sharpar',        rotation: { x: 0, y: 1.571, z: 0 } },
-    { name: 'Yevhen Malyshev',       rotation: { x: 0, y: 1.0,   z: 0 } },
-    { name: 'Karyna Bakhur',         rotation: { x: 0, y: 1.5,   z: 0 } },
-    { name: 'Taras Shpuk',           rotation: { x: 0, y: 2.0,   z: 0 } },
-    { name: 'Pavlo Ishchenko',       rotation: { x: 0, y: 2.5,   z: 0 } },
-    { name: 'Oleksiy Loginov',       rotation: { x: 0, y: 10.5,  z: 0 } },
-    { name: 'Volodymyr Androshchuk', label: 'V. Androshchuk', rotation: { x: 0, y: 3.5, z: 0 } },
-    { name: 'Oleksiy Khabarov',      rotation: { x: 0, y: 1.0,   z: 0 } },
-    { name: 'Mykyta Kozubenko',      rotation: { x: 0, y: 4.5,   z: 0 } },
-    { name: 'Andriy Yaremenko',      rotation: { x: 0, y: 5.0,   z: 0 } },
-    { name: 'Fedor Epifanov',        rotation: { x: 0, y: 8.0,   z: 0 } },
-    { name: 'Kateryna Troyan',       rotation: { x: 0, y: 6.0,   z: 0 } },
-    { name: 'Nazar Zuy',             rotation: { x: 0, y: 6.5,   z: 0 } },
-    { name: 'Mariia Lebid',          rotation: { x: 0, y: 7.0,   z: 0 } },
-    { name: 'Alina Perehudova',      rotation: { x: 0, y: 10.5,  z: 0 } },
-    { name: 'Oleksandr Peleshenko',  label: 'O. Peleshenko', rotation: { x: 0, y: 8.0, z: 0 } },
-    { name: 'Kateryna Diachenko',    rotation: { x: 0, y: 8.5,   z: 0 } },
-    { name: 'Viktoriia Ivashko',     rotation: { x: 0, y: 9.0,   z: 0 } },
-    { name: 'Andriy Kutsenko',       rotation: { x: 0, y: 9.5,   z: 0 } },
-    { name: 'Daria Kurdel',          rotation: { x: 0, y: 10,    z: 0 } },
-    { name: 'Ivan Kononenko',        rotation: { x: 0, y: 10.5,  z: 0 } },
+    { name: 'Maksym Halinichev',     rotation: { x: -0.3, y:  0,  z: 0 } },
+    { name: 'Dmytro Sharpar',        rotation: { x: -0.3, y: 1.1, z: 0 } },
+    { name: 'Yevhen Malyshev',       rotation: { x: -0.3, y: 3,   z: 0 } },
+    { name: 'Karyna Bakhur',         rotation: { x: -0.3, y: 5.5,   z: 0 } },
+    { name: 'Taras Shpuk',           rotation: { x: 0, y: 5.10,   z: 0 } },
+    { name: 'Pavlo Ishchenko',       rotation: { x: -4.56, y: 2.81,   z: 0 } },
+    { name: 'Oleksiy Loginov',       rotation: { x: -5.50, y: 4.77,  z: 0 } },
+    { name: 'Volodymyr Androshchuk', label: 'V. Androshchuk', rotation: { x: -6.14, y: 0.73, z: 0 } },
+    { name: 'Oleksiy Khabarov',      rotation: { x: -5.78, y: 0.85,   z: 0 } },
+    { name: 'Mykyta Kozubenko',      rotation: { x: -5.46, y: 1.53,   z: 0 } },
+    { name: 'Andriy Yaremenko',      rotation: { x: -0.54, y: 5.10,   z: 0 } },
+    { name: 'Fedor Epifanov',        rotation: { x: 0, y: 5.60,   z: 0 } },
+    { name: 'Kateryna Troyan',       rotation: { x: -0.35, y: 0.61,   z: 0 } },
+    { name: 'Nazar Zuy',             rotation: { x: -0.50, y: 3.60,   z: 0 } },
+    { name: 'Mariia Lebid',          rotation: { x: -0.50, y: 1.90,   z: 0 } },
+    { name: 'Alina Perehudova',      rotation: { x: -5.14, y: 3.17,  z: 0 } },
+    { name: 'Roman Polishchuk',      rotation: { x: -0.56, y: 4.29, z: 0 } },
+    { name: 'Kateryna Diachenko',    rotation: { x: -0.44, y: 2.51,   z: 0 } },
+    { name: 'Viktoriia Ivashko',     rotation: { x: 0.1, y: 0.17,   z: 0 } },
+    { name: 'Andriy Kutsenko',       rotation: { x: -6.18, y: 1.35,   z: 0 } },
+    { name: 'Daria Kurdel',          rotation: { x: -3.85, y: 3.24,    z: 0 } },
+    { name: 'Ivan Kononenko',        rotation: { x: -5.76, y: 5.69,  z: 0 } },
   ]
 
   const PX_PER_STEP   = 400
@@ -243,9 +243,10 @@
 
   function updateRotation(index) {
     if (!faces[index]) return
-    helmetStore.rotX = 0
-    helmetStore.rotY = faces[index].rotation.y
-    helmetStore.rotZ = 0
+    const rotation = faces[index].rotation ?? { x: 0, y: 0, z: 0 }
+    helmetStore.rotX = rotation.x
+    helmetStore.rotY = rotation.y
+    helmetStore.rotZ = rotation.z
   }
 
   function scheduleRotation(index) {
@@ -262,8 +263,9 @@
     if (scrolledInside > INTRO_PX + SCROLL_HEIGHT) {
       const rawExitT = (scrolledInside - (INTRO_PX + SCROLL_HEIGHT)) / EXIT_PX
       exitT = clamp(rawExitT, 0, 1)
-      helmetStore.exitY = lerp(0, -105, ease(exitT))
-      helmetStore.visible = true
+      helmetStore.exitY = lerp(0, -120, ease(exitT))
+      helmetStore.floatWeight = lerp(1, 0, ease(exitT))
+      helmetStore.visible = exitT < 1
       clearTimeout(rotationDelayId)
       return
     }
@@ -279,6 +281,9 @@
     }
     const rawIntroP = clamp(scrolledInside / INTRO_PX, 0, 1)
 
+    const activeFaceIndex = Math.max(0, Math.min(faces.length - 1, Math.round(smoothSelected)))
+    const activeFaceRotation = faces[activeFaceIndex]?.rotation ?? { x: 0, y: 0, z: 0 }
+
     if (rawIntroP < 1) {
       helmetStore.smoothRotation = false
       const ei = ease(clamp(rawIntroP / 0.65, 0, 1))
@@ -287,8 +292,9 @@
       helmetStore.cameraY = lerp(0.25,  ATH_CAM_Y,  ei)
       helmetStore.cameraZ = lerp(8.5, isMobile ? ATH_CAM_Z_MOBILE : ATH_CAM_Z, ei)
       helmetStore.lookAtY = lerp(0.20, ATH_LOOK_Y, ei)
-      helmetStore.rotX    = lerp(0.25,  ATH_ROT_X,  ei)
-      helmetStore.rotY    = lerp(Math.PI - 0.35,  faces[0].rotation.y, ei)
+      helmetStore.rotX    = lerp(0.25, activeFaceRotation.x, ei)
+      helmetStore.rotY    = lerp(Math.PI - 0.35, activeFaceRotation.y, ei)
+      helmetStore.rotZ    = lerp(0, activeFaceRotation.z, ei)
     } else {
       helmetStore.smoothRotation = true
       helmetStore.viewerPaddingLeft = isMobile ? '0%' : '38%'
@@ -296,7 +302,6 @@
       helmetStore.cameraY = ATH_CAM_Y
       helmetStore.cameraZ = isMobile ? ATH_CAM_Z_MOBILE : ATH_CAM_Z
       helmetStore.lookAtY = ATH_LOOK_Y
-      helmetStore.rotX    = ATH_ROT_X
     }
   }
 

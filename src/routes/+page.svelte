@@ -26,7 +26,7 @@
       const visorEl   = document.getElementById('helmet-visor')
 
       // navDark = true (testo bianco) dall'inizio di helmet-visor in poi
-      navDark = scrollY >= (visorEl?.offsetTop ?? Infinity) + 1550
+      navDark = scrollY >= (visorEl?.offsetTop ?? Infinity) + 350
 
       // I pixel colorati di sfondo sono nascosti durante la biografia (layout fitto).
       // Su mobile però tutta la sezione visor (casco che sale, zoom e de-zoom) resta

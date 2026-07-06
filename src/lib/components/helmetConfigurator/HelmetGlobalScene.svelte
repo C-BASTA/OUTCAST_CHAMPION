@@ -24,6 +24,7 @@
   let curRotY = helmetStore.rotY
   let curRotZ = helmetStore.rotZ
   let curFloatWeight = 0
+  let _visorPatched = false
 
   const FLOAT_AMP_Y    = 0.04
   const FLOAT_AMP_ROTX = 0.018
@@ -40,9 +41,22 @@
   useTask((delta) => {
     elapsed += delta
 
+    if (!_visorPatched && modelRef) {
+      modelRef.traverse((node) => {
+        if (!(node instanceof THREE.Mesh)) return
+        const mats = Array.isArray(node.material) ? node.material : [node.material]
+        for (const mat of mats) {
+          if (mat?.name === 'Material.017') {
+            mat.envMapIntensity = 0.1
+            _visorPatched = true
+          }
+        }
+      })
+    }
+
     const parked =
       !helmetStore.visible &&
-      helmetStore.entryTransformY >= 100 &&
+      (helmetStore.entryTransformY >= 100 || helmetStore.exitY <= -100) &&
       !helmetStore.starsVisible
     if (floatGroup) floatGroup.visible = !parked
 
@@ -78,29 +92,6 @@
 
   const gltf = useGltf('/models/casco_0307.gltf', { dracoLoader: useDraco('/draco/') })
 
-  $effect(() => {
-    if (!$gltf) return
-    $gltf.scene.traverse((node) => {
-      if (!(node instanceof THREE.Mesh)) return
-      const mat = node.material
-      console.log('Material name:', mat.name)
-      if (!mat) return
-      // if (mat.name === 'Material') {
-      //   mat.roughness = 0.02
-      //   mat.needsUpdate = true
-      // }
-      // // Material.001 = bordo visiera: roughness=1 nel GLB lo rende bianco piatto
-      // if (mat.name === 'Material.001') {
-      //   mat.roughness = 0.08
-      //   mat.needsUpdate = true
-      // }
-      // // Material.017 = visiera
-      // if (mat.name === 'Material.017') {
-      //   mat.roughness = 0.08
-      //   mat.needsUpdate = true
-      // }
-    })
-  })
 </script>
 
 <T.PerspectiveCamera makeDefault fov={CAMERA_FOV} bind:ref={camera} />

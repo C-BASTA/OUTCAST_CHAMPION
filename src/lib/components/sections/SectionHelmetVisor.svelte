@@ -459,7 +459,7 @@
     font-family: var(--font-primary, 'GeistPixel');
     font-size: clamp(24px, 3.2vw, 48px);
     white-space: nowrap;
-    color: #030404;
+    color: neutral-50;
     will-change: opacity, transform;
     pointer-events: auto;
     user-select: text;
