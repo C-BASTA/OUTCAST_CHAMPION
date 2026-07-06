@@ -20,12 +20,12 @@
         opacity: 1,
         y: 0,
         ease: 'power2.out',
-        stagger: 0.15,
+        stagger: 0.3,
         scrollTrigger: {
           trigger: section,
-          start: 'top 40%',
-          end: 'center center',
-          scrub: 1,
+          start: 'top top',
+          end: 'top 20%',
+          scrub: 2,
           invalidateOnRefresh: true,
         }
       }
@@ -138,7 +138,8 @@
       height: 110vh;
       /* Stacco dalla biografia che segue: aumenta per distanziarla di più. */
       margin-bottom: 8vh;
-      padding: 28px 20px;
+      padding: 8px 20px 48px;
+      height: auto;
     }
 
     blockquote {
