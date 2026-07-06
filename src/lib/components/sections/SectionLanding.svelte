@@ -58,7 +58,7 @@
   const RADIUS = 190
   const STIFFNESS = 0.15
   const DAMPING = 0.85
-  const MAX_TILES = 280
+  const MAX_TILES = 100
   const TILE_FADE_START = 0.58
   const REVEAL_PAD_X = 0.09
   const REVEAL_PAD_TOP = 0.22
@@ -67,8 +67,8 @@
   const HELMET_CENTER_X = 0.45
   // Su mobile la foto riempie il box con la testa più in alto: il casco va alzato
   // e rimpicciolito rispetto al desktop.
-  const HELMET_CENTER_Y_MOBILE = 0.32
-  const HELMET_SCALE_MOBILE = 0.4
+  const HELMET_CENTER_Y_MOBILE = 0.36
+  const HELMET_SCALE_MOBILE = 1.1
   let helmetMobile = false
 
   // --- LOGICA SCROLL ORIGINALE ---
@@ -192,13 +192,13 @@
 
     const padX = photoW * REVEAL_PAD_X
     const padY = photoH * REVEAL_PAD_TOP
+    const tx = Math.round(tile.x + padX + offsetX)
+    const ty = Math.round(tile.y + padY + offsetY)
+    const ts = tile.size
 
     ctx.save()
     ctx.globalAlpha = alpha
-    ctx.beginPath()
-    ctx.rect(tile.x + padX + offsetX, tile.y + padY + offsetY, tile.size, tile.size)
-    ctx.clip()
-    ctx.drawImage(helmetOffscreen, helmetOffscreenX, helmetOffscreenY)
+    ctx.drawImage(helmetOffscreen, tx, ty, ts, ts, tx, ty, ts, ts)
     ctx.restore()
   }
 
