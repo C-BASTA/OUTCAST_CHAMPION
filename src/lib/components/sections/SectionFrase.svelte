@@ -23,8 +23,8 @@
         stagger: 0.15,
         scrollTrigger: {
           trigger: section,
-          start: 'top 40%',
-          end: 'center center',
+          start: 'top 80%',
+          end: 'top 20%',
           scrub: 1,
           invalidateOnRefresh: true,
         }
@@ -138,7 +138,8 @@
       height: 110vh;
       /* Stacco dalla biografia che segue: aumenta per distanziarla di più. */
       margin-bottom: 8vh;
-      padding: 28px 20px;
+      padding: 8px 20px 48px;
+      height: auto;
     }
 
     blockquote {
