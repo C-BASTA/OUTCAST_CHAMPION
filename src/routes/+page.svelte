@@ -12,6 +12,7 @@
   import SectionAthletes from '$lib/components/sections/SectionAthletes.svelte'
   import SectionRegolamento from '$lib/components/sections/SectionRegolamento.svelte'
   import LoadingScreen from '$lib/components/LoadingScreen.svelte'
+  import Footer from '$lib/components/Footer.svelte'
 
   let scrollY     = $state(0)
   let loaderDone  = $state(false)
@@ -77,6 +78,7 @@
     <SectionFrase2 />
     <SectionRegolamento />
   </main>
+  <Footer />
 </div>
 
 <style>
@@ -97,4 +99,5 @@
   #athletes-section {
     background: #030404;
   }
+
 </style>
