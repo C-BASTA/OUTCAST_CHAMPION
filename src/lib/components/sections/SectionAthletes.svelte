@@ -255,6 +255,10 @@
 
   function syncHelmetLayout(scrolledInside, skipVisibility = false) {
     if (helmetStore.frozen) return
+    // Ignore calls while scroll is momentarily at 0 (position:fixed body removal glitch
+    // from AthleteDetail triggers window.scrollTo, briefly exposing scroll=0 before
+    // the restore completes — would snap cameraZ to 8.5 for a frame).
+    if (scrolledInside < 0) return
 
     // Su mobile il casco è sempre centrato (padding 0) e visibile durante questa sezione
     const maxPadding = isMobile ? 0 : 38
