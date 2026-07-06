@@ -1,7 +1,7 @@
 <script>
   import { TEAM, PARAS, QUESTIONS, ABOUT_STEP_PX } from '$lib/data/about.js'
 
-  const MAX_STEP = QUESTIONS.length - 1
+  const MAX_STEP = QUESTIONS.length +6
   const clamp = (x, a, b) => Math.max(a, Math.min(b, x))
 
   // Desktop: lo step è pilotato dal wheel (lo scroll del body è bloccato dal menu).

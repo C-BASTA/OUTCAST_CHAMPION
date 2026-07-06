@@ -20,12 +20,12 @@
         opacity: 1,
         y: 0,
         ease: 'power2.out',
-        stagger: 0.15,
+        stagger: 0.3,
         scrollTrigger: {
           trigger: section,
-          start: 'top 80%',
+          start: 'top top',
           end: 'top 20%',
-          scrub: 1,
+          scrub: 2,
           invalidateOnRefresh: true,
         }
       }
