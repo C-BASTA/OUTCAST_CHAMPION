@@ -242,6 +242,10 @@
     window.addEventListener('resize', checkSize)
 
     let lastSectionEnded = false
+    // Timer used to debounce onLeaveBack: if onLeave fires within 200ms it means
+    // the back-scroll was a glitch (position:fixed body removal in AthleteDetail
+    // briefly exposes scroll=0 before window.scrollTo restores the real position).
+    let leaveBackTimer = null
 
     // ScrollTrigger fires via Lenis → ScrollTrigger.update() wired in layout.svelte.
     // start:'top top' / end:'bottom bottom' maps exactly to the old manual formula:
@@ -289,27 +293,37 @@
           }
         }
       },
-      // Fired when the user scrolls forward past the section end (progress stays 1)
+      // Fired when the user scrolls forward past the section end (progress stays 1).
+      // Also cancels any pending leaveBack reset — if both fire within 200ms it was
+      // a scroll=0 glitch (AthleteDetail position:fixed removal), not genuine back-scroll.
       onLeave() {
+        clearTimeout(leaveBackTimer)
+        leaveBackTimer = null
         if (!lastSectionEnded) {
           lastSectionEnded = true
           applyEndState()
         }
       },
-      // Fired when the user scrolls back before the section start
+      // Fired when the user scrolls back before the section start.
+      // Debounced: only resets state after 200ms without a subsequent onLeave.
       onLeaveBack() {
-        progress = 0
-        if (lastSectionEnded) {
-          lastSectionEnded = false
-          helmetStore.visible = false
-        }
-        helmetStore.entryTransformY = ENTRY_START_Y
-        helmetStore.floatWeight     = 0
+        clearTimeout(leaveBackTimer)
+        leaveBackTimer = setTimeout(() => {
+          leaveBackTimer = null
+          progress = 0
+          if (lastSectionEnded) {
+            lastSectionEnded = false
+            helmetStore.visible = false
+          }
+          helmetStore.entryTransformY = ENTRY_START_Y
+          helmetStore.floatWeight     = 0
+        }, 200)
       },
     })
 
     return () => {
       st.kill()
+      clearTimeout(leaveBackTimer)
       window.removeEventListener('resize', checkSize)
     }
   })
