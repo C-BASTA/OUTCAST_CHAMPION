@@ -11,31 +11,31 @@
   let ctx
 
   onMount(() => {
-  ctx = gsap.context(() => {
-    const lines = section.querySelectorAll('.line, .quotes');
+    const isMobile = window.innerWidth < 768
 
-    gsap.fromTo(lines,
-      { opacity: 0, y: 60 },
-      {
-        opacity: 1,
-        y: 0,
-        ease: 'power2.out',
-        stagger: 0.3,
-        scrollTrigger: {
-          trigger: section,
-          start: 'top top',
-          end: 'top 20%',
-          scrub: 2,
-          invalidateOnRefresh: true,
+    ctx = gsap.context(() => {
+      const lines = section.querySelectorAll('.line, .quotes')
+
+      gsap.fromTo(lines,
+        { opacity: 0, y: 60 },
+        {
+          opacity: 1,
+          y: 0,
+          ease: 'power2.out',
+          stagger: isMobile ? 0.15 : 0.3,
+          scrollTrigger: {
+            trigger: section,
+            start: isMobile ? 'top 80%' : 'top top',
+            end:   isMobile ? 'center center' : 'top 20%',
+            scrub: isMobile ? 1 : 2,
+            invalidateOnRefresh: true,
+          }
         }
-      }
-    );
-  }, section);
+      )
+    }, section)
 
-  return () => {
-    if (ctx) ctx.revert();
-  }
-})
+    return () => { if (ctx) ctx.revert() }
+  })
 
   onDestroy(() => {
     if (ctx) ctx.revert();
