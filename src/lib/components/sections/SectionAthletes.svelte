@@ -202,6 +202,10 @@
   let exitT    = $state(0)
   let rotationDelayId = null
   let isMobile = $state(false)
+  // true while scroll is restoring after overlay close; prevents syncHelmetLayout
+  // from entering the intro branch (which snaps the helmet to the intro rotation)
+  // while Lenis animates through the intro zone on the way back to the gallery.
+  let closingOverlay = false
 
   function abbreviateName(name) {
     const parts = name.trim().split(/\s+/)
@@ -423,6 +427,21 @@
         onUpdate: (self) => {
           const scrolled = self.scroll() - self.start
 
+          // While restoring scroll after overlay close, skip all helmet updates
+          // until we're back in the gallery zone (past the intro animation range).
+          // This prevents syncHelmetLayout from briefly entering the intro branch
+          // and snapping the helmet to the intro rotation while Lenis animates
+          // through the intro zone on the way back from scroll=0 to savedScrollY.
+          if (closingOverlay) {
+            if (scrolled >= INTRO_PX) {
+              closingOverlay = false
+              helmetStore.frozen = false
+              // Fall through: process this tick normally now that we've unfrozen.
+            } else {
+              return
+            }
+          }
+
           introP = clamp(scrolled / INTRO_PX, 0, 1)
 
           if (scrolled >= INTRO_PX) {
@@ -448,17 +467,20 @@
   function handleOverlayClose() {
     activeAthlete      = null
     activeAthleteIndex = -1
-    // Keep frozen until AthleteDetail's body-unfix + window.scrollTo glitch settles.
-    // Setting frozen=false immediately would let a spurious syncHelmetLayout call
-    // (triggered by the brief scroll=0 before restoration) snap the helmet to the
-    // intro rotation for a frame, causing a visible flash.
+    closingOverlay     = true
+    // frozen stays true; onUpdate will clear closingOverlay and unfreeze as soon
+    // as scroll settles back into the gallery zone (scrolled >= INTRO_PX).
+    // Fallback: force-unfreeze after 600ms in case onUpdate never fires with a
+    // gallery-range value (e.g., Lenis doesn't emit scroll events during restoration).
     setTimeout(() => {
-      if (!wrapper) return
+      if (!closingOverlay) return
+      closingOverlay = false
       helmetStore.frozen = false
-      const wrapperTop  = wrapper.getBoundingClientRect().top + window.scrollY
-      const scrolled    = window.scrollY - wrapperTop
+      if (!wrapper) return
+      const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY
+      const scrolled   = window.scrollY - wrapperTop
       syncHelmetLayout(scrolled)
-    }, 50)
+    }, 600)
   }
 
   onDestroy(() => {
