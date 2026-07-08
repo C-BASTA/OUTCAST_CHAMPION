@@ -445,14 +445,16 @@
     })
   })
 
-   function handleOverlayClose() {
+  function handleOverlayClose() {
     activeAthlete      = null
     activeAthleteIndex = -1
-    helmetStore.frozen = false
-    // AthleteDetail's cleanup removes position:fixed and calls window.scrollTo —
-    // wait for that to settle before re-syncing the helmet state.
+    // Keep frozen until AthleteDetail's body-unfix + window.scrollTo glitch settles.
+    // Setting frozen=false immediately would let a spurious syncHelmetLayout call
+    // (triggered by the brief scroll=0 before restoration) snap the helmet to the
+    // intro rotation for a frame, causing a visible flash.
     setTimeout(() => {
       if (!wrapper) return
+      helmetStore.frozen = false
       const wrapperTop  = wrapper.getBoundingClientRect().top + window.scrollY
       const scrolled    = window.scrollY - wrapperTop
       syncHelmetLayout(scrolled)
