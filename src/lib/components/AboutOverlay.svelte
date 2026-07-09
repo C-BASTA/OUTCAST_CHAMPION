@@ -124,7 +124,9 @@
     position: fixed;
     inset: 0;
     z-index: 280;
-    background: #fafafa;
+    background: rgba(250, 250, 250, 0.96);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
     color: #030404;
     display: flex;
     flex-direction: column;

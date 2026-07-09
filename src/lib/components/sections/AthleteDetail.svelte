@@ -323,7 +323,7 @@
     position: fixed;
     inset: 0;
     z-index: 500;
-    background: transparent;
+    background: rgba(3, 4, 4, 0.26);
     backdrop-filter: blur(56px) saturate(0.75);
     -webkit-backdrop-filter: blur(56px) saturate(0.75);
     overflow: hidden;
